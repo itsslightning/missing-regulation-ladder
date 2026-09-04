@@ -63,6 +63,7 @@ from statsmodels.stats.multitest import multipletests
 
 from pipeline import config as cfg
 from pipeline import decisions
+from pipeline import sources
 from pipeline.provenance import Provenance
 from pipeline.s01_gene_universe import GENE_UNIVERSE, strip_version
 from pipeline.s02_audit_rungs import SB_EXCLUDED, SB_MAJOR, _read_gz
@@ -167,9 +168,18 @@ def load_psychencode() -> pd.DataFrame | None:
     because absence from that file cannot be distinguished from "tested and
     null".
     """
-    full = cfg.DIR_RESTRICTED / "psychencode" / "Full_hg19_cis-eQTL.txt.gz"
-    if full.exists() and full.stat().st_size > 3_000_000_000:
-        return _load_psychencode_full(full)
+    full = (
+        cfg.DIR_RESTRICTED / "psychencode" / sources.PSYCHENCODE_FULL_FILE
+    )
+    if full.exists():
+        size = full.stat().st_size
+        if size == sources.PSYCHENCODE_FULL_BYTES:
+            return _load_psychencode_full(full)
+        print(
+            f"  PsychENCODE full file is {size / 1e9:.2f} GB of "
+            f"{sources.PSYCHENCODE_FULL_BYTES / 1e9:.2f} GB -- still "
+            "downloading; falling back to the significant-only release."
+        )
 
     sig = cfg.DIR_RESTRICTED / "psychencode" / "DER-08b_hg38_eQTL.bonferroni.txt"
     if not sig.exists():

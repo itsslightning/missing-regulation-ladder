@@ -198,6 +198,13 @@ PSYCHENCODE = Source(
     ),
 )
 
+#: Exact byte count of PsychENCODE's full association file, from the server's
+#: Content-Length. A size check rather than a ">3 GB" heuristic because that
+#: file has now truncated twice mid-transfer with curl still exiting 0, and a
+#: partial gzip would silently produce a wrong rung 2 rather than an error.
+PSYCHENCODE_FULL_BYTES = 3_293_218_507
+PSYCHENCODE_FULL_FILE = "Full_hg19_cis-eQTL.txt.gz"
+
 METABRAIN = Source(
     key="metabrain",
     name="MetaBrain cortex cis-eQTLs (EUR)",
