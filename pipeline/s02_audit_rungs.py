@@ -46,6 +46,23 @@ SB_MAJOR = ("Ast", "End", "Ext", "IN", "MG", "OD", "OPC")
 SB_EXCLUDED = ("MiGA3",)
 
 
+def _read_gz(path: Path, **kwargs) -> pd.DataFrame | None:
+    """Read a gzipped table, or return None if the file is not whole yet.
+
+    Two different failures land here and both look like a corrupt file: a
+    download that dropped mid-stream, and a file being read while `tar` is
+    still writing it. Neither should be silently treated as a small dataset,
+    because a short file would show up as a genuinely lower gene count and
+    quietly bias the audit. So this warns and returns None instead.
+    """
+    try:
+        with gzip.open(path, "rt") as fh:
+            return pd.read_csv(fh, **kwargs)
+    except (EOFError, gzip.BadGzipFile, pd.errors.ParserError):
+        print(f"  WARNING: {path.name} is incomplete (still downloading?); skipped.")
+        return None
+
+
 def _universe() -> set[str]:
     if not GENE_UNIVERSE.exists():
         raise FileNotFoundError(
@@ -63,13 +80,14 @@ def audit_singlebrain(universe: set[str]) -> pd.DataFrame:
     rows = []
     for path in sorted((DIR_RAW / "singlebrain").glob("*_top_assoc.tsv.gz")):
         cell = path.name.split("_")[0]
-        with gzip.open(path, "rt") as fh:
-            df = pd.read_csv(
-                fh,
-                sep="\t",
-                usecols=["feature", "qval", "Fixed_bonf", "Fixed_P"],
-                low_memory=False,
-            )
+        df = _read_gz(
+            path,
+            sep="\t",
+            usecols=["feature", "qval", "Fixed_bonf", "Fixed_P"],
+            low_memory=False,
+        )
+        if df is None:
+            continue
         df["gene_id"] = strip_version(df["feature"])
         in_universe = df["gene_id"].isin(universe)
 
@@ -80,22 +98,37 @@ def audit_singlebrain(universe: set[str]) -> pd.DataFrame:
         else:
             tier = "subtype (rung 4)"
 
+        sub = df[in_universe]
         rows.append(
             {
                 "rung": tier,
                 "cell": cell,
                 "genes_tested": len(df),
-                "in_universe": int(in_universe.sum()),
+                "in_universe": len(sub),
                 # Two candidate definitions of "detectable", both computed so
                 # the size of the D-001 choice is visible rather than argued.
-                "egenes_qval": int((df["qval"] <= 0.05).sum()),
-                "egenes_bonf": int((df["Fixed_bonf"] <= 0.05).sum()),
+                "egenes_qval": int((sub["qval"] <= 0.05).sum()),
+                "egenes_bonf": int((sub["Fixed_bonf"] <= 0.05).sum()),
             }
         )
-    out = pd.DataFrame(rows)
-    out["frac_qval_of_tested"] = out["egenes_qval"] / out["genes_tested"]
-    out["frac_bonf_of_tested"] = out["egenes_bonf"] / out["genes_tested"]
-    out["frac_qval_of_universe"] = out["egenes_qval"] / len(universe)
+    return _add_fractions(pd.DataFrame(rows), universe)
+
+
+def _add_fractions(out: pd.DataFrame, universe: set[str]) -> pd.DataFrame:
+    """Two denominators, because they answer different questions.
+
+    `frac_of_tested` is the saturation check: of the genes this rung actually
+    tested, how many came back significant. If it approaches 1 the outcome
+    measure has no headroom left.
+
+    `frac_of_universe` is the recovery-curve denominator: the fixed gene set,
+    so that a rung testing fewer genes cannot score higher by testing fewer.
+    """
+    if out.empty:
+        return out
+    out["frac_of_tested"] = out["egenes_qval"] / out["in_universe"]
+    out["frac_bonf_of_tested"] = out["egenes_bonf"] / out["in_universe"]
+    out["frac_of_universe"] = out["egenes_qval"] / len(universe)
     return out
 
 
@@ -108,28 +141,33 @@ def audit_gtex(universe: set[str]) -> pd.DataFrame:
     rows = []
     for path in sorted((DIR_RAW / "gtex_v10").glob("*.eGenes.txt.gz")):
         tissue = path.name.split(".v10.")[0]
-        with gzip.open(path, "rt") as fh:
-            df = pd.read_csv(
-                fh, sep="\t", usecols=["gene_id", "qval", "pval_beta"], low_memory=False
-            )
+        df = _read_gz(
+            path,
+            sep="\t",
+            usecols=["gene_id", "biotype", "qval", "num_var"],
+            low_memory=False,
+        )
+        if df is None:
+            continue
         df["gene_id_bare"] = strip_version(df["gene_id"])
+        # GTEx tests every biotype, including pseudogenes and lncRNAs, so its
+        # raw "genes tested" is roughly twice SingleBrain's. Restricting to the
+        # universe is what makes the two comparable; both counts are kept so
+        # the difference is visible rather than buried.
+        in_universe = df["gene_id_bare"].isin(universe)
         rows.append(
             {
                 "rung": "bulk tissue (rung 1)",
                 "cell": tissue,
                 "genes_tested": len(df),
-                "in_universe": int(df["gene_id_bare"].isin(universe).sum()),
-                "egenes_qval": int((df["qval"] <= 0.05).sum()),
+                "in_universe": int(in_universe.sum()),
+                "egenes_qval": int((df.loc[in_universe, "qval"] <= 0.05).sum()),
+                # GTEx ships no within-gene Bonferroni column; its qval is
+                # already Storey-on-permutation, which is the analogue.
                 "egenes_bonf": pd.NA,
             }
         )
-    out = pd.DataFrame(rows)
-    if out.empty:
-        return out
-    out["frac_qval_of_tested"] = out["egenes_qval"] / out["genes_tested"]
-    out["frac_bonf_of_tested"] = pd.NA
-    out["frac_qval_of_universe"] = out["egenes_qval"] / len(universe)
-    return out
+    return _add_fractions(pd.DataFrame(rows), universe)
 
 
 # ---------------------------------------------------------------------------
@@ -233,7 +271,7 @@ def main() -> None:
     pec = audit_psychencode(universe)
     bry = audit_bryois(universe)
 
-    fl = ("frac_qval_of_tested", "frac_bonf_of_tested", "frac_qval_of_universe")
+    fl = ("frac_of_tested", "frac_bonf_of_tested", "frac_of_universe")
     parts = ["# Stage 0 audit: what each rung actually ships\n"]
     parts.append(f"Gene universe: **{len(universe):,}** genes "
                  "(protein-coding, gnomAD v2.1.1 LOEUF, GTEx brain expression).\n")
@@ -272,8 +310,8 @@ def main() -> None:
     print("\nSaturation check (fraction of TESTED genes that are eGenes):")
     for rung, grp in sb[sb["rung"] != "excluded"].groupby("rung"):
         print(
-            f"  {rung:20s} qval   min={grp['frac_qval_of_tested'].min():.3f} "
-            f"max={grp['frac_qval_of_tested'].max():.3f}"
+            f"  {rung:20s} qval   min={grp['frac_of_tested'].min():.3f} "
+            f"max={grp['frac_of_tested'].max():.3f}"
         )
         print(
             f"  {'':20s} bonf   min={grp['frac_bonf_of_tested'].min():.3f} "
