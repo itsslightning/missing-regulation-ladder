@@ -249,6 +249,31 @@ is missing regulation in that cell type either way — but it must be stated, an
 the per-rung tested counts are kept in `docs/stage0_audit.md` so the alternative
 can be computed.
 
+### D-013 — Derived outputs are split on licence, not convenience — **SET** (2026-09-04)
+
+**Chosen:** `s04` writes two tables. `data/processed/schema_gene_sets.parquet`
+(published) carries the boolean set memberships and the browser-derived
+columns. `data/restricted/schema_gene_sets_full.parquet` (local, gitignored)
+adds `schema_p_published` and `schema_q_published`.
+
+**Why:** those two columns are Singh et al.'s Supplementary Table 5 reproduced
+for 17,740 genes. Crossref reports the paper under **Springer Nature
+text-and-data-mining terms, not CC-BY**, so shipping them is republishing a
+substantial part of a restricted table — which the project brief explicitly
+rules out — rather than publishing a derived result.
+
+The boolean memberships are a different matter: the 32-gene and 10-gene sets
+are the paper's own headline result, freely citable, and reproducible from the
+flags alone. Nothing analytically necessary is lost.
+
+**Alternative:** publish the full table and rely on the data being "public
+anyway". Rejected — freely downloadable is not the same as licensed to rehost,
+which is the distinction `sources.py` exists to enforce.
+
+**Generalises to:** any future derived table touching PsychENCODE (D-008) or
+PGC3. The rule is that a derived output may ship if it cannot be used to
+reconstruct a restricted source table.
+
 ---
 
 ## Still open

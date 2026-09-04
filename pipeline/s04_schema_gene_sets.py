@@ -33,10 +33,13 @@ import pandas as pd
 from statsmodels.stats.multitest import multipletests
 
 from pipeline import downloads, sources
-from pipeline.config import DIR_PROCESSED
+from pipeline.config import DIR_PROCESSED, DIR_RESTRICTED
 from pipeline.s01_gene_universe import GENE_UNIVERSE, strip_version
 
+#: Publishable: derived set memberships plus the redistributable browser columns.
 SCHEMA_SETS = DIR_PROCESSED / "schema_gene_sets.parquet"
+#: Local only: adds the two Singh et al. supplementary columns. See build().
+SCHEMA_SETS_FULL = DIR_RESTRICTED / "schema_gene_sets_full.parquet"
 
 #: The paper's own two thresholds. Singh et al. report 10 genes at exome-wide
 #: significance and 32 at FDR < 0.05; both are carried so downstream code can
@@ -133,7 +136,21 @@ def build() -> pd.DataFrame:
     # SENSITIVITY: the browser release under a locally computed BH FDR.
     out["is_schema_browser_fdr"] = out["schema_q_browser"] < FDR_THRESHOLD
 
-    out.to_parquet(SCHEMA_SETS)
+    # Two outputs, split on licence rather than on convenience (D-013).
+    #
+    # `schema_p_published` / `schema_q_published` are two columns of Singh et
+    # al.'s Supplementary Table 5 reproduced for 17,740 genes. Crossref reports
+    # that paper under Springer Nature text-and-data-mining terms, not CC-BY, so
+    # that is republishing a substantial part of a restricted table rather than
+    # publishing a derived result. It stays local.
+    #
+    # What ships is genuinely derived: the boolean set memberships (which are
+    # the paper's own headline result and freely citable), plus the browser
+    # columns, which come from a redistributable source.
+    out.to_parquet(SCHEMA_SETS_FULL)
+
+    publishable = out.drop(columns=["schema_p_published", "schema_q_published"])
+    publishable.to_parquet(SCHEMA_SETS)
     return out
 
 
