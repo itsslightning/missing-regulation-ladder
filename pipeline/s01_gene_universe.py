@@ -128,7 +128,7 @@ def load_brain_expression() -> pd.DataFrame:
     useful sanity check on the matching.
     """
     src = sources.GTEX_V10
-    path = DIR_RAW / "GTEx_v10_gene_median_tpm.gct.gz"
+    path = src.directory / "GTEx_v10_gene_median_tpm.gct.gz"
     if not path.exists():
         raise FileNotFoundError(
             f"{path} is missing. It is fetched separately from the eQTL archive; "
