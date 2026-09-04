@@ -20,30 +20,51 @@ These can move the headline conclusion on their own, so `pipeline/decisions.py`
 holds them as sentinels that raise on use rather than defaulting. Analysis code
 that depends on one cannot run until it is recorded.
 
-### D-001 — What counts as a "detectable" cis-eQTL? — **OPEN**
+### D-001 — What counts as a "detectable" cis-eQTL? — **SET** (2026-09-04)
 
-*Needed by: Stage 1.*
+**Delegated to Claude by the project owner** after being held open through
+Stage 0. Because it was not chosen by the person whose thesis this becomes, the
+rejected options run as sensitivity arms and appear in every figure.
 
-This is the y-axis of the recovery curve. A permissive definition makes every
-rung look successful and flatters H2 (power); a strict one suppresses the small
-effects single-nucleus data exists to reveal and flatters H1 (selection).
+**Chosen:** `uniform_recomputed_fdr`, implemented as **per-gene Bonferroni over
+the cis variants tested, applied identically at every rung, then one common
+across-gene FDR** (D-003).
 
-Two complications found in Stage 0:
+**Why not `study_native_threshold`.** GTEx and SingleBrain both ship Storey
+q-values, and a Storey q depends on π₀ — the estimated fraction of true nulls —
+computed *within each study*. A better-powered study has a lower π₀, which makes
+q ≤ 0.05 a **more permissive** bar there than in a weaker study. The threshold
+therefore loosens exactly where power is highest, which is precisely the
+direction that manufactures the recovery the power account predicts. Measured:
+this arm reports **88.2% gap closure vs 59.9%** under the uniform rule. Using it
+as primary would have let the significance calling produce the answer.
 
-- **The rungs do not ship the same statistics.** GTEx v10 and SingleBrain both
-  provide per-gene q-values. Bryois provides nominal p-values only, with no
-  per-gene correction. Any definition must say how that is bridged.
-- **The choice is worth a factor of 2–4 at rungs 3–4.** SingleBrain excitatory
-  neurons are 0.972 of tested genes under the shipped `qval` and 0.679 under
-  the within-gene Bonferroni column; MG4 is 0.451 versus 0.060. This is
-  probably the single largest lever in the project.
+**Why not `fixed_nominal_p`.** The number of cis variants tested per gene differs
+across rungs, so a fixed nominal threshold rewards rungs with denser coverage.
 
-| Option | Meaning |
+**Why not `effect_size_floor` as primary.** It targets the power confound most
+directly, but the rungs do not ship a common effect-size scale: GTEx slopes are
+on inverse-normal-transformed expression, SingleBrain betas on
+scaled/quantile-normalised expression, and Bryois ships betas without standard
+errors. Retained as a sensitivity arm where the scales are close enough to be
+informative (it gives 53.1% closure).
+
+**How the uniform rule is computable everywhere:**
+
+| Rung | Per-gene Bonferroni from |
 |---|---|
-| `study_native_threshold` | Each study's own call (q ≤ 0.05); reproduce an equivalent per-gene correction for Bryois. Comparable to published eGene counts; correction differs slightly per rung. |
-| `uniform_recomputed_fdr` | One identical per-gene FDR recomputed across all rungs. Maximum internal comparability; numbers no longer match any published count. |
-| `fixed_nominal_p` | One fixed nominal p threshold on the top variant per gene. Transparent, but favours rungs with denser variant coverage. |
-| `effect_size_floor` | Significance plus a minimum effect size, so "detected" means the same magnitude everywhere. Targets the power confound directly; discards the real small-effect eQTLs that are the point of higher resolution. |
+| GTEx | `pval_nominal` × `num_var` |
+| SingleBrain | `Fixed_bonf` (already exactly this construction) |
+| PsychENCODE | `nominal_pval` × `number_of_SNPs_tested` |
+| Bryois | min nominal p × variants tested per gene |
+
+**Known cost, stated not hidden:** Bonferroni over cis variants ignores LD, so it
+is stricter than the permutation p-value GTEx would use, and absolute eGene
+counts fall below every published figure. That is accepted because it is
+conservative *by the same construction at every rung*, which is what a
+cross-rung comparison requires.
+
+**Sensitivity arms shipped:** `native`, `effect`. See `docs/figures/fig2`.
 
 ### D-002 — Control-gene matching — **SET** (2026-09-04)
 
@@ -85,20 +106,48 @@ effective sample size (513 for a weighted mean) is reported next to raw counts.
 **Known residual imbalance:** log gene length, SMD 0.670. Expected and accepted
 per the mediator argument above; reported, not hidden.
 
-### D-003 — Multiple-testing correction across genes and rungs — **OPEN**
+### D-003 — Multiple-testing correction across genes and rungs — **SET** (2026-09-04)
 
-*Needed by: Stage 1.*
+**Delegated to Claude by the project owner**, same caveat as D-001.
 
-Tests are dependent in two directions at once: the same gene is retested at
-every rung, and neighbouring cell subtypes share donors and nuclei. BH assumes a
-dependence structure this design does not have.
+**Chosen:** `bh_within_rung` — Benjamini-Hochberg across **all gene × cell-type
+tests within a rung**, then a gene counts as detected at that rung if any of its
+cell types is significant.
 
-| Option | Meaning |
-|---|---|
-| `bh_within_rung` | BH across genes within each rung, nothing across rungs. Each rung its own experiment; cross-rung comparison becomes descriptive. |
-| `by_across_all` | BY across the full gene × rung grid. Valid under arbitrary dependence; substantially more conservative, will lower apparent recovery everywhere. |
-| `bh_across_all` | BH across the full grid. More powerful; independence/PRDS assumption not satisfied here. |
-| `permutation_null` | Permute gene labels within matched strata and calibrate empirically. No parametric dependence assumption, most defensible; more compute and more code to get right. |
+**The decisive argument is coherence, not conservatism.** Correcting across the
+full gene × rung grid would make a gene's eQTL status at rung 1 depend on how
+many rungs the analysis happens to include — adding a 29th SingleBrain subtype
+would change whether GTEx cortex is called as having an eQTL for gene X. The
+number of rungs is *my design choice, not a property of the data*, so it must
+not enter the per-rung detection call. That rules out both `bh_across_all` and
+`by_across_all` as the calling rule.
+
+**Why BH is applied across gene × cell-type pairs, not per cell type.** Rung 4
+has 28 cell types and rung 3 has 7. Calling per cell type and then taking the
+union would hand rung 4 four times as many chances purely for having more
+columns. Correcting over all pairs within the rung makes each rung pay for its
+own opportunities. This is load-bearing: under it, **rung 4 detects fewer genes
+than rung 3** (9,066 vs 9,906), whereas under study-native calling the order
+reverses (13,961 vs 13,211).
+
+**Why not `by_across_all`.** Beyond the coherence problem, the BY penalty over a
+grid of ~18,481 genes × ~40 cell-type columns is a factor of roughly 12. It
+would suppress detection at every rung severely enough that the curve would
+flatten toward zero and read as support for selection through sheer
+conservatism.
+
+**Why not `permutation_null`.** Not rejected on merit — **deferred**. It is the
+most defensible option and is the natural upgrade if the headline gap turns out
+marginal. It needs permutation of gene labels within matched strata at every
+rung: substantial compute and substantially more code to get right. The gap is
+currently far from marginal (0.143, CI [0.105, 0.180]), so it is not needed yet.
+
+**Cross-rung multiplicity** is handled where it belongs: the constrained-vs-control
+gap is reported per rung with bootstrap CIs, and the small family of rung-level
+gap contrasts carries its own BH correction (`gap_q` in
+`recovery_by_rung.parquet`).
+
+**Sensitivity arm:** `by_across_all` remains available and is noted as not yet run.
 
 ### D-004 — Colocalization priors and posterior threshold — **OPEN**
 

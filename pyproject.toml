@@ -23,6 +23,9 @@ dependencies = [
     # where the upstream repo used Altair.
     "streamlit>=1.60",
     "plotly>=5.22",
+    # Static figures for the methods note and the Stage 1 report. The dashboard
+    # uses Plotly; matplotlib is here only to write PNGs that live in docs/.
+    "matplotlib>=3.8",
 ]
 
 [project.optional-dependencies]

@@ -1,0 +1,5 @@
+label,n_in,n_out,detail,examples_dropped,n_dropped,pct_retained
+sets entering the curve,0,0,"2,767 constrained, 1,294 unique controls (weights sum to 2,767)",,0,
+"gap closure, uniform arm",0,0,"gap 0.357 -> 0.143; closure 59.9% [49.5%, 70.5%]",,0,
+"gap closure, native arm",0,0,"gap 0.306 -> 0.036; closure 88.2% [80.8%, 95.4%]",,0,
+"gap closure, effect arm",0,0,"gap 0.359 -> 0.168; closure 53.1% [42.7%, 63.9%]",,0,
