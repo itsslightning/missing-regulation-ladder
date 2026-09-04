@@ -251,17 +251,54 @@ def _load_psychencode_full(path: Path) -> pd.DataFrame:
     return df
 
 
-def load_bryois() -> pd.DataFrame | None:
+#: Bryois arms: the 8 cell types, plus pseudobulk from the same donors.
+BRYOIS_CELLS = (
+    "Astrocytes",
+    "Endothelial.cells",
+    "Excitatory.neurons",
+    "Inhibitory.neurons",
+    "Microglia",
+    "OPCs...COPs",
+    "Oligodendrocytes",
+    "Pericytes",
+)
+BRYOIS_ARMS = BRYOIS_CELLS + ("pb",)
+
+
+def bryois_complete_chromosomes() -> list[int]:
+    """Chromosomes for which every Bryois arm is present on disk.
+
+    The comparison is pseudobulk against cell types, so it is only valid on
+    chromosomes where BOTH arms have data -- otherwise one arm would be scored
+    on a gene set the other never saw. Restricting to complete chromosomes
+    keeps the contrast internally valid while the remaining files download,
+    which matters because there are 198 of them.
+    """
+    d = cfg.DIR_RAW / "bryois"
+    return [
+        c
+        for c in range(1, 23)
+        if all((d / f"{cell}.{c}.gz").exists() for cell in BRYOIS_ARMS)
+    ]
+
+
+def load_bryois(min_chromosomes: int = 2) -> pd.DataFrame | None:
     """The D-007 power-control arm: pseudobulk vs cell types, same donors.
 
     Headerless, space-separated, one file per cell type per chromosome, nominal
     p-values only. Reduced the same way as PsychENCODE: min p and variant count
     per gene, then the same Bonferroni.
+
+    Runs on whatever chromosomes are complete across all nine arms, so a
+    partial download still yields a valid -- if lower-powered -- contrast. The
+    chromosomes used are recorded on the frame so the report can state them.
     """
     d = cfg.DIR_RAW / "bryois"
-    files = sorted(p for p in d.glob("*.gz") if "snp_pos" not in p.name)
-    if len(files) < 198:
+    chroms = bryois_complete_chromosomes()
+    if len(chroms) < min_chromosomes:
         return None
+
+    files = [d / f"{cell}.{c}.gz" for c in chroms for cell in BRYOIS_ARMS]
 
     acc: dict[tuple[str, str], dict[str, list]] = {}
     for path in files:
@@ -306,7 +343,9 @@ def load_bryois() -> pd.DataFrame | None:
                 }
             )
         )
-    return pd.concat(frames, ignore_index=True)
+    out = pd.concat(frames, ignore_index=True)
+    out.attrs["chromosomes"] = chroms
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -383,8 +422,20 @@ def main() -> None:
 
     bry = load_bryois()
     if bry is None:
-        prov.note("Bryois arm (D-007)", "NOT AVAILABLE -- 198 files not yet complete")
+        prov.note(
+            "Bryois arm (D-007)",
+            "NOT AVAILABLE -- fewer than 2 chromosomes complete across all "
+            "nine arms",
+        )
     else:
+        chroms = bry.attrs.get("chromosomes", [])
+        prov.note(
+            "Bryois arm (D-007)",
+            f"pseudobulk vs 8 cell types on {len(chroms)} complete "
+            f"chromosome(s): {chroms}. Both arms are restricted to the same "
+            f"chromosomes, so the contrast is valid; it gains power as the "
+            f"remaining files arrive.",
+        )
         frames.append(bry)
 
     long = pd.concat(frames, ignore_index=True)
