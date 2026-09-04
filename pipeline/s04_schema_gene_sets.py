@@ -32,7 +32,7 @@ import gzip
 import pandas as pd
 from statsmodels.stats.multitest import multipletests
 
-from pipeline import provenance, sources
+from pipeline import downloads, sources
 from pipeline.config import DIR_PROCESSED
 from pipeline.s01_gene_universe import GENE_UNIVERSE, strip_version
 
@@ -54,7 +54,7 @@ def load_published() -> pd.DataFrame:
         sources.SCHEMA_PUBLISHED.directory / "singh2022_supplementary_tables.xlsx"
     )
     if not path.exists():
-        path = provenance.fetch(
+        path = downloads.fetch(
             sources.SCHEMA_PUBLISHED, filename="singh2022_supplementary_tables.xlsx"
         )
 
@@ -85,7 +85,7 @@ def load_browser() -> pd.DataFrame:
     src = sources.SCHEMA_GENES
     path = src.directory / "SCHEMA_gene_results.tsv.bgz"
     if not path.exists():
-        path = provenance.fetch(src, filename="SCHEMA_gene_results.tsv.bgz")
+        path = downloads.fetch(src, filename="SCHEMA_gene_results.tsv.bgz")
 
     with gzip.open(path, "rt") as fh:
         df = pd.read_csv(fh, sep="\t", low_memory=False)

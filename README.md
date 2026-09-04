@@ -168,5 +168,26 @@ SCHEMA sets (32 published / 50 browser) and the rung audit are built; see
 [`docs/stage0_report.md`](docs/stage0_report.md). Stage 1 awaits decisions D-001
 and D-003.
 
-<!-- TODO: cross-link the schizophrenia gene-prioritisation repo here once its
-     URL is confirmed, so the two read as one research programme. -->
+## Related work
+
+This is the third project in one line of work on schizophrenia genetics, and it
+is deliberately the one that asks a question rather than builds a ranking.
+
+- **[celltype-enrichment](https://github.com/itsslightning/celltype-enrichment)**
+  — cell-type enrichment of schizophrenia vs Alzheimer's common-variant
+  heritability (MAGMA, MAGMA.Celltyping, EWCE). Establishes *which brain cell
+  types* carry schizophrenia heritability.
+- **[scz-target-prioritization](https://github.com/itsslightning/scz-target-prioritization)**
+  — ranks GWAS genes on association, druggability and cell-type specificity
+  together. Establishes *which genes* are worth pursuing, and surfaced CHRM4 at
+  rank 7 before Cobenfy's approval made the muscarinic mechanism obvious.
+- **This repo** — asks why the regulatory evidence for those genes is missing in
+  the first place, and whether it is missing because of biology or because of
+  measurement.
+
+The three share conventions on purpose: `pipeline/provenance.py` (gene-loss
+accounting) is carried over unchanged from `scz-target-prioritization`, the
+`pipeline/` → `data/processed/` → `app/` layout is the same, and both dashboards
+read only what the pipeline already wrote. What is new here is
+`pipeline/decisions.py`, which holds conclusion-shaping choices as sentinels
+that refuse to default.

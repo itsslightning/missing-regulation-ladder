@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from pipeline import provenance, sources
+from pipeline import downloads, sources
 from pipeline.config import DIR_RAW, DIR_RESTRICTED
 
 #: Files that live directly in data/raw rather than in a per-source
@@ -71,11 +71,11 @@ def main() -> None:
                 unattributed.append(path)
                 continue
 
-            if provenance.already_have(source, path):
+            if downloads.already_have(source, path):
                 skipped += 1
                 continue
 
-            provenance.record(source, path, url=_url_for(source, path))
+            downloads.record(source, path, url=_url_for(source, path))
             recorded += 1
 
     print(f"recorded {recorded} file(s), {skipped} already stamped")
@@ -85,11 +85,11 @@ def main() -> None:
         for p in unattributed:
             print(f"  {p}")
 
-    rows = provenance.summary_table()
+    rows = downloads.summary_table()
     total = sum(r["bytes"] for r in rows)
-    print(f"\nprovenance now covers {len(rows)} file(s), {total / 1e9:.2f} GB")
+    print(f"\ndownload log now covers {len(rows)} file(s), {total / 1e9:.2f} GB")
 
-    restricted = provenance.restricted_files_present()
+    restricted = downloads.restricted_files_present()
     if restricted:
         print("\nnon-redistributable files on disk (never commit these):")
         for r in restricted:

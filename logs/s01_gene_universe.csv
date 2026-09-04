@@ -1,0 +1,4 @@
+label,n_in,n_out,detail,examples_dropped,n_dropped,pct_retained
+constraint x GTEx brain expression,19183,18481,"Inner join on unversioned ENSG. Losses are genes present in gnomAD v2.1.1 (GENCODE v19 era) with no counterpart in the GTEx v10 median-TPM matrix -- retired or merged IDs, mostly.","ENSG00000005955, ENSG00000006074, ENSG00000006075, ENSG00000006114, ENSG00000011052, ENSG00000017373, ENSG00000017621, ENSG00000056661",702,96.34
+universe x SCHEMA statistics,18481,17630,"LEFT join: genes without SCHEMA statistics stay in the universe. They are still valid denominator entries -- a gene can lack an exome association and still have, or lack, a cis-eQTL.","ENSG00000015479, ENSG00000031698, ENSG00000034510, ENSG00000036549, ENSG00000046647, ENSG00000067646, ENSG00000068438, ENSG00000068781",851,95.4
+constrained gene counts,0,0,LOEUF < 0.35: 2937; pLI >= 0.9: 3025,,0,

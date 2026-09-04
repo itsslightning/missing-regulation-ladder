@@ -115,4 +115,8 @@ PLI_CONSTRAINED_MIN = 0.9
 
 RECOVERY_TABLE = DIR_PROCESSED / "recovery_by_rung.parquet"
 GENE_SETS_TABLE = DIR_PROCESSED / "gene_sets.parquet"
-PROVENANCE_LOG = DIR_LOGS / "provenance.json"
+
+#: Which bytes each run read: URL, UTC date, sha256, licence per file.
+#: Written by downloads.py. Distinct from the per-stage logs/sNN_*.json files,
+#: which record gene loss through the pipeline (provenance.py).
+DOWNLOAD_LOG = DIR_LOGS / "downloads.json"

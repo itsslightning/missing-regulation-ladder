@@ -17,14 +17,17 @@ data/processed/*.tsv
 data/processed/*.csv
 !data/processed/.gitkeep
 
-# Logs are excluded, with two deliberate exceptions. provenance.json and
-# decisions.jsonl are not scratch output -- they are the reproducibility record
-# (which bytes were used, and which methodological choices were made and when).
-# A clone without them cannot reproduce or audit the result, so they ship.
+# Logs are excluded, with deliberate exceptions. downloads.json (which bytes
+# each run read), decisions.jsonl (which methodological choices were made and
+# when) and the per-stage sNN_* gene-loss records are not scratch output --
+# they are the reproducibility record, and the dashboard's methodology tab
+# reads them. A clone without them cannot reproduce or audit the result.
 logs/*
 !logs/.gitkeep
-!logs/provenance.json
+!logs/downloads.json
 !logs/decisions.jsonl
+!logs/s[0-9][0-9]_*.json
+!logs/s[0-9][0-9]_*.csv
 
 # ---------------------------------------------------------------------------
 # Python

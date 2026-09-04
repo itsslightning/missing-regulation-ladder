@@ -36,8 +36,10 @@ import gzip
 
 import pandas as pd
 
-from pipeline import provenance, sources
-from pipeline.config import DIR_PROCESSED, DIR_RAW
+from pipeline import config as cfg
+from pipeline import downloads, sources
+from pipeline.config import DIR_PROCESSED, LOEUF_CONSTRAINED_MAX, PLI_CONSTRAINED_MIN
+from pipeline.provenance import Provenance
 
 GENE_UNIVERSE = DIR_PROCESSED / "gene_universe.parquet"
 
@@ -91,7 +93,7 @@ def load_constraint() -> pd.DataFrame:
     src = sources.GNOMAD_CONSTRAINT
     path = src.directory / "gnomad.v2.1.1.lof_metrics.by_gene.txt.bgz"
     if not path.exists():
-        path = provenance.fetch(src)
+        path = downloads.fetch(src)
 
     keep = {
         "gene": "symbol",
@@ -166,7 +168,7 @@ def load_schema() -> pd.DataFrame:
     src = sources.SCHEMA_GENES
     path = src.directory / "SCHEMA_gene_results.tsv.bgz"
     if not path.exists():
-        path = provenance.fetch(src, filename="SCHEMA_gene_results.tsv.bgz")
+        path = downloads.fetch(src, filename="SCHEMA_gene_results.tsv.bgz")
 
     with gzip.open(path, "rt") as fh:
         df = pd.read_csv(fh, sep="\t", low_memory=False)
@@ -195,6 +197,8 @@ def load_schema() -> pd.DataFrame:
 
 
 def build() -> pd.DataFrame:
+    prov = Provenance("s01_gene_universe")
+
     print("Loading annotation sources")
     constraint = load_constraint()
     expression = load_brain_expression()
@@ -202,28 +206,50 @@ def build() -> pd.DataFrame:
 
     print("\nJoining on unversioned ENSG")
     universe = constraint.join(expression, how="inner")
-    print(
-        f"  constraint x expression: {len(constraint)} -> {len(universe)} "
-        f"({len(constraint) - len(universe)} lost to GENCODE drift)"
+    prov.record(
+        "constraint x GTEx brain expression",
+        len(constraint),
+        len(universe),
+        detail=(
+            "Inner join on unversioned ENSG. Losses are genes present in gnomAD "
+            "v2.1.1 (GENCODE v19 era) with no counterpart in the GTEx v10 "
+            "median-TPM matrix -- retired or merged IDs, mostly."
+        ),
+        dropped=sorted(set(constraint.index) - set(universe.index)),
     )
 
     universe = universe.join(schema, how="left")
-    matched = universe["schema_cc_p"].notna().sum()
-    print(
-        f"  + schema (left join): {matched} of {len(universe)} universe genes "
-        f"carry SCHEMA statistics ({len(universe) - matched} without)"
+    matched = int(universe["schema_cc_p"].notna().sum())
+    prov.record(
+        "universe x SCHEMA statistics",
+        len(universe),
+        matched,
+        detail=(
+            "LEFT join: genes without SCHEMA statistics stay in the universe. "
+            "They are still valid denominator entries -- a gene can lack an "
+            "exome association and still have, or lack, a cis-eQTL."
+        ),
+        dropped=sorted(universe.index[universe["schema_cc_p"].isna()]),
     )
 
     # Constraint labels. These are gnomAD's and SCHEMA's own conventional cut
     # points, not a threshold invented here -- see config.py.
-    from pipeline.config import LOEUF_CONSTRAINED_MAX, PLI_CONSTRAINED_MIN
 
     universe["is_constrained_loeuf"] = universe["loeuf"] < LOEUF_CONSTRAINED_MAX
     universe["is_constrained_pli"] = universe["pli"] >= PLI_CONSTRAINED_MIN
 
+    prov.note(
+        "constrained gene counts",
+        f"LOEUF < {LOEUF_CONSTRAINED_MAX}: "
+        f"{int(universe['is_constrained_loeuf'].sum())}; "
+        f"pLI >= {PLI_CONSTRAINED_MIN}: "
+        f"{int(universe['is_constrained_pli'].sum())}",
+    )
+
     universe = universe.sort_values("loeuf")
     DIR_PROCESSED.mkdir(parents=True, exist_ok=True)
     universe.to_parquet(GENE_UNIVERSE)
+    prov.save(cfg.DIR_LOGS / "s01_gene_universe.json")
     return universe
 
 
