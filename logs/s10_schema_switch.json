@@ -1,7 +1,7 @@
 {
   "pipeline": "s10_schema_switch",
-  "started_utc": "2026-09-04T04:36:08+00:00",
-  "finished_utc": "2026-09-04T04:36:08+00:00",
+  "started_utc": "2026-09-04T04:40:49+00:00",
+  "finished_utc": "2026-09-04T04:40:49+00:00",
   "steps": [
     {
       "label": "SCHEMA genes gaining an eQTL at single-nucleus resolution",

@@ -1,7 +1,7 @@
 {
   "pipeline": "s05_detection",
-  "started_utc": "2026-09-04T03:55:15+00:00",
-  "finished_utc": "2026-09-04T03:55:18+00:00",
+  "started_utc": "2026-09-04T04:40:32+00:00",
+  "finished_utc": "2026-09-04T04:40:35+00:00",
   "steps": [
     {
       "label": "rung 2 (PsychENCODE)",
@@ -16,7 +16,7 @@
       "label": "Bryois arm (D-007)",
       "n_in": 0,
       "n_out": 0,
-      "detail": "NOT AVAILABLE -- 198 files not yet complete",
+      "detail": "NOT AVAILABLE -- fewer than 2 chromosomes complete across all nine arms",
       "examples_dropped": "",
       "n_dropped": 0,
       "pct_retained": NaN

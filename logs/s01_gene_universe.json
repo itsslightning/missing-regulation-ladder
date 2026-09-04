@@ -1,7 +1,7 @@
 {
   "pipeline": "s01_gene_universe",
-  "started_utc": "2026-09-04T03:46:18+00:00",
-  "finished_utc": "2026-09-04T03:46:19+00:00",
+  "started_utc": "2026-09-04T04:39:42+00:00",
+  "finished_utc": "2026-09-04T04:39:43+00:00",
   "steps": [
     {
       "label": "constraint x GTEx brain expression",

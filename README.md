@@ -165,7 +165,9 @@ derived outputs — recovery curves, summary tables — are published from them.
 
 ## Reproducibility
 
-- Dependencies pinned in `uv.lock`; `uv sync` reproduces the environment.
+- `uv sync` then `uv run python scripts/run_all.py` reproduces every table and
+  figure from the raw downloads in about 70 seconds. `--from sNN` resumes.
+- Dependencies pinned in `uv.lock`; `requirements.txt` is the deploy floor.
 - `RANDOM_SEED` in `pipeline/config.py` seeds every sampling and gene-matching
   step.
 - Every download is stamped with its URL, UTC date, byte count and sha256 in
@@ -177,7 +179,8 @@ derived outputs — recovery curves, summary tables — are published from them.
 ## Layout
 
 ```
-pipeline/     config, source registry, provenance, decisions, stage scripts
+pipeline/     config, sources, downloads, provenance, decisions, sNN stages
+scripts/      run_all.py -- runs every stage in dependency order
 app/          Streamlit dashboard (Stage 3)
 data/raw/     redistributable downloads
 data/restricted/   licence-restricted downloads, never committed

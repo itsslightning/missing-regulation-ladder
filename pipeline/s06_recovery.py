@@ -49,6 +49,9 @@ RECOVERY_BY_LOEUF = cfg.DIR_PROCESSED / "recovery_by_loeuf.parquet"
 #: The same, holding expression roughly fixed. The raw decile view is confounded
 #: badly enough to invert the result, so this is what should be read.
 RECOVERY_BY_LOEUF_EXPR = cfg.DIR_PROCESSED / "recovery_by_loeuf_expr.parquet"
+#: The pLI-banded view. The brief asks for LOEUF/pLI stratification and the two
+#: metrics do not select the same genes, so both are reported.
+RECOVERY_BY_PLI = cfg.DIR_PROCESSED / "recovery_by_pli.parquet"
 
 #: Bootstrap replicates for the control arm and the gap. 2,000 is enough for a
 #: stable 95% percentile interval and cheap at this table size.
@@ -191,24 +194,54 @@ def compute(
     return pd.DataFrame(rows)
 
 
-def by_loeuf(
-    universe: pd.DataFrame, detection: pd.DataFrame, arm: str
+#: pLI bins, the other conventional constraint presentation. gnomAD's own
+#: convention treats >= 0.9 as constrained and < 0.1 as tolerant, so the bins
+#: are cut to make those two the endpoints rather than splitting them.
+PLI_BINS = [-0.001, 0.1, 0.5, 0.9, 1.0]
+PLI_LABELS = ["<0.1", "0.1-0.5", "0.5-0.9", ">=0.9"]
+
+
+def by_constraint_bin(
+    universe: pd.DataFrame, detection: pd.DataFrame, arm: str, metric: str
 ) -> pd.DataFrame:
-    """Recovery per LOEUF decile per rung, on the full universe.
+    """Recovery per constraint bin per rung, on the full universe.
+
+    `metric` is "loeuf" (gnomAD deciles) or "pli" (four conventional bands).
+    Both are reported because the project brief asks for LOEUF/pLI
+    stratification and the two do not select the same genes -- LOEUF < 0.35
+    gives 2,937 genes and pLI >= 0.9 gives 3,025, overlapping but not nested.
 
     Stratification is on the whole universe rather than the matched sets: the
-    matched design answers "constrained vs comparable unconstrained", while
-    the decile view answers "how does recovery vary with constraint", and
-    forcing the second through the matched sets would throw away eight deciles.
+    matched design answers "constrained vs comparable unconstrained", while the
+    bin view answers "how does recovery vary with constraint", and forcing the
+    second through the matched sets would throw away most of the range.
+
+    NOTE: this view is confounded by expression and must not be read alone --
+    see `by_loeuf_within_expression` and figure 3.
     """
     col = ARMS[arm]
     det = detection.pivot(index="gene_id", columns="rung", values=col)
+    u = universe.copy()
+    if metric == "loeuf":
+        u["bin"] = u["loeuf_decile"]
+        u["bin_label"] = u["loeuf_decile"].astype("Int64").astype(str)
+    elif metric == "pli":
+        u["bin_label"] = pd.cut(u["pli"], bins=PLI_BINS, labels=PLI_LABELS)
+        u["bin"] = u["bin_label"].cat.codes
+        u = u[u["bin"] >= 0]
+    else:
+        raise ValueError(metric)
+
     rows = []
+    seen = set()
     for rung in [r for r in RUNG_ORDER + list(RUNG_LABELS) if r in det.columns]:
-        if any(r["rung"] == rung for r in rows):
+        if rung in seen:
             continue
-        hit = det[rung].reindex(universe.index).fillna(False).astype(bool)
-        for decile, idx in universe.groupby("loeuf_decile").groups.items():
+        seen.add(rung)
+        hit = det[rung].reindex(u.index).fillna(False).astype(bool)
+        for (b, label), idx in u.groupby(
+            ["bin", "bin_label"], observed=True
+        ).groups.items():
             d = hit.loc[idx]
             k, n = int(d.sum()), len(d)
             lo, hi = _wilson(k, n)
@@ -216,7 +249,9 @@ def by_loeuf(
                 {
                     "rung": rung,
                     "arm": arm,
-                    "loeuf_decile": int(decile),
+                    "metric": metric,
+                    "bin": int(b),
+                    "bin_label": str(label),
                     "n": n,
                     "k": k,
                     "rate": k / n if n else np.nan,
@@ -225,6 +260,14 @@ def by_loeuf(
                 }
             )
     return pd.DataFrame(rows)
+
+
+def by_loeuf(
+    universe: pd.DataFrame, detection: pd.DataFrame, arm: str
+) -> pd.DataFrame:
+    """LOEUF-decile view, kept under its original name for the figures."""
+    out = by_constraint_bin(universe, detection, arm, "loeuf")
+    return out.rename(columns={"bin": "loeuf_decile"})
 
 
 def gap_closure(
@@ -394,12 +437,15 @@ def main() -> None:
         f"(weights sum to {gene_sets.loc[gene_sets['set'] == 'control', 'weight'].sum():,.0f})",
     )
 
-    curves, loeuf, loeuf_expr, schema_rows = [], [], [], []
+    curves, loeuf, loeuf_expr, pli, schema_rows = [], [], [], [], []
     for arm in ARMS:
         curves.append(compute(gene_sets, detection, arm, rng))
         loeuf.append(by_loeuf(universe, detection, arm))
+        pli.append(by_constraint_bin(universe, detection, arm, "pli"))
         loeuf_expr.append(by_loeuf_within_expression(universe, detection, arm))
         schema_rows.append(schema_overlay(schema, detection, arm))
+
+    pd.concat(pli, ignore_index=True).to_parquet(RECOVERY_BY_PLI, index=False)
 
     pd.concat(loeuf_expr, ignore_index=True).to_parquet(
         RECOVERY_BY_LOEUF_EXPR, index=False
