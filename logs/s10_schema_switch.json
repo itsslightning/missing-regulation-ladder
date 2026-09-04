@@ -1,0 +1,16 @@
+{
+  "pipeline": "s10_schema_switch",
+  "started_utc": "2026-09-04T04:36:08+00:00",
+  "finished_utc": "2026-09-04T04:36:08+00:00",
+  "steps": [
+    {
+      "label": "SCHEMA genes gaining an eQTL at single-nucleus resolution",
+      "n_in": 32,
+      "n_out": 15,
+      "detail": "15 switch on, 4 already visible in bulk, 11 still undetected at single-nucleus resolution",
+      "examples_dropped": "",
+      "n_dropped": 17,
+      "pct_retained": 46.88
+    }
+  ]
+}

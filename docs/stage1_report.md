@@ -39,8 +39,44 @@ replicates, BH-adjusted across the rung contrasts).
 **The SCHEMA genes move further than the constrained set as a whole.** Of the 32
 published SCHEMA genes (FDR < 0.05), **4 have a detectable cis-eQTL in bulk
 cortex; 19 do at single-nucleus major-cell-type resolution** — 12.5% → 59.4%.
-Fifteen genes that carry exome-wide schizophrenia evidence acquire regulatory
-evidence that bulk tissue could not see. That is the Stage 2 target list.
+
+Splitting the 32 three ways (full table: [`schema_switch.md`](schema_switch.md)):
+
+- **15 switch on** — invisible in bulk, detectable at single-nucleus resolution.
+  This is the Stage 2 colocalization target list, and the cell types matter for
+  which SingleBrain full-association files to pull (4–10 GB each, so they are
+  fetched per gene, per D-006):
+
+  | Gene | Switches on in |
+  |---|---|
+  | TRIO | End, Ext, OD, OPC |
+  | DNM3 | Ast, IN, MG, OPC |
+  | FAM178A | Ext, IN, OD, OPC |
+  | XPO7 | Ast, Ext, OD |
+  | STAG1 | Ext, MG |
+  | KDM6B | Ext, IN |
+  | **GRIN2A** | OD, OPC |
+  | SV2A | IN, OD |
+  | SRRM2 | Ast |
+  | CUL1 | MG |
+  | CACNA1G | OPC |
+  | SP4 | Ext |
+  | ZMYM2 | IN |
+  | NR3C2 | OD |
+  | ZNF136 | Ext |
+
+- **4 were already visible** in bulk (MAGI2, AKAP11, ANKRD12, PREP).
+- **11 remain undetected** even at single-nucleus resolution — the residual
+  missing regulation, and arguably the most interesting group for H1.
+
+Two observations worth carrying to Stage 2. **GRIN2A** — an NMDA receptor
+subunit and one of the most-cited schizophrenia genes — switches on only in
+*oligodendrocyte lineage* (OD, OPC), not in neurons, which is not where a
+glutamate-receptor story would predict. And several genes switch on in a single
+cell type only (SRRM2 in astrocytes, CUL1 in microglia, SP4 in excitatory
+neurons), which is exactly the cell-type-specific regulation the resolution
+argument predicts, even though §4 finds resolution is not what closes the
+aggregate gap.
 
 ## 3. Robustness to the decision I was asked to make
 
@@ -80,6 +116,12 @@ controls:
 | | BY across the whole grid | 2,767 | 0.326 → 0.170 | 47.9% [34.4, 60.3] |
 | SCHEMA release | published 32 genes (primary) | 32 | recovery 0.125 → 0.594 | — |
 | | browser 50 genes | 50 | recovery 0.140 → 0.620 | — |
+
+The primary row appears in both tables with slightly different intervals —
+[49.5, 70.5] above, [49.1, 70.0] here. That is Monte Carlo noise: the two
+tables draw independent 2,000-replicate bootstraps of the same quantity. A
+difference of ~0.4 percentage points is the resolution of the bootstrap, not a
+discrepancy, and it is worth knowing that is the precision on offer.
 
 **Closure spans 47.9%–59.9% across all of these, and the residual gap excludes
 zero in every one.** Two results are worth calling out:
