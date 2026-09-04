@@ -11,6 +11,23 @@ closes?
 It is a re-analysis of published summary statistics only. No genotype-level
 data, no wet lab.
 
+## Result so far
+
+![Recovery curve](docs/figures/fig1_recovery_curve.png)
+
+Going from bulk cortex to single-nucleus major cell types closes **59.9%
+[49.5%, 70.5%]** of the constrained-gene eQTL gap. The residual 40% does not
+close, under any of three detection rules. Of the 32 published SCHEMA genes,
+**4 have a detectable cis-eQTL in bulk cortex and 19 do at single-nucleus
+resolution**.
+
+The important qualification: single-nucleus resolution arrives with 4.8× the
+donor count, so this is closure by *resolution-plus-power*, and the two are not
+yet separated. Going finer still — 7 major cell types to 28 subtypes, at
+identical donor count — buys nothing (gap 0.143 → 0.166), which is the first
+hint that donor count rather than resolution is doing the work. See
+[`docs/stage1_report.md`](docs/stage1_report.md) §4.
+
 ---
 
 ## The disagreement being adjudicated
@@ -157,16 +174,21 @@ app/          Streamlit dashboard (Stage 3)
 data/raw/     redistributable downloads
 data/restricted/   licence-restricted downloads, never committed
 data/processed/    derived tables the dashboard reads
-docs/         methods note, Stage 0 report
-logs/         provenance.json, decisions.jsonl
+docs/         stage reports, figures, methods note
+logs/         downloads.json (which bytes), decisions.jsonl (which choices),
+              sNN_*.json (gene loss per stage)
 ```
 
 ## Status
 
-**Stage 0 complete.** Gene universe (18,481), matched control set (2,767 pairs),
-SCHEMA sets (32 published / 50 browser) and the rung audit are built; see
-[`docs/stage0_report.md`](docs/stage0_report.md). Stage 1 awaits decisions D-001
-and D-003.
+**Stage 1 complete (rungs 1, 3, 4).** The constrained-gene gap closes 59.9%
+[49.5%, 70.5%] from bulk cortex to single-nucleus major cell types; the residual
+excludes zero under every detection rule. See
+[`docs/stage1_report.md`](docs/stage1_report.md).
+
+Stage 0: gene universe (18,481), matched control set (2,767 pairs),
+SCHEMA sets (32 published / 50 browser) and the rung audit; see
+[`docs/stage0_report.md`](docs/stage0_report.md).
 
 ## Related work
 

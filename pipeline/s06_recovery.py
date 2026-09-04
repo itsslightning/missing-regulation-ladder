@@ -176,7 +176,16 @@ def compute(
                 "gap_hi": gap_hi,
                 # Two-sided bootstrap p for "gap != 0", used only for the
                 # small family of rung-level contrasts (D-003).
-                "gap_p": float(2 * min((gap_boot <= 0).mean(), (gap_boot >= 0).mean())),
+                #
+                # Floored at 1/N_BOOT rather than allowed to reach 0. A
+                # bootstrap cannot resolve a p-value below its own replicate
+                # count, and reporting 0 (or clipping to 1e-12 to keep BH
+                # happy) would be fabricated precision. A gap_p at the floor
+                # means "no replicate crossed zero", i.e. p < 1/N_BOOT.
+                "gap_p": max(
+                    1.0 / N_BOOT,
+                    float(2 * min((gap_boot <= 0).mean(), (gap_boot >= 0).mean())),
+                ),
             }
         )
     return pd.DataFrame(rows)
@@ -400,7 +409,7 @@ def main() -> None:
     # D-003: the rung-level gap contrasts are their own small family.
     for arm, grp in curve.groupby("arm"):
         curve.loc[grp.index, "gap_q"] = multipletests(
-            grp["gap_p"].clip(lower=1e-12), method="fdr_bh"
+            grp["gap_p"], method="fdr_bh"
         )[1]
 
     curve.to_parquet(cfg.RECOVERY_TABLE, index=False)
