@@ -95,17 +95,36 @@ def record(source: Source, path: Path, *, url: str | None = None) -> dict:
     return entry
 
 
-def already_have(source: Source, path: Path) -> bool:
+def already_have(source: Source, path: Path, *, deep: bool = False) -> bool:
     """True if this exact file was fetched before and has not changed on disk.
 
     A hash mismatch raises rather than returning False: silently re-downloading
     over a changed file would erase the evidence that it changed.
+
+    By default the check is by byte size, which is O(1) per file. Hashing every
+    recorded file on every run is O(total bytes), and this project's data
+    directory reaches several gigabytes once the Bryois record is complete --
+    enough to make a routine re-stamp take minutes. Size catches truncation,
+    which is the failure mode that has actually occurred here, repeatedly.
+
+    `deep=True` forces the sha256 comparison, which additionally catches an
+    upstream edit that preserved the byte count. scripts/verify_downloads.py is
+    the place that wants it.
     """
     if not path.exists():
         return False
     entry = _load().get(source.key, {}).get(path.name)
     if entry is None:
         return False
+    if path.stat().st_size != entry["bytes"]:
+        raise DownloadError(
+            f"{path} is {path.stat().st_size:,} bytes but was recorded as "
+            f"{entry['bytes']:,} on {entry['downloaded_utc']}. Either the file "
+            "is mid-download, was edited locally, or the upstream release "
+            "changed. Resolve deliberately rather than re-stamping over it."
+        )
+    if not deep:
+        return True
     if sha256(path) != entry["sha256"]:
         raise DownloadError(
             f"{path} is on disk but its sha256 does not match the one recorded on "

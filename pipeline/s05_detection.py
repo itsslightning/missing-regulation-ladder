@@ -55,6 +55,7 @@ Writes: data/processed/detection_long.parquet  (gene x rung x cell)
 from __future__ import annotations
 
 import gzip
+import json
 from pathlib import Path
 
 import numpy as np
@@ -275,20 +276,41 @@ BRYOIS_CELLS = (
 BRYOIS_ARMS = BRYOIS_CELLS + ("pb",)
 
 
+def _bryois_manifest() -> dict[str, int]:
+    """Expected byte size per file, from the Zenodo record."""
+    path = cfg.DIR_RAW / "bryois" / "manifest.json"
+    if not path.exists():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def bryois_complete_chromosomes() -> list[int]:
-    """Chromosomes for which every Bryois arm is present on disk.
+    """Chromosomes for which every Bryois arm is present AND complete.
 
     The comparison is pseudobulk against cell types, so it is only valid on
     chromosomes where BOTH arms have data -- otherwise one arm would be scored
     on a gene set the other never saw. Restricting to complete chromosomes
     keeps the contrast internally valid while the remaining files download,
     which matters because there are 198 of them.
+
+    Completeness is checked by BYTE SIZE against the Zenodo manifest, not by
+    file existence. A file being downloaded right now exists and is non-empty
+    but is truncated, and a truncated gzip either raises mid-read or silently
+    yields fewer genes -- which would look like a real difference between the
+    arms rather than a partial file.
     """
     d = cfg.DIR_RAW / "bryois"
+    sizes = _bryois_manifest()
+
+    def ok(name: str) -> bool:
+        p = d / name
+        if not p.exists():
+            return False
+        expected = sizes.get(name)
+        return expected is None or p.stat().st_size == expected
+
     return [
-        c
-        for c in range(1, 23)
-        if all((d / f"{cell}.{c}.gz").exists() for cell in BRYOIS_ARMS)
+        c for c in range(1, 23) if all(ok(f"{cell}.{c}.gz") for cell in BRYOIS_ARMS)
     ]
 
 

@@ -17,6 +17,7 @@ and both are worth knowing about before Stage 3 licence checks.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from pipeline import downloads, sources
@@ -54,12 +55,31 @@ def _url_for(source: sources.Source, path: Path) -> str:
     return source.url
 
 
+def _expected_size(path: Path) -> int | None:
+    """Authoritative byte size for a file, from upstream, or None if unknown."""
+    if path.name == sources.PSYCHENCODE_FULL_FILE:
+        return sources.PSYCHENCODE_FULL_BYTES
+    manifest = DIR_RAW / "bryois" / "manifest.json"
+    if path.parent.name == "bryois" and manifest.exists():
+        return json.loads(manifest.read_text(encoding="utf-8")).get(path.name)
+    return None
+
+
 def main() -> None:
     recorded, skipped, unattributed = 0, 0, []
+    incomplete: list[tuple[Path, int, int]] = []
 
     for base in (DIR_RAW, DIR_RESTRICTED):
         for path in sorted(base.rglob("*")):
-            if not path.is_file() or path.name in (".gitkeep", "urls.txt"):
+            if not path.is_file() or path.name in (
+                ".gitkeep", "urls.txt", "urls_all.txt", "urls_priority.txt",
+                "manifest.json", "zenodo_record.json",
+            ):
+                continue
+            # Derived outputs can land in data/restricted when their licence
+            # requires it (D-013). They are products of this pipeline, not
+            # downloads, so they have no upstream URL to record.
+            if path.suffix == ".parquet":
                 continue
             if path.suffix == ".part":
                 print(f"  incomplete download left behind: {path}")
@@ -71,6 +91,15 @@ def main() -> None:
                 unattributed.append(path)
                 continue
 
+            # Never stamp a file that is still arriving. A record made
+            # mid-download captures a truncated size and the hash of a partial
+            # file, and then *looks* authoritative -- which is exactly how a
+            # completed file later came to read as "164% of expected".
+            expected = _expected_size(path)
+            if expected is not None and path.stat().st_size != expected:
+                incomplete.append((path, path.stat().st_size, expected))
+                continue
+
             if downloads.already_have(source, path):
                 skipped += 1
                 continue
@@ -79,6 +108,14 @@ def main() -> None:
             recorded += 1
 
     print(f"recorded {recorded} file(s), {skipped} already stamped")
+
+    if incomplete:
+        print(f"\n{len(incomplete)} file(s) still downloading, not stamped:")
+        for p, actual, expected in incomplete:
+            print(
+                f"  {p.parent.name}/{p.name}: {actual:,} of {expected:,} "
+                f"({actual / expected:.1%})"
+            )
 
     if unattributed:
         print("\nfiles not attributable to a registered source:")
