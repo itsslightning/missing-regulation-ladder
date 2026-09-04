@@ -193,14 +193,74 @@ PGC3 remains unblocking until Stage 2, as intended.
 
 ---
 
-## 8. What I need from you
+## 8. Gene sets built
 
-Four decisions, all conclusion-shaping, none defaulted. They are written up in
-`DECISIONS.md` as **D-009**, **D-002**, **D-010** and **D-007**.
+### 8.1 Constrained genes and matched controls (D-002)
 
-`D-001` (detectable-eQTL definition) and `D-003` (multiple-testing correction)
-are Stage 1 decisions and can wait for the Stage 1 kickoff — but section 5 above
-is the evidence you will want when making D-001.
+Matching on log GTEx cortex TPM and coding-exon count, caliper 0.25 SD, **with
+replacement**, seed 20260903.
 
-Also outstanding and lower-stakes: **D-011**, whether rung 2 is PsychENCODE
-alone, waits for MetaBrain, or is dropped for a three-rung ladder.
+| | |
+|---|---|
+| Constrained genes (LOEUF < 0.35) | 2,937 |
+| Matched | **2,767 (94%)** |
+| Unique control genes | 1,294 (serving 2,767 case-slots) |
+| Effective n, control side | 513 |
+
+Balance after matching:
+
+| Covariate | Constrained | Control | SMD |
+|---|---|---|---|
+| log TPM (cortex) | 1.020 | 1.014 | 0.009 |
+| coding exons | 14.617 | 14.586 | 0.003 |
+| brain tissues expressed | 11.939 | 11.842 | 0.030 |
+| log gene length | 4.793 | 4.443 | **0.670** (deliberately unmatched) |
+
+Case representativeness: retained vs all constrained genes, LOEUF SMD 0.027.
+
+Matching **with** replacement was not the default and the reason is recorded in
+full under D-002: 1:1 without replacement dropped 40% of constrained genes, and
+the dropped 40% were systematically the most constrained, longest and
+most-expressed — the genes the hypothesis is most about.
+
+### 8.2 SCHEMA sets (D-009)
+
+| Set | Genes in universe |
+|---|---|
+| **Primary** — Singh et al. 2022, FDR < 0.05 | **32** |
+| Singh et al. 2022, exome-wide p < 2.14×10⁻⁶ | 10 |
+| Sensitivity — browser 2026-08-21, local BH FDR < 0.05 | 50 |
+
+The pipeline reproduces the published result exactly: SETD1A, CUL1, XPO7, TRIO,
+CACNA1G, SP4, GRIA3, GRIN2A, HERC1, RB1CC1 as the exome-wide ten.
+
+**Two flags for Stage 1.** First, the two releases disagree more than expected —
+only **12 of the published 32** are also significant in the browser release (20
+published-only, 38 browser-only). They are not interchangeable and the
+discordance will need explaining. Second, **32 genes is a small set**;
+SCHEMA-specific recovery curves will carry wide confidence intervals. The
+LOEUF-constrained set (2,937 genes) is the statistical workhorse and SCHEMA is
+the sharper, smaller overlay.
+
+---
+
+## 9. Decisions taken, and what is still open
+
+**Settled in Stage 0** (full rationale in `DECISIONS.md`): D-002 control
+matching, D-005 constraint source, D-006 SingleBrain file scope, D-007 Bryois
+pseudobulk arm accepted, D-009 SCHEMA sets, D-010 rung 1 = `Brain_Cortex`,
+D-012 fixed gene universe as denominator. D-008 (PsychENCODE licence) is
+provisional pending a terms read before Stage 3.
+
+**Open, needed at Stage 1 kickoff:**
+
+- **D-001** — what counts as a detectable eQTL. Section 5 is the evidence: this
+  choice is worth a factor of 2–4 at rungs 3–4 and is the largest single lever
+  in the project.
+- **D-003** — multiple-testing correction across genes and rungs.
+
+**Open, lower stakes:** **D-011**, whether rung 2 is PsychENCODE alone, waits
+for MetaBrain, or is dropped for a three-rung ladder.
+
+**Open, Stage 2:** **D-004** colocalization priors. Also blocked on PGC3 access,
+which remains un-blocking until then as intended.

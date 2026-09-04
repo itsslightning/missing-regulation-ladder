@@ -7,14 +7,18 @@ Gene universe: **18,481** genes (protein-coding, gnomAD v2.1.1 LOEUF, GTEx brain
 
 | rung | cell | genes_tested | in_universe | egenes_qval | egenes_bonf | frac_of_tested | frac_bonf_of_tested | frac_of_universe |
 |---|---|---|---|---|---|---|---|---|
+| bulk tissue (rung 1) | Brain_Amygdala | 24991 | 16019 | 4047 | - | 0.253 | - | 0.219 |
 | bulk tissue (rung 1) | Brain_Anterior_cingulate_cortex_BA24 | 25420 | 16033 | 5967 | - | 0.372 | - | 0.323 |
+| bulk tissue (rung 1) | Brain_Caudate_basal_ganglia | 25768 | 16070 | 8126 | - | 0.506 | - | 0.440 |
 | bulk tissue (rung 1) | Brain_Cerebellar_Hemisphere | 26170 | 15944 | 9039 | - | 0.567 | - | 0.489 |
 | bulk tissue (rung 1) | Brain_Cerebellum | 26696 | 16107 | 9151 | - | 0.568 | - | 0.495 |
 | bulk tissue (rung 1) | Brain_Cortex | 26134 | 16195 | 8226 | - | 0.508 | - | 0.445 |
+| bulk tissue (rung 1) | Brain_Frontal_Cortex_BA9 | 25884 | 16114 | 7956 | - | 0.494 | - | 0.430 |
 | bulk tissue (rung 1) | Brain_Hippocampus | 25468 | 16111 | 5877 | - | 0.365 | - | 0.318 |
 | bulk tissue (rung 1) | Brain_Hypothalamus | 26212 | 16321 | 5705 | - | 0.350 | - | 0.309 |
 | bulk tissue (rung 1) | Brain_Nucleus_accumbens_basal_ganglia | 25926 | 16069 | 7664 | - | 0.477 | - | 0.415 |
 | bulk tissue (rung 1) | Brain_Putamen_basal_ganglia | 24915 | 15899 | 6792 | - | 0.427 | - | 0.368 |
+| bulk tissue (rung 1) | Brain_Spinal_cord_cervical_c-1 | 25721 | 16227 | 5499 | - | 0.339 | - | 0.298 |
 | bulk tissue (rung 1) | Brain_Substantia_nigra | 25195 | 16078 | 3920 | - | 0.244 | - | 0.212 |
 
 

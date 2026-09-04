@@ -317,6 +317,43 @@ ALL_DECISIONS = (
     COLOC_PRIORS,
 )
 
+_BY_KEY = {d.key: d for d in ALL_DECISIONS}
+
+
+def _replay_log() -> None:
+    """Restore decisions already recorded, so they survive across runs.
+
+    Without this the sentinels would reset on every import and a decision made
+    last week would look unmade today. The log is the source of truth and is
+    replayed in order, so a later `force=True` correction supersedes the
+    earlier entry exactly as it did when it was made.
+
+    Restoration deliberately bypasses `decide()`: re-running it would append
+    duplicate entries to the log every time the module is imported, and would
+    trip the "already set" guard on the second replayed entry for a key.
+    """
+    if not DECISION_LOG.exists():
+        return
+    for line in DECISION_LOG.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            rec = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        decision = _BY_KEY.get(rec.get("key"))
+        if decision is None or rec.get("chosen") not in decision.alternatives:
+            # An entry for a decision or option that no longer exists means the
+            # code moved on from the log. Skipped rather than crashing, but the
+            # mismatch is worth surfacing.
+            continue
+        decision._value = rec["chosen"]
+        decision._decided = True
+        decision._rationale = rec.get("rationale")
+
+
+_replay_log()
+
 
 def outstanding() -> list[OpenDecision]:
     """The decisions still unmade, for the Stage-0 report and the dashboard."""

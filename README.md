@@ -121,7 +121,8 @@ two except in the Bryois within-study arm.
 |---|---|---|---|
 | [gnomAD v2.1.1 constraint](https://gnomad.broadinstitute.org/downloads) — Karczewski et al. 2020, *Nature* 581:434–443 | LOEUF/pLI, matching covariates | gnomAD terms | Yes |
 | [gnomAD v4.1 constraint](https://gnomad.broadinstitute.org/downloads) — Chen et al. 2024, *Nature* 625:92–100 | robustness check | gnomAD terms | Yes |
-| [SCHEMA](https://schema.broadinstitute.org/) — Singh et al. 2022, *Nature* 604:509–516 | schizophrenia gene set | browser terms | Yes |
+| [SCHEMA browser](https://schema.broadinstitute.org/) — release 2026-08-21 | SCHEMA set, sensitivity arm | browser terms | Yes |
+| [Singh et al. 2022 Supp. Table 5](https://doi.org/10.1038/s41586-022-04556-w) — *Nature* 604:509–516 | SCHEMA set, **primary** | publisher supplementary | **No** |
 | [GTEx v10](https://gtexportal.org/home/downloads/adult-gtex/qtl) | rung 1 | open access | Yes |
 | [PsychENCODE](http://resource.psychencode.org/) — Wang et al. 2018, *Science* 362:eaat8464 | rung 2 | under review | **No** (pending) |
 | [MetaBrain](https://www.metabrain.nl/) — de Klein et al. 2023, *Nature Genetics* 55:377–388 | rung 2 (blocked) | registration form | **No** |
@@ -162,7 +163,10 @@ logs/         provenance.json, decisions.jsonl
 
 ## Status
 
-Stage 0 (setup and scope lock) — in progress. Stages 1–4 not started.
+**Stage 0 complete.** Gene universe (18,481), matched control set (2,767 pairs),
+SCHEMA sets (32 published / 50 browser) and the rung audit are built; see
+[`docs/stage0_report.md`](docs/stage0_report.md). Stage 1 awaits decisions D-001
+and D-003.
 
 <!-- TODO: cross-link the schizophrenia gene-prioritisation repo here once its
      URL is confirmed, so the two read as one research programme. -->

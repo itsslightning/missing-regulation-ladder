@@ -5,17 +5,18 @@ the table, and why. Written as the choice is made, not reconstructed afterwards.
 This is the raw material for the thesis methods section.
 
 Machine-readable twin: `logs/decisions.jsonl` (appended by
-`pipeline/decisions.py` whenever a decision is recorded in code).
+`pipeline/decisions.py` whenever a decision is recorded in code, and replayed at
+import so a choice survives across runs).
 
 **Status key** — `OPEN`: needs a human call before dependent code can run.
-`PROPOSED`: recommended, awaiting sign-off. `SET`: decided, with rationale.
-`PROVISIONAL`: decided but expected to be revisited when a blocker clears.
+`SET`: decided, with rationale. `PROVISIONAL`: decided but expected to be
+revisited when a blocker clears.
 
 ---
 
-## Load-bearing decisions — held OPEN by design
+## Load-bearing decisions — the four sentinels
 
-These four can move the headline conclusion on their own, so `pipeline/decisions.py`
+These can move the headline conclusion on their own, so `pipeline/decisions.py`
 holds them as sentinels that raise on use rather than defaulting. Analysis code
 that depends on one cannot run until it is recorded.
 
@@ -27,10 +28,15 @@ This is the y-axis of the recovery curve. A permissive definition makes every
 rung look successful and flatters H2 (power); a strict one suppresses the small
 effects single-nucleus data exists to reveal and flatters H1 (selection).
 
-Complication found in Stage 0: **the rungs do not ship the same statistics.**
-GTEx v10 and SingleBrain both provide per-gene permutation q-values. Bryois
-provides nominal p-values only, with no per-gene correction. Any definition must
-say how that is bridged.
+Two complications found in Stage 0:
+
+- **The rungs do not ship the same statistics.** GTEx v10 and SingleBrain both
+  provide per-gene q-values. Bryois provides nominal p-values only, with no
+  per-gene correction. Any definition must say how that is bridged.
+- **The choice is worth a factor of 2–4 at rungs 3–4.** SingleBrain excitatory
+  neurons are 0.972 of tested genes under the shipped `qval` and 0.679 under
+  the within-gene Bonferroni column; MG4 is 0.451 versus 0.060. This is
+  probably the single largest lever in the project.
 
 | Option | Meaning |
 |---|---|
@@ -39,24 +45,45 @@ say how that is bridged.
 | `fixed_nominal_p` | One fixed nominal p threshold on the top variant per gene. Transparent, but favours rungs with denser variant coverage. |
 | `effect_size_floor` | Significance plus a minimum effect size, so "detected" means the same magnitude everywhere. Targets the power confound directly; discards the real small-effect eQTLs that are the point of higher resolution. |
 
-### D-002 — Control-gene matching tolerance and covariates — **OPEN**
+### D-002 — Control-gene matching — **SET** (2026-09-04)
 
-*Needed by: Stage 0 (final step).*
+**Chosen:** `caliper_expression_exons`, caliper **0.25 SD**, **with replacement**.
+Covariates: log GTEx brain-cortex median TPM and gnomAD coding-exon count.
+Controls drawn from LOEUF ≥ 1.0; cases are LOEUF < 0.35. Recorded in
+`logs/decisions.jsonl`; parameters in `pipeline/s03_control_matching.py`.
 
-The control curve is the entire comparison. Constrained genes are longer, more
-highly expressed and have more exons, and each of those independently predicts
-eQTL discovery power. Loose matching leaves a gap that is really a length or
-expression artefact. Over-tight matching on covariates that are themselves
-*consequences* of constraint regresses away the effect being measured —
-regulatory-landscape complexity is part of Mostafavi's proposed mechanism, not a
-nuisance variable.
+**Alternatives rejected:** adding gene length to the covariates; a propensity
+score over all covariates; no matching with LOEUF-decile stratification instead.
 
-| Option | Meaning |
-|---|---|
-| `caliper_expression_exons` | Nearest-neighbour within a caliper on expression decile and coding-exon count only, per the report's caveat. Fewest assumptions; leaves gene length and TSS density unbalanced. |
-| `caliper_plus_length` | Adds gene length and number of cis variants tested. Closes the obvious power confounds; risks conditioning on a mediator. |
-| `propensity_score` | One propensity model over all covariates. Uses everything at once; harder to defend in a viva, hides which covariate does the work. |
-| `stratified_no_matching` | No matched set; compare across LOEUF deciles with covariate adjustment in regression. Discards no genes, adjustment is explicit; loses the simple two-curve plot. |
+**Why these covariates:** matches the report's stated caveat exactly and carries
+the fewest assumptions. Gene length is deliberately *not* matched on — it is a
+partial proxy for regulatory-landscape complexity, which is part of Mostafavi's
+proposed mechanism rather than a nuisance covariate, so matching on it would
+risk conditioning on a mediator and regressing away the effect being measured.
+
+**Why with replacement — this was not the obvious default.** 1:1 matching
+without replacement at 0.25 SD left 40% of constrained genes unmatched, and the
+unmatched 40% were not random: they had more coding exons (SMD −1.37), higher
+expression (−0.61) and *lower* LOEUF (+0.40) than the matched ones. The genes
+the hypothesis is most about were the ones being dropped, because
+highly-expressed many-exon genes are rare among unconstrained genes — which is
+exactly the confound the matching exists to handle. Measured comparison:
+
+| Strategy | Cases kept | SMD expr | SMD exons | Case bias (LOEUF) |
+|---|---|---|---|---|
+| 0.25 SD, no replacement | 1,753 / 2,937 | 0.026 | 0.026 | 0.160 |
+| 1.0 SD, no replacement | 2,274 / 2,937 | 0.202 | 0.220 | 0.102 |
+| **0.25 SD, with replacement** | **2,767 / 2,937** | **0.009** | **0.003** | **0.027** |
+
+**Cost, and how it is handled:** 1,294 unique control genes serve 2,767 cases,
+so control observations are reused and correlated. Reuse is mild (median 1×,
+90th percentile 4×, max 21×; 828 controls used once). Every control-side
+statistic therefore carries a frequency weight, confidence intervals on the
+control curve must be cluster-robust by control gene (1,294 clusters), and
+effective sample size (513 for a weighted mean) is reported next to raw counts.
+
+**Known residual imbalance:** log gene length, SMD 0.670. Expected and accepted
+per the mediator argument above; reported, not hidden.
 
 ### D-003 — Multiple-testing correction across genes and rungs — **OPEN**
 
@@ -94,124 +121,145 @@ it. Subtype rungs test more features, compounding the effect.
 
 ### D-005 — gnomAD v2.1.1 as the primary constraint source — **SET** (2026-09-04)
 
-**Chosen:** v2.1.1 `oe_lof_upper` (LOEUF) and `pLI` as primary; v4.1 downloaded
-as a robustness check.
+**Chosen:** v2.1.1 `oe_lof_upper` (LOEUF) and `pLI` as primary; v4.1 as a
+robustness check.
 
-**Alternatives:** v4.1 as primary (newer, ~730k exomes, better-powered
-constraint estimates); v2.1.1 only (no robustness check).
+**Alternatives:** v4.1 as primary (newer, ~730k exomes); v2.1.1 only.
 
 **Why:** v2.1.1 is the vintage Mostafavi et al. 2023 and the SCHEMA papers used,
-so the constrained-gene definition matches the literature the project is
-adjudicating. It also ships `oe_lof_upper_bin` (the decile field) and every
-covariate the control matching needs — `num_coding_exons`, `cds_length`,
-`gene_length`, `brain_expression` — in a single table. v4.1 recomputes LOEUF and
-shifts gene rankings; if the recovery curve changes qualitatively under v4.1
-that is a finding to report, not a bug to hide.
+so the constrained-gene definition matches the literature being adjudicated. It
+ships `oe_lof_upper_bin` (deciles) and the matching covariates in one table.
 
-**Revisit if:** the v4.1 robustness check materially changes the conclusion.
+**Caveat found:** its `brain_expression` column — the obvious candidate for the
+expression covariate — is `NA` for all 19,704 rows. Expression is taken from the
+GTEx v10 median-TPM matrix instead.
 
 ### D-006 — SingleBrain `top_assoc` only for Stages 0–1 — **SET** (2026-09-04)
 
-**Chosen:** download the 36 `*_top_assoc.tsv.gz` files (~1.6 MB each) for the
-recovery curve. Defer `*_full_assoc.tsv.gz` to Stage 2, fetched per gene of
-interest rather than in bulk.
+**Chosen:** the 36 `*_top_assoc.tsv.gz` files (~1.6 MB each). Defer
+`*_full_assoc.tsv.gz` to Stage 2, fetched per gene of interest.
 
-**Alternatives:** download all full associations up front (~150 GB across 36
-files, 4–10 GB each).
+**Why:** `top_assoc` is one row per gene with the best variant and a q-value —
+exactly and completely what the recovery curve needs. Full associations are
+4–10 GB each (~150 GB for the set) and are needed only for colocalization.
 
-**Why:** `top_assoc` is one row per gene with the best variant and a q-value,
-which is exactly and completely what the recovery curve needs. Full associations
-are needed only for colocalization. Pulling 150 GB to compute a statistic that
-uses one row per gene would be wasteful and would put the project's storage
-footprint beyond what a laptop and a public repo can carry.
+**Consequence:** Stage 2 colocalization at rungs 3–4 needs a targeted
+extraction strategy, not a bulk download. Noted now, not in week 5.
 
-**Consequence to be aware of:** Stage 2 colocalization at rungs 3–4 will need a
-targeted extraction strategy, not a bulk download. Noted now so it is not a
-surprise later.
+### D-007 — Bryois pseudobulk arm as a within-study power control — **SET** (2026-09-04)
 
-### D-007 — Add a Bryois pseudobulk arm as a within-study power control — **PROPOSED**
+**Chosen:** accepted. Bryois pseudobulk (`pb.[1-22].gz`) versus Bryois cell
+types enters as a fifth, parallel comparison — not a rung on the main ladder.
 
-*Not in the original report. Recommended addition; needs sign-off because it
-changes the design.*
+**Why:** the four rungs differ in donor count, ancestry, normalisation and eQTL
+pipeline as well as resolution, so the main curve partly measures power. The
+Bryois February 2023 update added a "tissue-like" pseudobulk analysis
+aggregating reads across all nuclei per individual — **same donors, same
+pipeline, same normalisation** as the eight cell-type files, differing only in
+resolution. It is the only comparison in this design where resolution is
+isolated from sample size.
 
-**Proposed:** treat Bryois pseudobulk (`pb[1-22].gz`) versus Bryois cell types
-as a fifth, parallel comparison — not a rung on the main ladder.
+**Alternative:** rely only on reporting recovery against donor N, and accept
+"resolution-plus-power" framing with no clean within-study test.
 
-**Why:** the report names cross-study comparability as the project's main
-technical risk, and it is a real one: the four rungs differ in donor count,
-ancestry, normalisation and eQTL pipeline as well as in resolution, so the main
-curve partly measures power. The February 2023 update to the Bryois Zenodo
-record added a "tissue-like" pseudobulk analysis aggregating reads across all
-nuclei per individual — **same donors, same pipeline, same normalisation** as
-the eight cell-type files, differing only in resolution.
+**Cost:** ~4 GB additional download, one extra analysis arm.
 
-That is the single comparison available anywhere in this design where resolution
-is isolated from sample size. It converts the project's biggest weakness into a
-controlled contrast, and it is the natural answer to the interview question
-"how do you know this isn't just a power difference?".
+### D-008 — PsychENCODE held as non-redistributable — **PROVISIONAL** (2026-09-04)
 
-**Cost:** ~4 GB of additional download and one extra analysis arm.
-
-**Alternative:** rely only on reporting recovery against donor N (mitigation
-already planned), and accept "resolution-plus-power" as the framing with no
-clean within-study test.
-
-### D-008 — PsychENCODE held as non-redistributable pending a licence read — **PROVISIONAL** (2026-09-04)
-
-**Chosen:** write PsychENCODE files to `data/restricted/`.
+**Chosen:** written to `data/restricted/`.
 
 **Why:** the files download without a click-through, which is not the same as a
 licence to rehost. Held restricted until the resource.psychencode.org terms are
-read and quoted here. Derived counts are publishable either way, so this costs
-nothing now.
+read and quoted here. Derived counts are publishable either way.
 
-**Revisit:** before Stage 3, per the project's licensing check.
+**Revisit:** before Stage 3.
+
+### D-009 — SCHEMA gene set: both releases, published primary — **SET** (2026-09-04)
+
+**Chosen:** Singh et al. 2022 Supplementary Table 5 as the **primary** set;
+the browser release 2026-08-21 as a **sensitivity** arm.
+
+**Alternatives:** published only (fewer genes, wider CIs); browser only (more
+cases but not citable, and requires inventing an FDR).
+
+**Why:** the published table ships `Q meta`, the FDR the paper's own thresholds
+are defined on, so the primary set needs no invented significance rule. The
+browser release ships p-values only, so any gene set drawn from it requires a
+locally computed FDR — a judgment layered on top of the gene-set definition.
+Running both shows the conclusion is robust to the choice.
+
+**Validation:** the pipeline reproduces the published result exactly — **32
+genes at FDR < 0.05** and **10 at exome-wide significance** (SETD1A, CUL1,
+XPO7, TRIO, CACNA1G, SP4, GRIA3, GRIN2A, HERC1, RB1CC1).
+
+**Flag for Stage 1 — the two releases disagree substantially.** Browser release
+under local BH FDR < 0.05 gives 50 genes, of which only **12 overlap** the
+published 32 (20 published-only, 38 browser-only). Do not present them as
+interchangeable, and expect to explain the discordance.
+
+**Second flag:** 32 genes is a small set. SCHEMA-specific recovery curves will
+have wide confidence intervals. The LOEUF-constrained set (2,937 genes) is the
+statistical workhorse; SCHEMA is the sharper, smaller overlay.
+
+**Cost:** the Singh supplementary table is keyed by gene symbol, not Ensembl ID,
+so it needs a symbol → ENSG hop through gnomAD. 17,740 of 18,320 mapped; 580
+lost to symbol drift.
+
+### D-010 — Rung 1 is GTEx `Brain_Cortex` alone — **SET** (2026-09-04)
+
+**Chosen:** `Brain_Cortex` only.
+
+**Alternatives:** `Brain_Frontal_Cortex_BA9`; the union of all 13 brain tissues;
+cortex primary with union as sensitivity.
+
+**Why:** closest to the report's "GTEx v10 cortex (bulk)", and the cleanest
+anatomical comparison to PsychENCODE prefrontal cortex and SingleBrain
+neocortical nuclei. A union of 13 tissues would have far more power and would
+inflate rung 1, flattening the very curve being measured.
+
+**Supporting observation:** GTEx cerebellum reaches 0.568 of tested genes,
+essentially matching SingleBrain excitatory neurons (0.579 of universe) — a bulk
+tissue matching the best single-nucleus cell type. Tissue choice at rung 1 is
+worth as much as a rung of the ladder, which is why it is recorded rather than
+assumed.
+
+### D-012 — Recovery is scored against a fixed gene universe — **SET** (2026-09-04)
+
+**Chosen:** one fixed 18,481-gene denominator (protein-coding, has gnomAD v2.1.1
+LOEUF, has GTEx brain expression), used for every rung.
+
+**Alternatives:** score each rung against the genes that rung tested; score
+against all protein-coding genes regardless of annotation coverage.
+
+**Why this is load-bearing, not bookkeeping.** Measured against genes tested,
+97% of the genes SingleBrain excitatory neurons tested are eGenes — the measure
+has no headroom, and a constrained-gene recovery fraction would rise to ≈1 at
+rungs 3–4 *whatever the biology*, "supporting" the power account by
+construction. A per-rung denominator also rewards a cell type for testing fewer
+genes, and constrained genes are more broadly expressed, so they would be
+systematically advantaged.
+
+Against the fixed universe the ladder becomes interpretable: bulk cortex 0.445 →
+best single-nucleus cell type 0.579.
+
+**Cost:** genes not tested at a rung count as "no detectable eQTL" there, which
+conflates "tested and null" with "not expressed in this cell type". That is the
+right default for this question — a gene with no eQTL detectable in a cell type
+is missing regulation in that cell type either way — but it must be stated, and
+the per-rung tested counts are kept in `docs/stage0_audit.md` so the alternative
+can be computed.
 
 ---
 
-## Open questions escalated to the project owner
-
-These emerged in Stage 0, are conclusion-shaping, and are **not** being defaulted.
-
-### D-009 — Which SCHEMA release defines the gene set? — **OPEN**
-
-The SCHEMA browser currently serves a release dated **2026-08-21** carrying
-**87,959 cases / 150,587 controls** — roughly 3.6× the 24,248 cases of the
-published Singh et al. 2022 analysis. It also ships **no q-value column**, only
-per-gene p-values, so an FDR would have to be computed locally.
-
-This is not a minor version bump. It changes which genes are "SCHEMA genes",
-how many there are, and whether the gene set is citable to a peer-reviewed paper.
-
-| Option | Consequence |
-|---|---|
-| Published Singh et al. 2022 set | Citable, peer-reviewed, matches the literature being adjudicated; fewer genes (10 exome-wide significant, 32 at FDR < 0.05), so less power in the recovery curve. |
-| Browser release 2026-08-21 | ~3.6× the cases, more genes, better-powered curve; not a citable peer-reviewed set, needs a locally computed FDR, and a thesis examiner will ask why the published set was not used. |
-| Both | Primary analysis on one, sensitivity analysis on the other. Most defensible; roughly doubles Stage 1 work. |
-
-### D-010 — What defines rung 1 (GTEx brain)? — **OPEN**
-
-GTEx v10 has 13 brain tissues. "Cortex" alone, a single frontal-cortex region,
-or the union across brain regions are materially different rung-1 baselines —
-a union has far more power, which would flatten the very curve being measured.
-Because rung 1 is the baseline the whole ladder is measured against, this choice
-propagates into every downstream number.
-
-| Option | Consequence |
-|---|---|
-| `Brain_Cortex` only | Closest to the report's "GTEx v10 cortex (bulk)"; single tissue, modest N, cleanest comparison to PsychENCODE prefrontal cortex. |
-| `Brain_Frontal_Cortex_BA9` only | Best anatomical match to PsychENCODE and SingleBrain (neocortex); slightly smaller N. |
-| Union of all 13 brain tissues | Most power, most eGenes; inflates rung 1 and makes the ladder's first step look artificially high. |
-| Cortex primary + union as sensitivity | Defensible; extra work. |
+## Still open
 
 ### D-011 — Rung 2 source, given MetaBrain is inaccessible — **OPEN**
 
-MetaBrain has no public file index; access is gated behind a Google Form the
-maintainers distribute links through, so it cannot be automated. See the Stage 0
-report.
+MetaBrain has no public file index; access is gated behind a Google Form, so it
+cannot be automated.
 
 | Option | Consequence |
 |---|---|
-| PsychENCODE alone as rung 2 | Proceeds now, no blocker. Rung 2 is then one bulk-brain study rather than the meta-analysed resource the report assumed. |
+| PsychENCODE alone as rung 2 | Proceeds now. Rung 2 is one bulk-brain study rather than the meta-analysed resource the report assumed, and its file supplies no denominator of its own (see the Stage 0 report). |
 | Wait for MetaBrain access | Matches the report; unknown delay, human action required. |
-| Drop rung 2, use a 3-rung ladder | Simplest; loses the bulk-tissue → bulk-brain step, which is where the report expected the first increment. |
+| Drop rung 2, use a 3-rung ladder | Simplest; loses the bulk-tissue → bulk-brain step where the report expected the first increment. |

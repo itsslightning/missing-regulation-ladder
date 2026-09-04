@@ -17,8 +17,14 @@ data/processed/*.tsv
 data/processed/*.csv
 !data/processed/.gitkeep
 
+# Logs are excluded, with two deliberate exceptions. provenance.json and
+# decisions.jsonl are not scratch output -- they are the reproducibility record
+# (which bytes were used, and which methodological choices were made and when).
+# A clone without them cannot reproduce or audit the result, so they ship.
 logs/*
 !logs/.gitkeep
+!logs/provenance.json
+!logs/decisions.jsonl
 
 # ---------------------------------------------------------------------------
 # Python

@@ -125,6 +125,29 @@ SCHEMA_GENES = Source(
     ),
 )
 
+SCHEMA_PUBLISHED = Source(
+    key="schema_published",
+    name="SCHEMA published gene results (Singh et al. 2022, Supplementary Table 5)",
+    url=(
+        "https://static-content.springer.com/esm/art%3A10.1038%2Fs41586-022-04556-w/"
+        "MediaObjects/41586_2022_4556_MOESM3_ESM.xlsx"
+    ),
+    citation="Singh et al. 2022, Nature 604:509-516",
+    licence="Springer Nature supplementary material; check terms before rehosting",
+    redistributable=False,
+    version="Supplementary Table 5",
+    notes=(
+        "The PRIMARY SCHEMA gene set (D-009). 18,324 genes with `P meta` and, "
+        "crucially, `Q meta` -- the FDR the paper's own 10-gene and 32-gene "
+        "thresholds are defined on. The browser release ships no q-value, so "
+        "using it would mean inventing an FDR; this table does not force that "
+        "choice, which is why it is primary.\n\n"
+        "Keyed by gene SYMBOL, not Ensembl ID, so it needs a symbol -> ENSG hop "
+        "through gnomAD. Held non-redistributable: publisher supplementary "
+        "files are not covered by the CC licences the Zenodo records carry."
+    ),
+)
+
 # ---------------------------------------------------------------------------
 # Rung 1 -- bulk, single tissue
 # ---------------------------------------------------------------------------
@@ -277,6 +300,7 @@ ALL_SOURCES: tuple[Source, ...] = (
     GNOMAD_CONSTRAINT,
     GNOMAD_CONSTRAINT_V4,
     SCHEMA_GENES,
+    SCHEMA_PUBLISHED,
     GTEX_V10,
     PSYCHENCODE,
     METABRAIN,

@@ -52,15 +52,53 @@ def test_redeciding_requires_force(sample: OpenDecision) -> None:
     assert sample.value == "b"
 
 
-def test_all_four_project_decisions_start_open() -> None:
-    """A default silently introduced later would break this."""
+def test_the_four_project_decisions_exist() -> None:
     assert len(decisions.ALL_DECISIONS) == 4
-    assert {d.key for d in decisions.outstanding()} == {
+    assert {d.key for d in decisions.ALL_DECISIONS} == {
         "D-001",
         "D-002",
         "D-003",
         "D-004",
     }
+
+
+def test_no_decision_is_set_without_a_rationale() -> None:
+    """The invariant that survives persistence.
+
+    Decisions are replayed from logs/decisions.jsonl at import, so "all four
+    start open" stopped being true the moment D-002 was recorded. The property
+    that must still hold is that nothing is set *implicitly*: a decision with a
+    value has to have come from a deliberate `decide()` call, which always
+    carries a rationale and always names an option that was written down and
+    weighed in advance.
+    """
+    for d in decisions.ALL_DECISIONS:
+        if d.decided:
+            assert d.rationale, f"{d.key} is set but carries no rationale"
+            assert d.value in d.alternatives, (
+                f"{d.key} is set to {d.value!r}, which is not one of its "
+                "recorded alternatives"
+            )
+
+
+def test_replayed_decisions_match_the_log() -> None:
+    """What the module reports must equal what the log says was chosen."""
+    if not decisions.DECISION_LOG.exists():
+        pytest.skip("no decisions recorded yet")
+
+    import json
+
+    latest: dict[str, str] = {}
+    for line in decisions.DECISION_LOG.read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            rec = json.loads(line)
+            latest[rec["key"]] = rec["chosen"]
+
+    for key, chosen in latest.items():
+        decision = {d.key: d for d in decisions.ALL_DECISIONS}.get(key)
+        if decision is not None:
+            assert decision.decided, f"{key} is in the log but reports as open"
+            assert decision.value == chosen
 
 
 def test_every_decision_offers_real_alternatives() -> None:
