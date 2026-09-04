@@ -89,6 +89,50 @@ def _gap_with_ci(
     return case_rate, ctrl_rate, ctrl_rate - case_rate, lo, hi
 
 
+def bryois_contrast(
+    long: pd.DataFrame,
+    cases: pd.Index,
+    ctrls: pd.Index,
+    weights: np.ndarray,
+    genes: pd.Index,
+    rng: np.random.Generator,
+) -> list[dict]:
+    """The D-007 arm: Bryois pseudobulk vs its own 8 cell types.
+
+    The mirror image of the splitting test above. Same donors, same pipeline,
+    same normalisation; pseudobulk POOLS all nuclei per individual while the
+    cell-type arm keeps them separate. So this varies resolution in the
+    opposite direction from splitting a SingleBrain class.
+
+    Neither isolates resolution -- pooling raises reads per context as it
+    lowers resolution, splitting does the reverse -- but if BOTH leave the gap
+    unmoved, resolution is not the active ingredient in either direction, and
+    the closure seen on the main ladder has to be coming from donor count.
+    """
+    arms = [a for a in ("bryois_pb", "bryois_celltype") if a in set(long["rung"])]
+    if len(arms) < 2:
+        return []
+
+    rows = []
+    for arm in arms:
+        cells = sorted(set(long.loc[long["rung"] == arm, "cell"]))
+        hit = _detect(long, cells, genes)
+        cr, kr, gap, lo, hi = _gap_with_ci(hit, cases, ctrls, weights, rng)
+        rows.append(
+            {
+                "major": "Bryois (D-007)",
+                "arm": "pooled" if arm == "bryois_pb" else "split",
+                "n_columns": len(cells),
+                "constrained_rate": cr,
+                "control_rate": kr,
+                "gap": gap,
+                "gap_lo": lo,
+                "gap_hi": hi,
+            }
+        )
+    return rows
+
+
 def main() -> None:
     prov = Provenance("s08_resolution_test")
     rng = np.random.default_rng(cfg.RANDOM_SEED)
@@ -123,6 +167,16 @@ def main() -> None:
                 }
             )
 
+    bry = bryois_contrast(long, cases, ctrls, weights, genes, rng)
+    if bry:
+        rows.extend(bry)
+    else:
+        prov.note(
+            "Bryois contrast (D-007)",
+            "not available yet -- needs both bryois_pb and bryois_celltype in "
+            "the detection table",
+        )
+
     out = pd.DataFrame(rows)
     out.to_parquet(OUT, index=False)
 
@@ -130,18 +184,24 @@ def main() -> None:
     print(f"  {'class':<6}{'cols':>5}{'arm':>9}{'constr':>9}{'ctrl':>8}"
           f"{'gap':>9}{'95% CI':>18}")
     deltas = []
+    bryois_delta = None
     for major, g in out.groupby("major", sort=False):
         for _, r in g.iterrows():
             print(
-                f"  {r['major']:<6}{r['n_columns']:>5}{r['arm']:>9}"
+                f"  {r['major']:<15}{r['n_columns']:>5}{r['arm']:>9}"
                 f"{r['constrained_rate']:>9.3f}{r['control_rate']:>8.3f}"
                 f"{r['gap']:>9.3f}   [{r['gap_lo']:.3f}, {r['gap_hi']:.3f}]"
             )
         p = g[g["arm"] == "pooled"]["gap"].iloc[0]
         s = g[g["arm"] == "split"]["gap"].iloc[0]
-        deltas.append(s - p)
-        print(f"  {'':<6}{'':>5}{'change':>9}{'':>17}{s - p:>+9.3f}"
-              f"   {'(split narrows)' if s < p else '(split widens)'}")
+        # Bryois is a separate study varying resolution the other way, so it
+        # is reported on its own rather than averaged into the SingleBrain mean.
+        if major.startswith("Bryois"):
+            bryois_delta = s - p
+        else:
+            deltas.append(s - p)
+        print(f"  {'':<15}{'':>5}{'change':>9}{'':>17}{s - p:>+9.3f}"
+              f"   {'(finer narrows)' if s < p else '(finer widens)'}")
 
     mean_delta = float(np.mean(deltas))
     n_narrow = sum(d < 0 for d in deltas)
@@ -151,9 +211,33 @@ def main() -> None:
         else "splitting does NOT narrow the gap -- resolution is not the "
         "active ingredient"
     )
-    print(f"\n  mean change in gap on splitting: {mean_delta:+.3f}")
+    print(f"\n  SingleBrain, mean change in gap on splitting: {mean_delta:+.3f}")
     print(f"  classes where splitting narrowed the gap: {n_narrow} of {len(deltas)}")
     print(f"  => {verdict}")
+
+    if bryois_delta is not None:
+        agree = (mean_delta < -0.01) == (bryois_delta < -0.01)
+        print(
+            f"\n  Bryois (D-007), pseudobulk -> 8 cell types: {bryois_delta:+.3f}"
+        )
+        print(
+            "  => the two directions "
+            + ("AGREE" if agree else "DISAGREE")
+            + ": resolution "
+            + ("is" if bryois_delta < -0.01 and mean_delta < -0.01 else "is not")
+            + " the active ingredient"
+        )
+        prov.record(
+            "Bryois pseudobulk vs cell types (D-007)",
+            0,
+            0,
+            detail=(
+                f"change in constrained-gene gap on going from pseudobulk to 8 "
+                f"cell types, same donors: {bryois_delta:+.3f}. SingleBrain "
+                f"splitting gave {mean_delta:+.3f}. The two vary resolution in "
+                f"opposite directions."
+            ),
+        )
 
     prov.record(
         "within-SingleBrain resolution test",

@@ -1,8 +1,17 @@
 {
   "pipeline": "s08_resolution_test",
-  "started_utc": "2026-09-04T04:40:38+00:00",
-  "finished_utc": "2026-09-04T04:40:47+00:00",
+  "started_utc": "2026-09-04T04:42:20+00:00",
+  "finished_utc": "2026-09-04T04:42:29+00:00",
   "steps": [
+    {
+      "label": "Bryois contrast (D-007)",
+      "n_in": 0,
+      "n_out": 0,
+      "detail": "not available yet -- needs both bryois_pb and bryois_celltype in the detection table",
+      "examples_dropped": "",
+      "n_dropped": 0,
+      "pct_retained": NaN
+    },
     {
       "label": "within-SingleBrain resolution test",
       "n_in": 6,
