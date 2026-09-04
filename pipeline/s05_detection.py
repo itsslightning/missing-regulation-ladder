@@ -292,7 +292,7 @@ def bryois_complete_chromosomes() -> list[int]:
     ]
 
 
-def load_bryois(min_chromosomes: int = 2) -> pd.DataFrame | None:
+def load_bryois(min_chromosomes: int = 1) -> pd.DataFrame | None:
     """The D-007 power-control arm: pseudobulk vs cell types, same donors.
 
     Headerless, space-separated, one file per cell type per chromosome, nominal

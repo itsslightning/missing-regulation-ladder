@@ -25,11 +25,12 @@ resolution**.
 
 The important qualification: single-nucleus resolution arrives with 4.8× the
 donor count, so this is closure by *resolution-plus-power*, and the two are not
-yet separated. Going finer still — 7 major cell types to 28 subtypes, at
-identical donor count — buys nothing (gap 0.143 → 0.166), which is the first
-hint that donor count rather than resolution is doing the work — and splitting
-each cell class into its own subtypes, same donors and same nuclei, moves the
-gap by a mean of −0.007 (narrows in 3 of 6 classes, widens in 3). See
+yet separated.
+
+What evidence there is points at the **power** half. Splitting each SingleBrain
+cell class into its own subtypes — same donors, same nuclei, same pipeline,
+only the grouping changes — moves the gap by **−0.007 [−0.021, +0.005]**. That
+bounds cell-type resolution at **at most ~10% of the observed closure**. See
 [`docs/stage1_report.md`](docs/stage1_report.md) §4.
 
 ---
@@ -109,7 +110,8 @@ Four mitigations are built in:
    against rung index alone.
 2. **Splitting cell classes into their own subtypes** within SingleBrain —
    same donors, same nuclei, same pipeline, only the grouping changes. Run in
-   Stage 1: the gap moves by a mean of −0.007.
+   Stage 1: the gap moves by -0.007 [-0.021, +0.005], bounding resolution at
+   at most ~10% of the observed closure.
 3. Bryois et al. 2022 enters as a **within-assay power contrast**, not as a
    rung: single-nucleus like SingleBrain but at a much smaller donor count.
 4. **The Bryois pseudobulk arm.** The February 2023 update to that Zenodo

@@ -144,24 +144,37 @@ risk. It is present, and it is not small.
 
 Four pieces of internal evidence bear on it, and they point the same way:
 
-**(a) Splitting a cell class into its subtypes does nothing to the gap**
-(figure 4). This is the tightest test currently available. SingleBrain reports
-each major class both pooled and split — Ast against Ast1–Ast4, Ext against
-Ext1–Ext8, and so on — from the **same donors, the same nuclei, the same
-pipeline**. The only thing that changes is the grouping. Result: the gap moves
-by a mean of **−0.007**, narrowing in 3 of 6 classes and widening in 3.
+**(a) Splitting a cell class into its subtypes does not measurably change the
+gap** (figure 4). This is the tightest test currently available. SingleBrain
+reports each major class both pooled and split — Ast against Ast1–Ast4, Ext
+against Ext1–Ext8, and so on — from the **same donors, the same nuclei, the
+same pipeline**. The only thing that changes is the grouping.
 
-| Class | Pooled gap | Split gap | Change |
+| Class | Pooled gap | Split gap | Δ [95% CI] |
 |---|---|---|---|
-| Ast (4 sub) | 0.142 | 0.113 | −0.030 |
-| Ext (8 sub) | 0.154 | 0.183 | +0.029 |
-| IN (7 sub) | 0.206 | 0.170 | −0.036 |
-| MG (4 sub) | 0.061 | 0.034 | −0.027 |
-| OD (3 sub) | 0.104 | 0.114 | +0.010 |
-| OPC (2 sub) | 0.086 | 0.096 | +0.010 |
+| Ast (4 sub) | 0.142 | 0.113 | −0.030 [−0.067, +0.006] |
+| Ext (8 sub) | 0.154 | 0.183 | +0.029 [−0.005, +0.059] |
+| IN (7 sub) | 0.206 | 0.170 | −0.036 [−0.077, +0.003] |
+| MG (4 sub) | 0.061 | 0.034 | −0.027 [−0.060, +0.004] |
+| OD (3 sub) | 0.104 | 0.114 | +0.010 [−0.016, +0.035] |
+| OPC (2 sub) | 0.086 | 0.096 | +0.010 [−0.009, +0.028] |
+| **Pooled** | | | **−0.007 [−0.021, +0.005]** |
 
-If cell-type resolution were the mechanism, splitting should have narrowed the
-gap systematically. It did not.
+Δ intervals come from a *paired* bootstrap: both arms are evaluated on the same
+replicate and the difference taken within it, so the strong correlation between
+them cancels rather than inflating the interval.
+
+**Every per-class interval spans zero**, so no individual class shows an
+effect — an earlier version of this report said the gap "narrows in 3 of 6
+classes and widens in 3", which was reporting the sign of noise and has been
+corrected. The pooled estimate is what carries the claim: **−0.007 [−0.021,
++0.005]**.
+
+Read that as a bound, not a null. The data **rule out any change larger than
+about 0.021 in either direction**, against a bulk-to-single-nucleus closure of
+0.214. So cell-type resolution accounts for **at most ~10% of the observed
+closure**, with a point estimate near 3%. It does not prove resolution
+contributes nothing; it puts a ceiling on how much it could contribute.
 
 **(b) The same holds at ladder scale.** Rungs 3 and 4 differ only in grouping
 (7 classes vs 28 subtypes) at identical donor count, and the gap goes 0.143 →
@@ -196,9 +209,19 @@ in either direction, and the closure on the main ladder must be coming from
 donor count. That is a bounded, defensible conclusion, and it is the one this
 project can actually reach.
 
+**Bryois status: running, currently uninformative.** On chromosome 1 alone —
+all that has downloaded of the 198 files — pseudobulk gives a gap of 0.082
+[0.004, 0.173] and the 8 cell types 0.051 [−0.038, 0.156], a paired difference
+of **−0.030 [−0.077, +0.020]**. That interval spans zero and is three times
+wider than the SingleBrain pooled interval, so it currently distinguishes
+nothing. It narrows as the remaining chromosomes arrive. Both arms are
+restricted to the same tested genes, so the contrast is valid at any coverage —
+it is only imprecise.
+
 **My read.** The data are consistent with a large power component, a real
-residual, and — on four independent internal checks — **no evidence that
-cell-type resolution itself is what closes the gap**.
+residual, and — on four independent internal checks — **no detectable
+contribution from cell-type resolution, bounded at roughly 10% of the observed
+closure**.
 
 That is a sharper claim than "Rosen is right", and it is the most interesting
 thing Stage 1 has produced. It splits Rosen's account in two. The *power* half

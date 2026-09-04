@@ -1,13 +1,13 @@
 {
   "pipeline": "s08_resolution_test",
-  "started_utc": "2026-09-04T04:42:20+00:00",
-  "finished_utc": "2026-09-04T04:42:29+00:00",
+  "started_utc": "2026-09-04T05:27:46+00:00",
+  "finished_utc": "2026-09-04T05:27:56+00:00",
   "steps": [
     {
-      "label": "Bryois contrast (D-007)",
+      "label": "Bryois pseudobulk vs cell types (D-007)",
       "n_in": 0,
       "n_out": 0,
-      "detail": "not available yet -- needs both bryois_pb and bryois_celltype in the detection table",
+      "detail": "change in constrained-gene gap on going from pseudobulk to 8 cell types, same donors: -0.030 [-0.077, +0.020]. Interval spans zero -- uninformative at this chromosome coverage.",
       "examples_dropped": "",
       "n_dropped": 0,
       "pct_retained": NaN

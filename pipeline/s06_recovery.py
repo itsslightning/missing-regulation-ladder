@@ -137,7 +137,7 @@ def compute(
     ctrls = gene_sets[gene_sets["set"] == "control"]
 
     rows = []
-    for rung in [r for r in RUNG_ORDER + list(RUNG_LABELS) if r in det.columns]:
+    for rung in [r for r in RUNG_ORDER if r in det.columns]:
         if any(r["rung"] == rung for r in rows):
             continue
         # A gene absent from a rung's table was never tested there. Under D-012
@@ -234,7 +234,7 @@ def by_constraint_bin(
 
     rows = []
     seen = set()
-    for rung in [r for r in RUNG_ORDER + list(RUNG_LABELS) if r in det.columns]:
+    for rung in [r for r in RUNG_ORDER if r in det.columns]:
         if rung in seen:
             continue
         seen.add(rung)
@@ -363,7 +363,7 @@ def by_loeuf_within_expression(
 
     rows = []
     seen = set()
-    for rung in [r for r in RUNG_ORDER + list(RUNG_LABELS) if r in det.columns]:
+    for rung in [r for r in RUNG_ORDER if r in det.columns]:
         if rung in seen:
             continue
         seen.add(rung)
@@ -400,7 +400,7 @@ def schema_overlay(
     det = detection.pivot(index="gene_id", columns="rung", values=col)
     genes = schema.index[schema["is_schema_published_fdr"]]
     rows = []
-    for rung in [r for r in RUNG_ORDER + list(RUNG_LABELS) if r in det.columns]:
+    for rung in [r for r in RUNG_ORDER if r in det.columns]:
         if any(r["rung"] == rung for r in rows):
             continue
         d = det[rung].reindex(genes).fillna(False).astype(bool)

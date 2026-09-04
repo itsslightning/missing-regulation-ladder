@@ -284,10 +284,20 @@ def fig_resolution_test(res: pd.DataFrame) -> None:
     least for the splitting direction: each SingleBrain class is reported both
     pooled and split into its own subtypes, from the same donors and nuclei.
     """
-    classes = list(dict.fromkeys(res["major"]))
+    # The POOLED summary row and the Bryois arm are separate objects: one is an
+    # aggregate, the other a different study. Neither belongs among the bars.
+    summary = res[res["major"] == "POOLED"]
+    pooled_stat = (
+        (summary["delta"].iloc[0], summary["delta_lo"].iloc[0],
+         summary["delta_hi"].iloc[0])
+        if not summary.empty
+        else None
+    )
+    cls_rows = res[~res["major"].isin(["POOLED"]) & ~res["major"].str.startswith("Bryois")]
+    classes = list(dict.fromkeys(cls_rows["major"]))
     x = np.arange(len(classes))
-    pooled = res[res["arm"] == "pooled"].set_index("major").loc[classes]
-    split = res[res["arm"] == "split"].set_index("major").loc[classes]
+    pooled = cls_rows[cls_rows["arm"] == "pooled"].set_index("major").loc[classes]
+    split = cls_rows[cls_rows["arm"] == "split"].set_index("major").loc[classes]
 
     fig, (ax, ax2) = plt.subplots(
         1, 2, figsize=(10.4, 4.2), gridspec_kw={"width_ratios": [1.55, 1]}
@@ -315,25 +325,41 @@ def fig_resolution_test(res: pd.DataFrame) -> None:
         fontsize=9, loc="left",
     )
 
-    delta = (split["gap"] - pooled["gap"]).to_numpy()
-    colours = [TEAL if d < 0 else RUST for d in delta]
-    ax2.barh(x, delta, color=colours, alpha=0.85)
+    # Deltas WITH their paired-bootstrap intervals. Plotting bare deltas would
+    # invite reading the sign of noise: every per-class interval spans zero.
+    delta = split["delta"].to_numpy()
+    d_lo = split["delta_lo"].to_numpy()
+    d_hi = split["delta_hi"].to_numpy()
+    ax2.errorbar(
+        delta, x, xerr=[delta - d_lo, d_hi - delta],
+        fmt="o", color=GREY, ms=5, capsize=3, lw=1.4,
+    )
     ax2.axvline(0, color="k", lw=1)
     ax2.set_yticks(x)
     ax2.set_yticklabels(classes, fontsize=8)
     ax2.invert_yaxis()
-    ax2.set_xlabel("change in gap on splitting")
+    ax2.set_xlabel("change in gap on splitting  (95% CI)")
     ax2.set_title(
-        f"B. Mean change {delta.mean():+.3f}\nnarrows in "
-        f"{int((delta < 0).sum())} of {len(delta)} classes — no systematic effect",
+        "B. Every per-class interval spans zero\n"
+        "pooled across classes: see caption",
         fontsize=9, loc="left",
     )
 
     fig.suptitle(
-        "Finer cell-type resolution, at identical donor count, does not close "
-        "the constrained-gene gap",
-        fontsize=10, y=1.03, x=0.01, ha="left",
+        "Finer cell-type resolution, at identical donor count, does not "
+        "measurably close the constrained-gene gap",
+        fontsize=10, y=1.06, x=0.01, ha="left",
     )
+    if pooled_stat is not None:
+        p_d, p_lo, p_hi = pooled_stat
+        fig.text(
+            0.01, 0.985,
+            f"Pooled across the {len(classes)} classes: {p_d:+.3f} "
+            f"[{p_lo:+.3f}, {p_hi:+.3f}] — rules out a change larger than "
+            f"~{max(abs(p_lo), abs(p_hi)):.3f}, against a bulk→single-nucleus "
+            f"closure of 0.214.",
+            fontsize=8, ha="left", va="top", color=GREY,
+        )
     fig.tight_layout()
     fig.savefig(FIG_DIR / "fig4_resolution_test.png", bbox_inches="tight")
     plt.close(fig)

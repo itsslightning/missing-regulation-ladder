@@ -1,8 +1,10 @@
 label,n_in,n_out,detail,examples_dropped,n_dropped,pct_retained
 rung 2 (PsychENCODE),0,0,"using the significant-only release: absence from the file cannot be distinguished from tested-and-null, so rung 2 detection is an upper bound on the numerator with an assumed denominator.",,0,
-Bryois arm (D-007),0,0,NOT AVAILABLE -- fewer than 2 chromosomes complete across all nine arms,,0,
-restrict all rungs to the fixed gene universe,475910,424320,"Tests on genes outside the 18,481-gene universe are dropped. The universe is the denominator (D-012), so a test on a gene it does not contain has nowhere to land.",,51590,89.16
+Bryois arm (D-007),0,0,"pseudobulk vs 8 cell types on 1 complete chromosome(s): [1]. Both arms are restricted to the same chromosomes, so the contrast is valid; it gains power as the remaining files arrive.",,0,
+restrict all rungs to the fixed gene universe,486148,433165,"Tests on genes outside the 18,481-gene universe are dropped. The universe is the denominator (D-012), so a test on a gene it does not contain has nowhere to land.",,52983,89.1
 rung gtex_cortex: tested -> detected (uniform),16195,5417,"1 cell type(s); native call would give 8,226",,10778,33.45
 rung sn_major: tested -> detected (uniform),14047,9906,"7 cell type(s); native call would give 13,211",,4141,70.52
 rung sn_subtype: tested -> detected (uniform),14422,9066,"28 cell type(s); native call would give 13,961",,5356,62.86
+rung bryois_celltype: tested -> detected (uniform),1552,284,8 cell type(s); native call would give 0,,1268,18.3
+rung bryois_pb: tested -> detected (uniform),1416,165,1 cell type(s); native call would give 0,,1251,11.65
 rung bulk_brain: tested -> detected (uniform),5251,5251,"1 cell type(s); native call would give 5,251",,0,100.0
