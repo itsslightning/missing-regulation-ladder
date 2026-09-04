@@ -1,0 +1,2 @@
+label,n_in,n_out,detail,examples_dropped,n_dropped,pct_retained
+within-SingleBrain resolution test,6,3,"mean change in constrained-gene gap on splitting a class into subtypes: -0.007; narrowed in 3 of 6 classes. Donors, pipeline and normalisation are identical between arms.",,3,50.0

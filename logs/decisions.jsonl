@@ -19,3 +19,6 @@
 {"timestamp_utc": "2026-09-04T04:02:43+00:00", "key": "D-TEST", "question": "Does the gate hold?", "chosen": "a", "meaning": "first option", "rejected": {"b": "second option"}, "rationale": "because", "superseded": null}
 {"timestamp_utc": "2026-09-04T04:02:43+00:00", "key": "D-TEST", "question": "Does the gate hold?", "chosen": "a", "meaning": "first option", "rejected": {"b": "second option"}, "rationale": "first call", "superseded": null}
 {"timestamp_utc": "2026-09-04T04:02:43+00:00", "key": "D-TEST", "question": "Does the gate hold?", "chosen": "b", "meaning": "second option", "rejected": {"a": "first option"}, "rationale": "documented change", "superseded": "a"}
+{"timestamp_utc": "2026-09-04T04:08:05+00:00", "key": "D-TEST", "question": "Does the gate hold?", "chosen": "a", "meaning": "first option", "rejected": {"b": "second option"}, "rationale": "because", "superseded": null}
+{"timestamp_utc": "2026-09-04T04:08:05+00:00", "key": "D-TEST", "question": "Does the gate hold?", "chosen": "a", "meaning": "first option", "rejected": {"b": "second option"}, "rationale": "first call", "superseded": null}
+{"timestamp_utc": "2026-09-04T04:08:05+00:00", "key": "D-TEST", "question": "Does the gate hold?", "chosen": "b", "meaning": "second option", "rejected": {"a": "first option"}, "rationale": "documented change", "superseded": "a"}

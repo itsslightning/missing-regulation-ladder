@@ -71,42 +71,80 @@ inflates apparent recovery. Anyone quoting "single-nucleus resolution closes
 resolution increase, and the report flagged this as the project's main technical
 risk. It is present, and it is not small.
 
-Three pieces of internal evidence bear on it, and they point the same way:
+Four pieces of internal evidence bear on it, and they point the same way:
 
-**(a) Finer resolution at fixed N buys nothing.** Rungs 3 and 4 are the same
-study, same 983 donors, same pipeline, same normalisation — differing only in
-whether nuclei are grouped into 7 major classes or 28 subtypes. Going finer does
-**not** close the gap further: 0.143 → 0.166, slightly *wider*. If cell-type
-resolution per se were the mechanism, subtypes should have beaten major types.
-*Caveat:* subtypes have fewer nuclei each, so per-context power falls even at
-constant donor N — this contrasts resolution against per-context power rather
-than isolating resolution.
+**(a) Splitting a cell class into its subtypes does nothing to the gap**
+(figure 4). This is the tightest test currently available. SingleBrain reports
+each major class both pooled and split — Ast against Ast1–Ast4, Ext against
+Ext1–Ext8, and so on — from the **same donors, the same nuclei, the same
+pipeline**. The only thing that changes is the grouping. Result: the gap moves
+by a mean of **−0.007**, narrowing in 3 of 6 classes and widening in 3.
 
-**(b) A bulk tissue already matches the best cell type.** From the Stage 0
+| Class | Pooled gap | Split gap | Change |
+|---|---|---|---|
+| Ast (4 sub) | 0.142 | 0.113 | −0.030 |
+| Ext (8 sub) | 0.154 | 0.183 | +0.029 |
+| IN (7 sub) | 0.206 | 0.170 | −0.036 |
+| MG (4 sub) | 0.061 | 0.034 | −0.027 |
+| OD (3 sub) | 0.104 | 0.114 | +0.010 |
+| OPC (2 sub) | 0.086 | 0.096 | +0.010 |
+
+If cell-type resolution were the mechanism, splitting should have narrowed the
+gap systematically. It did not.
+
+**(b) The same holds at ladder scale.** Rungs 3 and 4 differ only in grouping
+(7 classes vs 28 subtypes) at identical donor count, and the gap goes 0.143 →
+0.166 — slightly *wider*.
+
+**(c) A bulk tissue already matches the best cell type.** From the Stage 0
 audit, GTEx *cerebellum* calls eGenes for 0.568 of tested genes, essentially
 matching SingleBrain excitatory neurons at 0.579. A bulk tissue with good N
 reaches single-nucleus territory.
 
-**(c) eGene yield across SingleBrain cell types tracks cell abundance.**
+**(d) eGene yield across SingleBrain cell types tracks cell abundance.**
 Ext > IN > Ast > OD > MG > End is close to the ordering of how many nuclei each
 type contributes — a power ordering, not a biological one.
 
-**My read.** The data are consistent with a large power component, a real
-residual, and — so far — **little evidence that cell-type resolution itself is
-what closes the gap**. That is a sharper claim than "Rosen is right", because it
-splits Rosen's account in two: the *power* half looks well supported here; the
-*resolution* half does not yet have direct support in this data. Bulk cortex at
-983 donors, which nobody has run, might well close as much of the gap as
-SingleBrain does.
+### The caveat that limits (a) and (b), and probably limits any such test
 
-**I cannot settle this with the rungs alone**, and I am not going to claim
-otherwise. The decisive test is the Bryois pseudobulk arm (D-007): the same 192
-donors, the same pipeline, the same normalisation, analysed once as pseudobulk
-and once as 8 cell types. That isolates resolution with N held exactly fixed. It
-is downloading (198 files, ~4.8 GB) and is the first thing to finish.
+Splitting a class gives each subtype fewer nuclei, so per-context power falls
+even though donor count is unchanged. Both arms of both tests therefore trade
+resolution against reads-per-context rather than isolating resolution.
+
+That is not a flaw in this design; it is a property of the data. **In
+single-cell data, resolution and per-context power are intrinsically coupled** —
+at fixed sequencing depth you cannot resolve more contexts without putting
+fewer reads in each. The Bryois pseudobulk arm has the identical confound
+running the other way: pooling all nuclei raises reads-per-context while
+lowering resolution.
+
+So Bryois will not be a clean isolation of resolution either. What the two
+directions together *can* do is bracket it: if pooling (Bryois) and splitting
+(this test) both leave the gap unmoved, resolution is not the active ingredient
+in either direction, and the closure on the main ladder must be coming from
+donor count. That is a bounded, defensible conclusion, and it is the one this
+project can actually reach.
+
+**My read.** The data are consistent with a large power component, a real
+residual, and — on four independent internal checks — **no evidence that
+cell-type resolution itself is what closes the gap**.
+
+That is a sharper claim than "Rosen is right", and it is the most interesting
+thing Stage 1 has produced. It splits Rosen's account in two. The *power* half
+looks well supported here. The *resolution* half has no support in this data at
+all: every time resolution is varied with donor count held fixed, the gap does
+not move. The natural implication — testable by someone with the data, not by
+me — is that **bulk cortex at 983 donors would close about as much of the gap as
+SingleBrain does**. Nobody has run that.
+
+**I cannot settle this from the rungs alone** and am not going to claim
+otherwise. The Bryois pseudobulk arm (D-007) is still the best remaining
+evidence and is downloading (198 files, ~4.8 GB). Per the caveat above it will
+not isolate resolution cleanly either, but it varies it in the opposite
+direction, and agreement between the two would bracket the conclusion.
 
 Until it lands, the defensible framing is **"resolution-plus-power closes ~60%
-of the gap"**, with the split between the two unresolved.
+of the gap, and what evidence there is points at the power half"**.
 
 ## 5. What is provisional
 
@@ -153,6 +191,7 @@ compared to a paper's headline eGene count.
 
 - Rungs 1, 3, 4: complete.
 - Rung 2: provisional pending the full PsychENCODE file (downloading).
-- Bryois power-control arm (D-007): downloading, 6 of 198 files.
+- Within-SingleBrain resolution test (fig 4): complete.
+- Bryois power-control arm (D-007): downloading.
 - D-004 (colocalization priors) remains open; Stage 2, also awaiting PGC3.
 - `by_across_all` sensitivity arm for D-003: available, not yet run.

@@ -25,7 +25,9 @@ The important qualification: single-nucleus resolution arrives with 4.8× the
 donor count, so this is closure by *resolution-plus-power*, and the two are not
 yet separated. Going finer still — 7 major cell types to 28 subtypes, at
 identical donor count — buys nothing (gap 0.143 → 0.166), which is the first
-hint that donor count rather than resolution is doing the work. See
+hint that donor count rather than resolution is doing the work — and splitting
+each cell class into its own subtypes, same donors and same nuclei, moves the
+gap by a mean of −0.007 (narrows in 3 of 6 classes, widens in 3). See
 [`docs/stage1_report.md`](docs/stage1_report.md) §4.
 
 ---
@@ -92,33 +94,37 @@ with a confidence interval on X.
 recovery tracks each study's donor count rather than its resolution. That
 confound is the project's main known risk and is addressed directly below.
 
-## The power confound, and the one clean test of it
+## The power confound, and how far it can be tested
 
 The four rungs differ in sample size, ancestry composition, normalisation and
 eQTL-calling pipeline as well as in resolution. Any naive reading of the
 recovery curve therefore partly measures power, which is Rosen's point rather
 than a test of it.
 
-Three mitigations are built in:
+Four mitigations are built in:
 
 1. Every recovery estimate is reported against the donor N of its rung, never
    against rung index alone.
-2. Bryois et al. 2022 enters as a **within-assay power contrast**, not as a
-   rung: it is single-nucleus like SingleBrain but at a much smaller donor
-   count, so if recovery tracks N rather than resolution the two should
-   separate despite comparable resolution.
-3. **The Bryois pseudobulk arm.** The February 2023 update to the Bryois Zenodo
-   record added `pb[1-22].gz` — a "tissue-like" analysis aggregating reads
-   across all nuclei per individual, from the *same donors, the same pipeline
-   and the same normalisation* as the eight cell-type files. Comparing Bryois
-   pseudobulk against Bryois cell types isolates resolution with sample size,
-   ancestry and pipeline held fixed. It is the only comparison in this design
-   where resolution is not confounded with power, and it is the strongest
-   available evidence on the question.
+2. **Splitting cell classes into their own subtypes** within SingleBrain —
+   same donors, same nuclei, same pipeline, only the grouping changes. Run in
+   Stage 1: the gap moves by a mean of −0.007.
+3. Bryois et al. 2022 enters as a **within-assay power contrast**, not as a
+   rung: single-nucleus like SingleBrain but at a much smaller donor count.
+4. **The Bryois pseudobulk arm.** The February 2023 update to that Zenodo
+   record added `pb[1-22].gz` — a "tissue-like" analysis pooling all nuclei per
+   individual, from the same donors and pipeline as the eight cell-type files.
+
+**A limitation discovered in Stage 1, worth stating plainly:** none of these
+isolates resolution cleanly, and probably nothing can. In single-cell data,
+resolution and per-context power are *intrinsically coupled* — at fixed
+sequencing depth you cannot resolve more contexts without putting fewer reads
+in each. Splitting (2) loses reads per context; pooling (4) gains them. The two
+vary resolution in opposite directions, so agreement between them brackets the
+answer even though neither isolates it.
 
 The headline framing is therefore "resolution-plus-power", and the honest
-statement of scope is that public summary statistics cannot fully separate the
-two except in the Bryois within-study arm.
+statement of scope is that public summary statistics can bound the split
+between the two but cannot fully resolve it.
 
 ## What this project will not claim
 

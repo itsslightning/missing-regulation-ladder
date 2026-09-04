@@ -1,0 +1,16 @@
+{
+  "pipeline": "s08_resolution_test",
+  "started_utc": "2026-09-04T04:06:26+00:00",
+  "finished_utc": "2026-09-04T04:06:36+00:00",
+  "steps": [
+    {
+      "label": "within-SingleBrain resolution test",
+      "n_in": 6,
+      "n_out": 3,
+      "detail": "mean change in constrained-gene gap on splitting a class into subtypes: -0.007; narrowed in 3 of 6 classes. Donors, pipeline and normalisation are identical between arms.",
+      "examples_dropped": "",
+      "n_dropped": 3,
+      "pct_retained": 50.0
+    }
+  ]
+}

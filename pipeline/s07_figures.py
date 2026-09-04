@@ -277,6 +277,68 @@ def fig_loeuf(loeuf: pd.DataFrame, loeuf_expr: pd.DataFrame, universe) -> None:
     plt.close(fig)
 
 
+def fig_resolution_test(res: pd.DataFrame) -> None:
+    """Figure 4: the within-SingleBrain resolution test.
+
+    The main ladder cannot separate resolution from donor count. This can, at
+    least for the splitting direction: each SingleBrain class is reported both
+    pooled and split into its own subtypes, from the same donors and nuclei.
+    """
+    classes = list(dict.fromkeys(res["major"]))
+    x = np.arange(len(classes))
+    pooled = res[res["arm"] == "pooled"].set_index("major").loc[classes]
+    split = res[res["arm"] == "split"].set_index("major").loc[classes]
+
+    fig, (ax, ax2) = plt.subplots(
+        1, 2, figsize=(10.4, 4.2), gridspec_kw={"width_ratios": [1.55, 1]}
+    )
+
+    w = 0.36
+    for off, d, colour, label in (
+        (-w / 2, pooled, TEAL, "pooled into one class"),
+        (+w / 2, split, RUST, "split into subtypes"),
+    ):
+        ax.bar(x + off, d["gap"], width=w, color=colour, alpha=0.85, label=label)
+        ax.errorbar(
+            x + off, d["gap"],
+            yerr=[d["gap"] - d["gap_lo"], d["gap_hi"] - d["gap"]],
+            fmt="none", ecolor="0.25", elinewidth=1, capsize=2.5,
+        )
+    ax.set_xticks(x)
+    ax.set_xticklabels(
+        [f"{c}\n({int(split.loc[c, 'n_columns'])} sub)" for c in classes], fontsize=8
+    )
+    ax.set_ylabel("Constrained-gene gap")
+    ax.legend(fontsize=8, framealpha=0.9)
+    ax.set_title(
+        "A. Same donors, same nuclei — only the grouping changes",
+        fontsize=9, loc="left",
+    )
+
+    delta = (split["gap"] - pooled["gap"]).to_numpy()
+    colours = [TEAL if d < 0 else RUST for d in delta]
+    ax2.barh(x, delta, color=colours, alpha=0.85)
+    ax2.axvline(0, color="k", lw=1)
+    ax2.set_yticks(x)
+    ax2.set_yticklabels(classes, fontsize=8)
+    ax2.invert_yaxis()
+    ax2.set_xlabel("change in gap on splitting")
+    ax2.set_title(
+        f"B. Mean change {delta.mean():+.3f}\nnarrows in "
+        f"{int((delta < 0).sum())} of {len(delta)} classes — no systematic effect",
+        fontsize=9, loc="left",
+    )
+
+    fig.suptitle(
+        "Finer cell-type resolution, at identical donor count, does not close "
+        "the constrained-gene gap",
+        fontsize=10, y=1.03, x=0.01, ha="left",
+    )
+    fig.tight_layout()
+    fig.savefig(FIG_DIR / "fig4_resolution_test.png", bbox_inches="tight")
+    plt.close(fig)
+
+
 def main() -> None:
     FIG_DIR.mkdir(parents=True, exist_ok=True)
     curve = pd.read_parquet(cfg.RECOVERY_TABLE)
@@ -288,6 +350,10 @@ def main() -> None:
     fig_recovery_curve(curve, schema)
     fig_gap(curve)
     fig_loeuf(loeuf, loeuf_expr, universe)
+
+    res_path = cfg.DIR_PROCESSED / "resolution_test.parquet"
+    if res_path.exists():
+        fig_resolution_test(pd.read_parquet(res_path))
 
     for p in sorted(FIG_DIR.glob("*.png")):
         print(f"  wrote {p.relative_to(cfg.ROOT).as_posix()}  "
