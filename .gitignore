@@ -1,0 +1,41 @@
+# ---------------------------------------------------------------------------
+# Data. Nothing under data/ is committed except the .gitkeep placeholders and
+# the small derived tables in data/processed that the dashboard reads.
+#
+# data/restricted/ is excluded as a whole directory rather than by pattern, so
+# a newly added file cannot slip into a commit merely because no rule matched
+# it. Anything whose licence does not permit redistribution goes there.
+# ---------------------------------------------------------------------------
+data/raw/*
+data/interim/*
+data/restricted/
+!data/raw/.gitkeep
+!data/interim/.gitkeep
+
+# Derived outputs are publishable, but the large intermediates are not.
+data/processed/*.tsv
+data/processed/*.csv
+!data/processed/.gitkeep
+
+logs/*
+!logs/.gitkeep
+
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+
+# ---------------------------------------------------------------------------
+# OS / editor
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Streamlit secrets must never be committed.
+.streamlit/secrets.toml
