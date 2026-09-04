@@ -1,0 +1,25 @@
+{
+  "pipeline": "s09_robustness",
+  "started_utc": "2026-09-04T04:33:26+00:00",
+  "finished_utc": "2026-09-04T04:33:28+00:00",
+  "steps": [
+    {
+      "label": "universe x gnomAD v4.1 constraint",
+      "n_in": 18481,
+      "n_out": 17169,
+      "detail": "genes without a v4.1 LOEUF cannot enter the v4.1 variant",
+      "examples_dropped": "",
+      "n_dropped": 1312,
+      "pct_retained": 92.9
+    },
+    {
+      "label": "robustness of the headline closure",
+      "n_in": 5,
+      "n_out": 5,
+      "detail": "closure ranges 47.9% to 59.9% across 5 variants of the constraint source, constraint metric and multiple-testing rule",
+      "examples_dropped": "",
+      "n_dropped": 0,
+      "pct_retained": 100.0
+    }
+  ]
+}

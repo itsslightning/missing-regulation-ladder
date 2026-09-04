@@ -147,7 +147,11 @@ gap is reported per rung with bootstrap CIs, and the small family of rung-level
 gap contrasts carries its own BH correction (`gap_q` in
 `recovery_by_rung.parquet`).
 
-**Sensitivity arm:** `by_across_all` remains available and is noted as not yet run.
+**Sensitivity arm run 2026-09-04 (`s09_robustness.py`).** `by_across_all` — the
+most conservative correction available and the one rejected above — still gives
+**47.9% closure [34.4, 60.3]**, with the residual gap excluding zero. So the
+headline is not an artefact of a permissive multiple-testing rule. It is the
+variant that moves the number most, which is worth stating.
 
 ### D-004 — Colocalization priors and posterior threshold — **OPEN**
 
@@ -182,6 +186,16 @@ ships `oe_lof_upper_bin` (deciles) and the matching covariates in one table.
 **Caveat found:** its `brain_expression` column — the obvious candidate for the
 expression covariate — is `NA` for all 19,704 rows. Expression is taken from the
 GTEx v10 median-TPM matrix instead.
+
+**Robustness check run 2026-09-04 (`s09_robustness.py`): passes.** Rebuilding
+the case set on v4.1 LOEUF < 0.35 more than halves it (2,767 → 1,292 genes,
+because v4.1 shifts LOEUF values) and reorders genes, yet the headline closure
+is **59.0% [45.5, 72.3]** against the primary's **59.9% [49.1, 70.0]**. The
+conclusion does not depend on the gnomAD vintage, so v2.1.1 stays primary on
+the original grounds.
+
+**Also checked:** pLI ≥ 0.9 instead of LOEUF as the constraint metric gives
+52.2% [38.3, 64.4] on a 3,000-gene case set.
 
 ### D-006 — SingleBrain `top_assoc` only for Stages 0–1 — **SET** (2026-09-04)
 

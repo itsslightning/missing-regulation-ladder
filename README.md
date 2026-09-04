@@ -17,7 +17,9 @@ data, no wet lab.
 
 Going from bulk cortex to single-nucleus major cell types closes **59.9%
 [49.5%, 70.5%]** of the constrained-gene eQTL gap. The residual 40% does not
-close, under any of three detection rules. Of the 32 published SCHEMA genes,
+close. Closure spans 47.9%–59.9% across every structural variant tested
+(constraint source, constraint metric, multiple-testing rule). Of the 32
+published SCHEMA genes,
 **4 have a detectable cis-eQTL in bulk cortex and 19 do at single-nucleus
 resolution**.
 

@@ -45,6 +45,22 @@
       "version": "2.1.1"
     }
   },
+  "gnomad_constraint_v4": {
+    "gnomad.v4.1.constraint_metrics.tsv": {
+      "bytes": 95546041,
+      "citation": "Chen et al. 2024, Nature 625:92-100 (gnomAD v4.1)",
+      "downloaded_utc": "2026-09-04T04:32:13+00:00",
+      "file": "gnomad.v4.1.constraint_metrics.tsv",
+      "licence": "Free of restrictions (gnomAD terms); citation requested",
+      "redistributable": true,
+      "relative_path": "data/raw/gnomad_constraint_v4/gnomad.v4.1.constraint_metrics.tsv",
+      "sha256": "68d8abdb7fc48f570869b02dfaa74b9fecaece7fcc5f301ddca40ec1ce12da00",
+      "source_key": "gnomad_constraint_v4",
+      "source_name": "gnomAD v4.1 constraint metrics",
+      "url": "https://storage.googleapis.com/gcp-public-data--gnomad/release/4.1/constraint/gnomad.v4.1.constraint_metrics.tsv",
+      "version": "4.1"
+    }
+  },
   "gtex_v10": {
     "Brain_Amygdala.v10.eGenes.txt.gz": {
       "bytes": 2690204,

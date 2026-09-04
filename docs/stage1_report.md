@@ -64,6 +64,35 @@ better-powered study. It loosens precisely where power is highest, which
 inflates apparent recovery. Anyone quoting "single-nucleus resolution closes
 ~90% of the gap" from published eGene counts is, in part, quoting that artefact.
 
+### The other three choices the headline rests on
+
+D-001 is the largest lever, but not the only one. The remaining structural
+choices were re-run end to end — each rebuilding its own matched control set
+under the same D-002 rules and seed, since a different case set needs its own
+controls:
+
+| Family | Variant | n cases | Gap bulk → sn | Closure [95% CI] |
+|---|---|---|---|---|
+| Constraint source | **gnomAD v2.1.1 LOEUF < 0.35** (primary) | 2,767 | 0.357 → 0.143 | **59.9%** [49.1, 70.0] |
+| | gnomAD v4.1 LOEUF < 0.35 | 1,292 | 0.306 → 0.125 | 59.0% [45.5, 72.3] |
+| Constraint metric | gnomAD v2.1.1 pLI ≥ 0.9 | 3,000 | 0.220 → 0.105 | 52.2% [38.3, 64.4] |
+| Multiple testing | **BH within rung** (primary) | 2,767 | 0.357 → 0.143 | **59.9%** [49.1, 70.0] |
+| | BY across the whole grid | 2,767 | 0.326 → 0.170 | 47.9% [34.4, 60.3] |
+| SCHEMA release | published 32 genes (primary) | 32 | recovery 0.125 → 0.594 | — |
+| | browser 50 genes | 50 | recovery 0.140 → 0.620 | — |
+
+**Closure spans 47.9%–59.9% across all of these, and the residual gap excludes
+zero in every one.** Two results are worth calling out:
+
+- **The v4.1 check, promised in D-005, passes.** Recomputing constraint on
+  ~730k exomes reorders genes and more than halves the case set (2,767 → 1,292,
+  because v4.1 LOEUF values shift), yet closure is 59.0% against 59.9%. The
+  conclusion does not depend on the gnomAD vintage.
+- **BY across the whole grid — the most conservative correction available and
+  the one I rejected on coherence grounds — still gives 47.9% closure.** So the
+  headline is not an artefact of a permissive multiple-testing rule. It is,
+  however, the variant that moves the number most, which is worth knowing.
+
 ## 4. The power confound — the thing that qualifies everything above
 
 **The rungs differ in donor count as much as in resolution.** GTEx cortex has
@@ -194,4 +223,5 @@ compared to a paper's headline eGene count.
 - Within-SingleBrain resolution test (fig 4): complete.
 - Bryois power-control arm (D-007): downloading.
 - D-004 (colocalization priors) remains open; Stage 2, also awaiting PGC3.
-- `by_across_all` sensitivity arm for D-003: available, not yet run.
+- Robustness battery (constraint source, constraint metric, multiple-testing
+  rule, SCHEMA release): complete. Closure spans 47.9%-59.9%.
