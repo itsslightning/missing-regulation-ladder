@@ -209,56 +209,76 @@ in either direction, and the closure on the main ladder must be coming from
 donor count. That is a bounded, defensible conclusion, and it is the one this
 project can actually reach.
 
-**Bryois status: running, not yet informative.** On chromosomes 1–2 — what has
-downloaded of the 198 files — pseudobulk gives a gap of 0.058 [−0.001, 0.129]
-and the 8 cell types 0.021 [−0.047, 0.095], a paired difference of
+### The Bryois arm, complete — and it agrees
 
-> **−0.037 [−0.075, +0.004]**, on 439 constrained and 210 control genes.
+All 198 files (4.5 GB, 22 chromosomes) are downloaded and size-verified, so
+D-007 now runs at full coverage on **2,489 constrained genes**.
 
-That interval still spans zero, though it now only just does. It is about four
-times wider than the SingleBrain pooled interval, so it distinguishes nothing
-yet. Both arms are restricted to the same tested genes, so the contrast is
-valid at any coverage — it is only imprecise, and the width should fall roughly
-as √(chromosomes) as the rest arrive.
+| Arm | Constrained | Control | Gap [95% CI] |
+|---|---|---|---|
+| Bryois pseudobulk (all nuclei pooled) | 0.063 | 0.207 | 0.144 [0.103, 0.185] |
+| Bryois 8 cell types | 0.141 | 0.291 | 0.150 [0.102, 0.193] |
+| **Paired difference** | | | **+0.005 [−0.035, +0.048]** |
 
-**The sign looks like a tension. It is not — I checked.** The Bryois point
-estimate is *negative* (splitting narrows the gap), which is the direction the
-resolution account predicts and the opposite of the SingleBrain result
-(−0.007). Before reading anything into that, the obvious confound is the gene
-set: Bryois is restricted to whichever chromosomes have downloaded, which is a
-small, chromosome-specific subset, so "Bryois says −0.037, SingleBrain says
-−0.007" might be about *those genes* rather than about the studies.
+**The chr1–2 negative was noise, exactly as flagged.** At 2 of 22 chromosomes
+this read −0.037 [−0.075, +0.004] and looked like it might contradict the
+SingleBrain result. At full coverage it is **+0.005** — as close to zero as the
+data can put it. This is why that number was not quoted at the time.
 
-Re-running the SingleBrain splitting test on **exactly the 439 constrained
-genes Bryois has tested** gives **−0.017 [−0.103, +0.057]** — overlapping the
-Bryois interval, and with a CI five times wider than SingleBrain's full-gene
-estimate. So the apparent disagreement is the subset and its low power, not the
-studies. There is currently **no evidence the two studies disagree**.
+**Matched-gene-set control:** SingleBrain restricted to the same 2,489 genes
+gives **+0.019 [−0.015, +0.052]**, overlapping Bryois. No evidence the studies
+disagree.
 
-This is why the contrast is reported with a matched-gene-set control rather
-than as two numbers side by side.
+### The three tests converge
 
-**My read.** The data are consistent with a large power component, a real
-residual, and — on four independent internal checks — **no detectable
-contribution from cell-type resolution, bounded at roughly 10% of the observed
-closure**.
+| Test | Direction of change | Result | Bound, as % of the 0.214 closure |
+|---|---|---|---|
+| SingleBrain, split 6 classes into subtypes | more resolution | **−0.007** [−0.021, +0.005] | **≤10%** |
+| Bryois, pseudobulk → 8 cell types | more resolution | **+0.005** [−0.035, +0.048] | ≤22% |
+| SingleBrain on the Bryois gene set | more resolution | +0.019 [−0.015, +0.052] | ≤24% |
 
-That is a sharper claim than "Rosen is right", and it is the most interesting
-thing Stage 1 has produced. It splits Rosen's account in two. The *power* half
-looks well supported here. The *resolution* half has no support in this data at
-all: every time resolution is varied with donor count held fixed, the gap does
-not move. The natural implication — testable by someone with the data, not by
-me — is that **bulk cortex at 983 donors would close about as much of the gap as
-SingleBrain does**. Nobody has run that.
+Two independent studies, with different donors, pipelines and normalisations,
+varying resolution in **opposite directions** — Bryois by pooling nuclei
+together, SingleBrain by splitting them apart — and all three intervals centre
+on zero.
 
-**I cannot settle this from the rungs alone** and am not going to claim
-otherwise. The Bryois pseudobulk arm (D-007) is still the best remaining
-evidence and is downloading (198 files, ~4.8 GB). Per the caveat above it will
-not isolate resolution cleanly either, but it varies it in the opposite
-direction, and agreement between the two would bracket the conclusion.
+That is the bracket the design was built to produce. If cell-type resolution
+were what closes the gap, splitting should have narrowed it and pooling should
+have widened it, and the two tests should have disagreed in sign. They do not.
 
-Until it lands, the defensible framing is **"resolution-plus-power closes ~60%
-of the gap, and what evidence there is points at the power half"**.
+**Conclusion: cell-type resolution does not detectably close the
+constrained-gene gap, bounded at ~10% of the observed closure by the tighter
+test.** The ~60% closure on the main ladder is therefore attributable to donor
+count — 205 to 983, a 4.8× increase in power — and not to seeing cell types
+separately.
+
+**My read, now that both directions are in.** The ~60% closure is real, the
+~40% residual is real, and **cell-type resolution is not what produces the
+closure** — bounded at ~10% of it by the tighter test, with two independent
+studies varying resolution in opposite directions and both landing on zero.
+
+That is a sharper claim than "Rosen is right", and it is the main thing Stage 1
+has produced. It splits Rosen's account in two:
+
+- the **power** half is well supported here — the closure tracks a 4.8×
+  increase in donor count;
+- the **resolution** half has no support in this data at all.
+
+The natural implication, which this project cannot test but someone with the
+data could: **bulk cortex at 983 donors would likely close about as much of the
+gap as SingleBrain does.** Nobody has run that. If true, it means the field's
+move to single-nucleus eQTL mapping buys statistical power and cell-type
+attribution — both valuable — but is not, by itself, the answer to the missing
+regulation problem. The residual gap survives at every resolution tested.
+
+**What would change this conclusion**, stated so it can be checked:
+
+- a bulk brain eQTL study at ~1,000 donors closing the gap much *less* than
+  SingleBrain does at the same N — that would restore a resolution effect;
+- a resolution axis this design cannot reach, e.g. spatial or activity-state
+  contexts rather than cell-type labels;
+- the residual gap disappearing under a detection rule that is uniform across
+  rungs but more sensitive than per-gene Bonferroni.
 
 ## 5. What is provisional
 

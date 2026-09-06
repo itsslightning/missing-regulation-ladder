@@ -1,7 +1,7 @@
 {
   "pipeline": "s05_detection",
-  "started_utc": "2026-09-06T00:59:40+00:00",
-  "finished_utc": "2026-09-06T01:01:13+00:00",
+  "started_utc": "2026-09-06T02:07:14+00:00",
+  "finished_utc": "2026-09-06T02:15:56+00:00",
   "steps": [
     {
       "label": "rung 2 (PsychENCODE)",
@@ -16,19 +16,19 @@
       "label": "Bryois arm (D-007)",
       "n_in": 0,
       "n_out": 0,
-      "detail": "pseudobulk vs 8 cell types on 2 complete chromosome(s): [1, 2]. Both arms are restricted to the same chromosomes, so the contrast is valid; it gains power as the remaining files arrive.",
+      "detail": "pseudobulk vs 8 cell types on 22 complete chromosome(s): [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]. Both arms are restricted to the same chromosomes, so the contrast is valid; it gains power as the remaining files arrive.",
       "examples_dropped": "",
       "n_dropped": 0,
       "pct_retained": NaN
     },
     {
       "label": "restrict all rungs to the fixed gene universe",
-      "n_in": 493373,
-      "n_out": 439360,
+      "n_in": 575929,
+      "n_out": 509956,
       "detail": "Tests on genes outside the 18,481-gene universe are dropped. The universe is the denominator (D-012), so a test on a gene it does not contain has nowhere to land.",
       "examples_dropped": "",
-      "n_dropped": 54013,
-      "pct_retained": 89.05
+      "n_dropped": 65973,
+      "pct_retained": 88.54
     },
     {
       "label": "rung gtex_cortex: tested -> detected (uniform)",
@@ -38,6 +38,24 @@
       "examples_dropped": "",
       "n_dropped": 10778,
       "pct_retained": 33.45
+    },
+    {
+      "label": "rung bryois_celltype: tested -> detected (uniform)",
+      "n_in": 14671,
+      "n_out": 2781,
+      "detail": "8 cell type(s); native call would give 0",
+      "examples_dropped": "",
+      "n_dropped": 11890,
+      "pct_retained": 18.96
+    },
+    {
+      "label": "rung bryois_pb: tested -> detected (uniform)",
+      "n_in": 13735,
+      "n_out": 1719,
+      "detail": "1 cell type(s); native call would give 0",
+      "examples_dropped": "",
+      "n_dropped": 12016,
+      "pct_retained": 12.52
     },
     {
       "label": "rung sn_major: tested -> detected (uniform)",
@@ -56,24 +74,6 @@
       "examples_dropped": "",
       "n_dropped": 5356,
       "pct_retained": 62.86
-    },
-    {
-      "label": "rung bryois_celltype: tested -> detected (uniform)",
-      "n_in": 2592,
-      "n_out": 504,
-      "detail": "8 cell type(s); native call would give 0",
-      "examples_dropped": "",
-      "n_dropped": 2088,
-      "pct_retained": 19.44
-    },
-    {
-      "label": "rung bryois_pb: tested -> detected (uniform)",
-      "n_in": 2402,
-      "n_out": 301,
-      "detail": "1 cell type(s); native call would give 0",
-      "examples_dropped": "",
-      "n_dropped": 2101,
-      "pct_retained": 12.53
     },
     {
       "label": "rung bulk_brain: tested -> detected (uniform)",

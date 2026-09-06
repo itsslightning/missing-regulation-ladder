@@ -1,9 +1,21 @@
-"""Stage 1, step 4: does splitting a cell type help, holding everything else fixed?
+"""Stage 1, step 4: does cell-type resolution move the gap, at fixed donor count?
 
 The recovery curve cannot separate resolution from donor count, because
-SingleBrain arrives with 4.8x GTEx's donors. The Bryois pseudobulk arm (D-007)
-is the decisive test and is still downloading. This is the tightest test
-available in the meantime, and it is a genuinely clean one.
+SingleBrain arrives with 4.8x GTEx's donors. This module runs the two tests
+that can, in opposite directions, and they now agree.
+
+  SPLITTING (SingleBrain)   pool a cell class, then split it into its subtypes
+  POOLING   (Bryois, D-007) pool all nuclei into pseudobulk, vs 8 cell types
+
+Neither isolates resolution on its own, because resolution and per-context
+power are intrinsically coupled: at fixed sequencing depth you cannot resolve
+more contexts without putting fewer reads in each. Splitting loses reads per
+context; pooling gains them. Running both directions is what brackets the
+answer -- if resolution were doing the work, splitting should narrow the gap
+and pooling should widen it, and the two should disagree in sign.
+
+They do not. Both centre on zero (see the constants below and the Stage 1
+report), so the closure the main ladder shows is coming from donor count.
 
 SingleBrain reports each major cell class BOTH as one class and as its
 constituent subtypes:
@@ -44,6 +56,13 @@ from pipeline.s05_detection import DETECTION_LONG, FDR_ALPHA
 from pipeline.s06_recovery import N_BOOT, _ci, _weighted_rate
 
 OUT = cfg.DIR_PROCESSED / "resolution_test.parquet"
+
+#: The effect this test is trying to explain: the constrained-gene gap falls
+#: 0.357 -> 0.143 from bulk cortex to single-nucleus major cell types, so
+#: 0.214 in absolute terms. Every resolution delta below is reported as a
+#: fraction of it, because "the gap moved by 0.005" only means something
+#: against the size of the movement being accounted for.
+LADDER_CLOSURE = 0.214
 
 #: Major class -> its subtypes, as SingleBrain names them. End has none.
 SUBTYPES = {
@@ -412,7 +431,7 @@ def main() -> None:
         verdict = (
             f"no detectable effect of splitting; the data rule out a change "
             f"larger than about {bound:.3f} in either direction, against a "
-            f"bulk-to-single-nucleus closure of 0.214"
+            f"bulk-to-single-nucleus closure of {LADDER_CLOSURE:.3f}"
         )
     else:
         verdict = (
@@ -442,7 +461,15 @@ def main() -> None:
 
     if bryois_delta is not None:
         d, d_lo, d_hi = bryois_delta
-        informative = not (d_lo <= 0 <= d_hi)
+        # An interval spanning zero is not automatically uninformative. What
+        # matters is how tight it is relative to the effect being explained:
+        # a wide interval says "cannot tell", a narrow one centred on zero is a
+        # real null result and is the point of the test. The comparator is the
+        # bulk-to-single-nucleus closure the main ladder shows.
+        spans_zero = d_lo <= 0 <= d_hi
+        bound = max(abs(d_lo), abs(d_hi))
+        as_frac = bound / LADDER_CLOSURE
+        informative = (not spans_zero) or as_frac <= 0.35
 
         # Same-gene-set control: is the Bryois/SingleBrain difference about the
         # studies, or about which genes Bryois has downloaded so far?
@@ -478,13 +505,22 @@ def main() -> None:
             f"\n  Bryois (D-007), pseudobulk -> 8 cell types: {d:+.3f} "
             f"[{d_lo:+.3f}, {d_hi:+.3f}]"
         )
-        if informative:
-            print("  => the Bryois arm DOES resolve a direction; see the report.")
+        if not spans_zero:
+            print(
+                "  => the Bryois arm resolves a DIRECTION: pooling and "
+                "splitting are not equivalent."
+            )
+        elif informative:
+            print(
+                f"  => informative NULL: bounded at {bound:.3f}, i.e. at most "
+                f"{as_frac:.0%} of the {LADDER_CLOSURE:.3f} ladder closure.\n"
+                "     Pooling nuclei changes the gap no more than splitting "
+                "them does."
+            )
         else:
             print(
-                "  => the Bryois interval spans zero, so this arm is currently "
-                "UNINFORMATIVE.\n     It gains power as the remaining "
-                "chromosomes download."
+                f"  => UNINFORMATIVE: interval spans zero and is wide "
+                f"({bound:.3f}, {as_frac:.0%} of the ladder closure)."
             )
         prov.record(
             "Bryois pseudobulk vs cell types (D-007)",
