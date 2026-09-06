@@ -17,7 +17,7 @@ wet lab.
 
 Going from bulk cortex to single-nucleus major cell types closes **59.9%
 [49.5%, 70.5%]** of the constrained-gene eQTL gap. The residual 40% doesn't
-close, and closure spans 47.9%–59.9% across every structural variant tested.
+close, and closure spans 47.4%–59.9% across every structural variant tested.
 
 The cause turns out to be neither of the two hypotheses this project set out to
 adjudicate. All three candidate explanations were tested directly:

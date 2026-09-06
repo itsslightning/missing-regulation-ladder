@@ -107,7 +107,7 @@ sign of every causal estimate.
 
 Closure from bulk cortex to single-nucleus is **59.9% [49.5, 70.5]**. Across
 every structural variant tested (gnomAD v4.1 instead of v2.1.1, pLI instead of
-LOEUF, Benjamini–Yekutieli instead of BH) closure spans 47.9–59.9%, and the
+LOEUF, Benjamini–Yekutieli instead of BH) closure spans 47.4–59.9%, and the
 residual gap excludes zero in all of them.
 
 **Donor count is excluded.** PsychENCODE has the most donors on the ladder and

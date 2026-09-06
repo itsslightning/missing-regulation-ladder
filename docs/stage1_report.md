@@ -44,11 +44,9 @@ matched unconstrained genes, frequency-weighted (D-002).
 | Rung | Donors | Constrained | Control | Gap [95% CI] |
 |---|---|---|---|---|
 | GTEx cortex (bulk tissue) | 205 | 0.201 | 0.557 | **0.357** [0.311, 0.402] |
-| PsychENCODE (bulk brain) † | 1,387 | 0.154 | 0.502 | 0.347 [0.301, 0.391] |
+| PsychENCODE (bulk brain) | 1,387 | 0.324 | 0.695 | 0.371 [0.328, 0.413] |
 | SingleBrain, 7 major types | 983 | 0.624 | 0.767 | **0.143** [0.105, 0.180] |
 | SingleBrain, 28 subtypes | 983 | 0.542 | 0.708 | 0.166 [0.124, 0.204] |
-
-† provisional, see §5.
 
 Every gap is significant at the bootstrap resolution limit (p = 0.0005 = 1/2000
 replicates, BH-adjusted across the rung contrasts).
@@ -132,7 +130,7 @@ controls:
 | | gnomAD v4.1 LOEUF < 0.35 | 1,292 | 0.306 → 0.125 | 59.0% [45.5, 72.3] |
 | Constraint metric | gnomAD v2.1.1 pLI ≥ 0.9 | 3,000 | 0.220 → 0.105 | 52.2% [38.3, 64.4] |
 | Multiple testing | **BH within rung** (primary) | 2,767 | 0.357 → 0.143 | **59.9%** [49.1, 70.0] |
-| | BY across the whole grid | 2,767 | 0.326 → 0.170 | 47.9% [34.4, 60.3] |
+| | BY across the whole grid | 2,767 | 0.323 → 0.170 | 47.4% [34.3, 59.9] |
 | SCHEMA release | published 32 genes (primary) | 32 | recovery 0.125 → 0.594 | — |
 | | browser 50 genes | 50 | recovery 0.140 → 0.620 | — |
 
@@ -142,7 +140,7 @@ tables draw independent 2,000-replicate bootstraps of the same quantity. A
 difference of ~0.4 percentage points is the resolution of the bootstrap, not a
 discrepancy, and it is worth knowing that is the precision on offer.
 
-**Closure spans 47.9%–59.9% across all of these, and the residual gap excludes
+**Closure spans 47.4%–59.9% across all of these, and the residual gap excludes
 zero in every one.** Two results are worth calling out:
 
 - **The v4.1 check, promised in D-005, passes.** Recomputing constraint on
@@ -150,7 +148,7 @@ zero in every one.** Two results are worth calling out:
   because v4.1 LOEUF values shift), yet closure is 59.0% against 59.9%. The
   conclusion does not depend on the gnomAD vintage.
 - **BY across the whole grid, the most conservative correction available and
-  the one I rejected on coherence grounds, still gives 47.9% closure.** So the
+  the one I rejected on coherence grounds, still gives 47.4% closure.** So the
   headline is not an artefact of a permissive multiple-testing rule. It is,
   however, the variant that moves the number most, which is worth knowing.
 
@@ -365,21 +363,31 @@ datasets.
 - the residual gap disappearing under a detection rule that is uniform across
   rungs but more sensitive than per-gene Bonferroni.
 
-## 5. What is provisional
+## 5. What was provisional, and how it resolved
 
-**Rung 2 (PsychENCODE) should not be read yet.** The available file is the
-Bonferroni-filtered release, which contains only significant pairs: 8,190
-genes, every one an eGene by construction. Genes absent from it cannot be
-distinguished from tested-and-null, so its rates are deflated by an unknown
-amount and its position on the curve is not meaningful. The full association
-file (3.3 GB, hg19) is downloading; it needs no liftOver because gene-level
-detection uses no coordinates. It is shaded in every figure.
+**Rung 2 (PsychENCODE) is complete.** It was scored for most of this stage from
+the Bonferroni-filtered release, which contains only significant pairs: 8,190
+genes, every one an eGene by construction. Genes absent from that file cannot be
+told apart from tested-and-null, so its rates were deflated by an unknown amount
+and its position on the curve meant nothing. The full association file (3.3 GB,
+hg19, no liftOver needed because gene-level detection uses no coordinates) has
+since been downloaded and verified against its byte count, and every number in
+this report is scored from it. The provisional shading has been removed from the
+figures.
 
-**A curiosity to revisit once rung 2 is fixed:** PsychENCODE has the highest
-donor count on the ladder (1,387) and currently shows the *lowest* constrained
-recovery. If that survives the full file, it is evidence against a pure-N
-account and worth a hard look. If it does not survive, it was an artefact of the
-filtered file. Either way it should not be interpreted now.
+**The curiosity did not survive, and something better replaced it.** On the
+filtered file PsychENCODE had the highest donor count on the ladder (1,387) and
+the *lowest* constrained recovery (0.154), which looked like evidence against a
+pure-N account. With the real denominator its constrained recovery is 0.324,
+above GTEx cortex at 0.201, so the ordering was an artefact of the filtered file
+exactly as suspected.
+
+What the repair produced instead is stronger. The constrained-gene *gap* is
+0.357 at 205 donors and 0.371 at 1,387: unchanged across a 6.8-fold difference
+in sample size, in two studies from different consortia. That is the observation
+§4 and the assay contrast are built on, and it is a cleaner argument against the
+power account than the artefact it replaced, because it rests on the quantity
+the matched controls were designed to protect.
 
 ## 6. Method notes worth carrying into the thesis
 
@@ -408,10 +416,11 @@ compared to a paper's headline eGene count.
 
 ## 7. Status
 
-- Rungs 1, 3, 4: complete.
-- Rung 2: provisional pending the full PsychENCODE file (downloading).
+- All four rungs: complete, rung 2 on the full PsychENCODE association file.
 - Within-SingleBrain resolution test (fig 4): complete.
-- Bryois power-control arm (D-007): downloading.
-- D-004 (colocalization priors) remains open; Stage 2, also awaiting PGC3.
+- Bryois power-control arm (D-007): complete, and it carries more weight than
+  planned. It is the arm that separates assay from donor count.
+- D-004: decided (SMR with HEIDI, recorded 2026-09-06). Stage 2 is complete;
+  the HEIDI and coloc sensitivity arms are not yet run.
 - Robustness battery (constraint source, constraint metric, multiple-testing
-  rule, SCHEMA release): complete. Closure spans 47.9%-59.9%.
+  rule, SCHEMA release): complete. Closure spans 47.4%-59.9%.

@@ -148,9 +148,10 @@ gap is reported per rung with bootstrap CIs, and the small family of rung-level
 gap contrasts carries its own BH correction (`gap_q` in
 `recovery_by_rung.parquet`).
 
-**Sensitivity arm run 2026-09-04 (`s09_robustness.py`).** `by_across_all`, the
-most conservative correction available and the one rejected above, still gives
-**47.9% closure [34.4, 60.3]** with the residual gap excluding zero. So the
+**Sensitivity arm, re-run 2026-09-06 (`s09_robustness.py`) after rung 2 got its
+full association file.** `by_across_all`, the most conservative correction
+available and the one rejected above, still gives **47.4% closure
+[34.3, 59.9]** with the residual gap excluding zero. So the
 headline is not an artefact of a permissive multiple-testing rule. It is also
 the variant that moves the number most, which is worth stating.
 
