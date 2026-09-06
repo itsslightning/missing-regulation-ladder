@@ -1,0 +1,5 @@
+label,n_in,n_out,detail,examples_dropped,n_dropped,pct_retained
+PGC3 variants at p < 5e-08,7659767,20457,the raw material for locus definition,,7639310,0.27
+genome-wide significant variants outside the MHC,20457,14463,"MHC chr6:25,000,000-34,000,000 excluded: one LD block spanning megabases, which distance clumping would collapse into a single locus containing hundreds of genes.",,5994,70.7
+loci after distance clumping,14463,184,variants merged within 250 kb; no LD reference used,,14279,1.27
+GWAS loci gaining an eQTL explanation at single-nucleus resolution,35,71,"41 loci explained only in single-nucleus data, 5 only in bulk. This is the Stage 2 headline.",,-36,202.86

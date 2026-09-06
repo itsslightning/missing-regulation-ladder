@@ -1,30 +1,30 @@
 {
   "pipeline": "s12_smr_exposures",
-  "started_utc": "2026-09-06T03:11:58+00:00",
-  "finished_utc": "2026-09-06T03:12:38+00:00",
+  "started_utc": "2026-09-06T03:24:46+00:00",
+  "finished_utc": "2026-09-06T03:31:36+00:00",
   "steps": [
     {
       "label": "restrict exposures to the fixed gene universe",
-      "n_in": 467728,
-      "n_out": 419069,
+      "n_in": 491769,
+      "n_out": 431342,
       "detail": "same denominator as the recovery curve (D-012)",
       "examples_dropped": "",
-      "n_dropped": 48659,
-      "pct_retained": 89.6
+      "n_dropped": 60427,
+      "pct_retained": 87.71
     },
     {
       "label": "exposures carrying a usable rsID",
-      "n_in": 419069,
-      "n_out": 417750,
+      "n_in": 431342,
+      "n_out": 430017,
       "detail": "rsID is the Stage 2 join key: it reaches SingleBrain, GTEx and Bryois directly and is build-independent, which matters because the arms span GRCh37 and GRCh38 and PGC3 is GRCh37.",
       "examples_dropped": "ENSG00000001631, ENSG00000004838, ENSG00000005187, ENSG00000005189, ENSG00000005961, ENSG00000006016, ENSG00000006283, ENSG00000006788",
-      "n_dropped": 1319,
+      "n_dropped": 1325,
       "pct_retained": 99.69
     },
     {
       "label": "exposures with a usable standard error",
-      "n_in": 417750,
-      "n_out": 417749,
+      "n_in": 430017,
+      "n_out": 430016,
       "detail": "SMR needs beta and se; rows without one cannot be tested",
       "examples_dropped": "",
       "n_dropped": 1,
@@ -32,12 +32,12 @@
     },
     {
       "label": "exposure variants covered by the variant map",
-      "n_in": 417749,
-      "n_out": 233053,
+      "n_in": 430016,
+      "n_out": 245320,
       "detail": "5,352,389 variants with rsID, hg19 and hg38 positions, and the allele pair. The allele pair is the part SMR cannot be correct without: if the eQTL and GWAS report effects against opposite alleles and that is missed, the SMR estimate flips sign and a risk-increasing gene reads as protective. Uncovered variants are not lost -- PGC3 supplies its own alleles -- but they lose the independent cross-check.",
       "examples_dropped": "",
       "n_dropped": 184696,
-      "pct_retained": 55.79
+      "pct_retained": 57.05
     }
   ]
 }

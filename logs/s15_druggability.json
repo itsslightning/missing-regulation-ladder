@@ -1,0 +1,70 @@
+{
+  "pipeline": "s15_druggability",
+  "started_utc": "2026-09-06T03:32:55+00:00",
+  "finished_utc": "2026-09-06T03:32:55+00:00",
+  "steps": [
+    {
+      "label": "SMR genes, sn_only",
+      "n_in": 0,
+      "n_out": 0,
+      "detail": "516",
+      "examples_dropped": "",
+      "n_dropped": 0,
+      "pct_retained": NaN
+    },
+    {
+      "label": "SMR genes, bulk_and_sn",
+      "n_in": 0,
+      "n_out": 0,
+      "detail": "198",
+      "examples_dropped": "",
+      "n_dropped": 0,
+      "pct_retained": NaN
+    },
+    {
+      "label": "SMR genes, bulk_only",
+      "n_in": 0,
+      "n_out": 0,
+      "detail": "239",
+      "examples_dropped": "",
+      "n_dropped": 0,
+      "pct_retained": NaN
+    },
+    {
+      "label": "sn_only: SMR genes -> small-molecule tractable",
+      "n_in": 516,
+      "n_out": 175,
+      "detail": "24 at Phase 1 or beyond; 4 are published SCHEMA genes",
+      "examples_dropped": "",
+      "n_dropped": 341,
+      "pct_retained": 33.91
+    },
+    {
+      "label": "bulk_and_sn: SMR genes -> small-molecule tractable",
+      "n_in": 198,
+      "n_out": 64,
+      "detail": "7 at Phase 1 or beyond; 0 are published SCHEMA genes",
+      "examples_dropped": "",
+      "n_dropped": 134,
+      "pct_retained": 32.32
+    },
+    {
+      "label": "bulk_only: SMR genes -> small-molecule tractable",
+      "n_in": 239,
+      "n_out": 74,
+      "detail": "12 at Phase 1 or beyond; 0 are published SCHEMA genes",
+      "examples_dropped": "",
+      "n_dropped": 165,
+      "pct_retained": 30.96
+    },
+    {
+      "label": "CHRM4 / muscarinic callback",
+      "n_in": 0,
+      "n_out": 0,
+      "detail": "SLC5A7 (bulk_only)",
+      "examples_dropped": "",
+      "n_dropped": 0,
+      "pct_retained": NaN
+    }
+  ]
+}

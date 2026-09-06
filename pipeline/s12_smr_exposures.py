@@ -44,6 +44,7 @@ import pandas as pd
 from scipy.stats import norm
 
 from pipeline import config as cfg
+from pipeline import sources
 from pipeline.provenance import Provenance
 from pipeline.s01_gene_universe import GENE_UNIVERSE, strip_version
 from pipeline.s02_audit_rungs import SB_EXCLUDED, SB_MAJOR, _read_gz
@@ -196,11 +197,92 @@ def load_variant_map() -> pd.DataFrame:
     return df
 
 
+def load_psychencode(vmap: pd.DataFrame) -> pd.DataFrame:
+    """Rung 2 exposures, via the variant map.
+
+    The full PsychENCODE file identifies variants as "chr:pos" on hg19 with no
+    rsID and no alleles, so on its own it cannot enter an SMR analysis keyed on
+    rsID and harmonised on alleles. The variant map supplies both.
+
+    Streamed in chunks like s05's reducer, but keeping the SNP identity of the
+    best variant rather than only its p-value -- SMR needs to know WHICH
+    variant the instrument is.
+    """
+    from pipeline.s05_detection import PSYCHENCODE_FULL_COLUMNS
+
+    path = cfg.DIR_RESTRICTED / "psychencode" / sources.PSYCHENCODE_FULL_FILE
+    if not path.exists() or path.stat().st_size != sources.PSYCHENCODE_FULL_BYTES:
+        return pd.DataFrame()
+
+    best: dict[str, tuple[float, float, str, int]] = {}
+    reader = pd.read_csv(
+        path,
+        sep=r"\s+",
+        header=None,
+        names=PSYCHENCODE_FULL_COLUMNS,
+        usecols=["gene_id", "SNP_id", "number_of_SNPs_tested",
+                 "nominal_pval", "regression_slope"],
+        dtype={"gene_id": "string", "SNP_id": "string",
+               "number_of_SNPs_tested": "int32"},
+        chunksize=5_000_000,
+        engine="c",
+    )
+    for chunk in reader:
+        chunk["gene_id"] = strip_version(chunk["gene_id"])
+        top = chunk.loc[chunk.groupby("gene_id", sort=False)["nominal_pval"].idxmin()]
+        for gid, p, b, snp, n in zip(
+            top["gene_id"], top["nominal_pval"], top["regression_slope"],
+            top["SNP_id"], top["number_of_SNPs_tested"],
+        ):
+            cur = best.get(gid)
+            if cur is None or p < cur[0]:
+                best[gid] = (float(p), float(b), str(snp), int(n))
+
+    if not best:
+        return pd.DataFrame()
+    genes = list(best)
+    df = pd.DataFrame(
+        {
+            "gene_id": genes,
+            "snp_hg19": ["chr" + best[g][2] for g in genes],
+            "p_nominal": [best[g][0] for g in genes],
+            "beta": [best[g][1] for g in genes],
+            "n_var": [float(best[g][3]) for g in genes],
+        }
+    )
+    # "3:28130472" -> "chr3:28130472" to match the map's SNP_id_hg19 form.
+    m = vmap[["rsid", "pos_hg19", "effect_allele", "other_allele"]].rename(
+        columns={"pos_hg19": "snp_hg19"}
+    )
+    df = df.merge(m, on="snp_hg19", how="inner")
+    df["se"] = se_from_beta_p(df["beta"], df["p_nominal"])
+    return pd.DataFrame(
+        {
+            "gene_id": df["gene_id"],
+            "rung": "bulk_brain",
+            "cell": "PsychENCODE_PFC",
+            "rsid": df["rsid"].astype("string"),
+            "effect_allele": df["effect_allele"].str.upper(),
+            "other_allele": df["other_allele"].str.upper(),
+            "beta": df["beta"],
+            "se": df["se"],
+            "p_nominal": df["p_nominal"],
+            "n_var": df["n_var"],
+            "se_source": "derived_from_p",
+        }
+    )
+
+
 def main() -> None:
     prov = Provenance("s12_smr_exposures")
     universe = set(pd.read_parquet(GENE_UNIVERSE).index)
 
+    vmap = load_variant_map()
     frames = [load_gtex(), load_singlebrain()]
+    if not vmap.empty:
+        pec = load_psychencode(vmap)
+        if not pec.empty:
+            frames.append(pec)
     frames = [f for f in frames if not f.empty]
     if not frames:
         raise RuntimeError("no exposure arms could be built")
@@ -238,7 +320,6 @@ def main() -> None:
     )
     expo = expo[usable_se]
 
-    vmap = load_variant_map()
     if vmap.empty:
         prov.note("variant map", "snp_pos.txt.gz not available")
     else:

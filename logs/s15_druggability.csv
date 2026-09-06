@@ -1,0 +1,8 @@
+label,n_in,n_out,detail,examples_dropped,n_dropped,pct_retained
+"SMR genes, sn_only",0,0,516,,0,
+"SMR genes, bulk_and_sn",0,0,198,,0,
+"SMR genes, bulk_only",0,0,239,,0,
+sn_only: SMR genes -> small-molecule tractable,516,175,24 at Phase 1 or beyond; 4 are published SCHEMA genes,,341,33.91
+bulk_and_sn: SMR genes -> small-molecule tractable,198,64,7 at Phase 1 or beyond; 0 are published SCHEMA genes,,134,32.32
+bulk_only: SMR genes -> small-molecule tractable,239,74,12 at Phase 1 or beyond; 0 are published SCHEMA genes,,165,30.96
+CHRM4 / muscarinic callback,0,0,SLC5A7 (bulk_only),,0,

@@ -44,6 +44,8 @@ STAGES = [
     ("record_stage2_decisions", "record D-004"),
     ("s12_smr_exposures", "eQTL side of SMR, harmonised on rsID"),
     ("s13_smr", "SMR of SCZ risk on expression, per rung"),
+    ("s14_locus_explanation", "GWAS loci gaining an eQTL explanation"),
+    ("s15_druggability", "Open Targets tractability of newly-visible genes"),
 ]
 
 

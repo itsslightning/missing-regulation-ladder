@@ -1,7 +1,7 @@
 {
   "pipeline": "s13_smr",
-  "started_utc": "2026-09-06T03:13:44+00:00",
-  "finished_utc": "2026-09-06T03:13:53+00:00",
+  "started_utc": "2026-09-06T03:31:52+00:00",
+  "finished_utc": "2026-09-06T03:32:02+00:00",
   "steps": [
     {
       "label": "PGC3 outcome loaded",
@@ -14,35 +14,35 @@
     },
     {
       "label": "exposures passing the SMR instrument threshold (p < 5e-08)",
-      "n_in": 417749,
-      "n_out": 61069,
+      "n_in": 430016,
+      "n_out": 66898,
       "detail": "SMR estimates a ratio, so a weak instrument makes it explode. The number of testable genes differs by rung and is part of the Stage 2 answer, not a nuisance.",
       "examples_dropped": "",
-      "n_dropped": 356680,
-      "pct_retained": 14.62
+      "n_dropped": 363118,
+      "pct_retained": 15.56
     },
     {
       "label": "exposures matched to a PGC3 variant by rsID",
-      "n_in": 61069,
-      "n_out": 57240,
+      "n_in": 66898,
+      "n_out": 63041,
       "detail": "rsID join. Unmatched variants are typically absent from the GWAS imputation panel.",
       "examples_dropped": "",
-      "n_dropped": 3829,
-      "pct_retained": 93.73
+      "n_dropped": 3857,
+      "pct_retained": 94.23
     },
     {
       "label": "allele harmonisation",
       "n_in": 0,
       "n_out": 0,
-      "detail": "flipped=57,044, same=193, strand_flipped=3",
+      "detail": "flipped=61,126, same=1,911, strand=1, strand_flipped=3",
       "examples_dropped": "",
       "n_dropped": 0,
       "pct_retained": NaN
     },
     {
       "label": "variants with a reconcilable allele pair",
-      "n_in": 57240,
-      "n_out": 57240,
+      "n_in": 63041,
+      "n_out": 63041,
       "detail": "An unreconciled pair cannot be oriented, and guessing would flip the sign of b_xy for an unknown subset.",
       "examples_dropped": "",
       "n_dropped": 0,
@@ -50,12 +50,12 @@
     },
     {
       "label": "variants surviving the strand-ambiguity filter",
-      "n_in": 57240,
-      "n_out": 48442,
-      "detail": "8,798 A/T or C/G variants excluded: they are identical on either strand, so allele matching alone cannot orient them.",
+      "n_in": 63041,
+      "n_out": 52995,
+      "detail": "10,046 A/T or C/G variants excluded: they are identical on either strand, so allele matching alone cannot orient them.",
       "examples_dropped": "",
-      "n_dropped": 8798,
-      "pct_retained": 84.63
+      "n_dropped": 10046,
+      "pct_retained": 84.06
     },
     {
       "label": "SMR gtex_cortex: tested -> significant genes",
@@ -83,6 +83,15 @@
       "examples_dropped": "",
       "n_dropped": 7263,
       "pct_retained": 7.32
+    },
+    {
+      "label": "SMR bulk_brain: tested -> significant genes",
+      "n_in": 4553,
+      "n_out": 316,
+      "detail": "4,553 gene x cell tests, 316 significant",
+      "examples_dropped": "",
+      "n_dropped": 4237,
+      "pct_retained": 6.94
     }
   ]
 }

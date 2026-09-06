@@ -95,13 +95,15 @@ def load_pgc3() -> pd.DataFrame:
         path,
         sep="\t",
         skiprows=n_meta,
-        usecols=["ID", "A1", "A2", "BETA", "SE", "PVAL"],
+        usecols=["CHROM", "POS", "ID", "A1", "A2", "BETA", "SE", "PVAL"],
         dtype={"ID": "string", "A1": "string", "A2": "string"},
         encoding="utf-8",
         engine="c",
     )
     df = df.rename(
         columns={
+            "CHROM": "chrom",
+            "POS": "pos",
             "ID": "rsid",
             "A1": "gwas_effect_allele",
             "A2": "gwas_other_allele",

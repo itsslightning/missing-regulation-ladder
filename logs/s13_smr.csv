@@ -1,10 +1,11 @@
 label,n_in,n_out,detail,examples_dropped,n_dropped,pct_retained
 PGC3 outcome loaded,0,0,"7,659,767 variants, European autosomes, 52,017 cases / 75,889 controls (Trubetskoy et al. 2022, public v3 release)",,0,
-exposures passing the SMR instrument threshold (p < 5e-08),417749,61069,"SMR estimates a ratio, so a weak instrument makes it explode. The number of testable genes differs by rung and is part of the Stage 2 answer, not a nuisance.",,356680,14.62
-exposures matched to a PGC3 variant by rsID,61069,57240,rsID join. Unmatched variants are typically absent from the GWAS imputation panel.,,3829,93.73
-allele harmonisation,0,0,"flipped=57,044, same=193, strand_flipped=3",,0,
-variants with a reconcilable allele pair,57240,57240,"An unreconciled pair cannot be oriented, and guessing would flip the sign of b_xy for an unknown subset.",,0,100.0
-variants surviving the strand-ambiguity filter,57240,48442,"8,798 A/T or C/G variants excluded: they are identical on either strand, so allele matching alone cannot orient them.",,8798,84.63
+exposures passing the SMR instrument threshold (p < 5e-08),430016,66898,"SMR estimates a ratio, so a weak instrument makes it explode. The number of testable genes differs by rung and is part of the Stage 2 answer, not a nuisance.",,363118,15.56
+exposures matched to a PGC3 variant by rsID,66898,63041,rsID join. Unmatched variants are typically absent from the GWAS imputation panel.,,3857,94.23
+allele harmonisation,0,0,"flipped=61,126, same=1,911, strand=1, strand_flipped=3",,0,
+variants with a reconcilable allele pair,63041,63041,"An unreconciled pair cannot be oriented, and guessing would flip the sign of b_xy for an unknown subset.",,0,100.0
+variants surviving the strand-ambiguity filter,63041,52995,"10,046 A/T or C/G variants excluded: they are identical on either strand, so allele matching alone cannot orient them.",,10046,84.06
 SMR gtex_cortex: tested -> significant genes,2648,218,"2,648 gene x cell tests, 218 significant",,2430,8.23
 SMR sn_subtype: tested -> significant genes,6820,521,"29,163 gene x cell tests, 1,710 significant",,6299,7.64
 SMR sn_major: tested -> significant genes,7837,574,"16,631 gene x cell tests, 944 significant",,7263,7.32
+SMR bulk_brain: tested -> significant genes,4553,316,"4,553 gene x cell tests, 316 significant",,4237,6.94
