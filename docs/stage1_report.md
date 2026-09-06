@@ -15,8 +15,25 @@ constrained-gene eQTL gap falls from **0.357 to 0.143** — a closure of
 > The residual **40.1% [29.5%, 50.5%]** does not close, and its interval
 > excludes zero at every rung under every detection rule tested.
 
-That is a decomposition, not a verdict, and it is the honest shape of the
-answer. But there is a serious qualification in §4 that has to travel with it.
+**And the closure is caused by neither of the things this project set out to
+adjudicate.** §4 tests all three candidate explanations directly and excludes
+two of them:
+
+| Explanation | Test | Verdict |
+|---|---|---|
+| Donor count (Rosen's power account) | ×6.8 donors within bulk tissue | **excluded** — gap unchanged (−4.1% closure) |
+| Cell-type resolution | splitting *and* pooling, two studies | **excluded** — bounded at ≤10% |
+| **Assay: nuclei vs whole tissue** | bulk vs snRNA-seq, matched genes | **survives** — 0.217 separation |
+
+The single sharpest number: **Bryois pseudobulk**, single-nucleus data with all
+nuclei pooled, 192 donors — the smallest study here — has a gap of **0.144**,
+against PsychENCODE bulk tissue at **1,387 donors** with a gap of **0.367**.
+Seven times the donors, and more than twice the gap.
+
+So the honest decomposition is: **~60% of the constrained-gene deficit is a
+property of bulk tissue RNA-seq that single-nucleus RNA-seq does not share; the
+residual ~40% survives every assay, resolution and sample size tested here and
+is the part consistent with selection.**
 
 ## 2. The curve
 
@@ -40,43 +57,45 @@ replicates, BH-adjusted across the rung contrasts).
 published SCHEMA genes (FDR < 0.05), **4 have a detectable cis-eQTL in bulk
 cortex; 19 do at single-nucleus major-cell-type resolution** — 12.5% → 59.4%.
 
-Splitting the 32 three ways (full table: [`schema_switch.md`](schema_switch.md)):
+Splitting the 32 three ways, now that rung 2 has a real denominator (full
+table: [`schema_switch.md`](schema_switch.md)):
 
-- **15 switch on** — invisible in bulk, detectable at single-nucleus resolution.
-  This is the Stage 2 colocalization target list, and the cell types matter for
+- **13 switch on** — invisible in bulk, detectable in single-nucleus data. This
+  is the Stage 2 colocalization target list, and the cell types matter for
   which SingleBrain full-association files to pull (4–10 GB each, so they are
   fetched per gene, per D-006):
 
-  | Gene | Switches on in |
-  |---|---|
-  | TRIO | End, Ext, OD, OPC |
-  | DNM3 | Ast, IN, MG, OPC |
-  | FAM178A | Ext, IN, OD, OPC |
-  | XPO7 | Ast, Ext, OD |
-  | STAG1 | Ext, MG |
-  | KDM6B | Ext, IN |
-  | **GRIN2A** | OD, OPC |
-  | SV2A | IN, OD |
-  | SRRM2 | Ast |
-  | CUL1 | MG |
-  | CACNA1G | OPC |
-  | SP4 | Ext |
-  | ZMYM2 | IN |
-  | NR3C2 | OD |
-  | ZNF136 | Ext |
+  | Gene | Switches on in | | Gene | Switches on in |
+  |---|---|---|---|---|
+  | TRIO | End, Ext, OD, OPC | | SRRM2 | Ast |
+  | DNM3 | Ast, IN, MG, OPC | | CUL1 | MG |
+  | FAM178A | Ext, IN, OD, OPC | | SP4 | Ext |
+  | XPO7 | Ast, Ext, OD | | ZMYM2 | IN |
+  | STAG1 | Ext, MG | | NR3C2 | OD |
+  | KDM6B | Ext, IN | | ZNF136 | Ext |
+  | SV2A | IN, OD | | | |
 
-- **4 were already visible** in bulk (MAGI2, AKAP11, ANKRD12, PREP).
-- **11 remain undetected** even at single-nucleus resolution — the residual
-  missing regulation, and arguably the most interesting group for H1.
+- **6 were already visible** in bulk: MAGI2, AKAP11, GRIN2A, ANKRD12, PREP,
+  CACNA1G.
+- **10 remain undetected** in any assay at any resolution: ASH1L, RB1CC1,
+  FAM120A, GRIA3, HCN4, HERC1, SLC22A11, OR4P4, HIST1H1E, MAGEC1. This is the
+  residual missing regulation, and the most interesting group for the selection
+  hypothesis — it includes RB1CC1 and HERC1, two of the ten exome-wide
+  significant genes.
 
-Two observations worth carrying to Stage 2. **GRIN2A** — an NMDA receptor
-subunit and one of the most-cited schizophrenia genes — switches on only in
-*oligodendrocyte lineage* (OD, OPC), not in neurons, which is not where a
-glutamate-receptor story would predict. And several genes switch on in a single
-cell type only (SRRM2 in astrocytes, CUL1 in microglia, SP4 in excitatory
-neurons), which is exactly the cell-type-specific regulation the resolution
-argument predicts, even though §4 finds resolution is not what closes the
-aggregate gap.
+**A correction from the provisional rung 2.** With the significant-only
+PsychENCODE file this table read 15 switching on and GRIN2A among them, and the
+report drew attention to GRIN2A appearing in oligodendrocyte lineage rather
+than neurons. With a real bulk denominator, GRIN2A and CACNA1G are detectable
+in bulk after all. The oligodendrocyte observation was an artefact of the broken
+rung and has been withdrawn.
+
+What survives is that several genes switch on in a **single** cell type — SRRM2
+in astrocytes, CUL1 in microglia, SP4 in excitatory neurons, NR3C2 in
+oligodendrocytes. That is genuine cell-type-specific regulatory signal, and it
+is worth holding alongside §4's finding that granularity does not move the
+*aggregate* gap: knowing *where* a gene is regulated is useful for a drug
+target even when it is not what makes the gene detectable in the first place.
 
 ## 3. Robustness to the decision I was asked to make
 
@@ -252,24 +271,90 @@ test.** The ~60% closure on the main ladder is therefore attributable to donor
 count — 205 to 983, a 4.8× increase in power — and not to seeing cell types
 separately.
 
-**My read, now that both directions are in.** The ~60% closure is real, the
-~40% residual is real, and **cell-type resolution is not what produces the
-closure** — bounded at ~10% of it by the tighter test, with two independent
-studies varying resolution in opposite directions and both landing on zero.
+### CORRECTION: it is not donor count either
 
-That is a sharper claim than "Rosen is right", and it is the main thing Stage 1
-has produced. It splits Rosen's account in two:
+An earlier version of this report concluded that the closure was "attributable
+to the 4.8× increase in donor count". **That was wrong**, and it was wrong
+because rung 2 was still the provisional significant-only file — the single
+data point that could separate donor count from assay was the broken one.
 
-- the **power** half is well supported here — the closure tracks a 4.8×
-  increase in donor count;
-- the **resolution** half has no support in this data at all.
+With rung 2 repaired, PsychENCODE has the **highest donor count on the ladder**
+(1,387, more than SingleBrain's 983) and the **largest gap**:
 
-The natural implication, which this project cannot test but someone with the
-data could: **bulk cortex at 983 donors would likely close about as much of the
-gap as SingleBrain does.** Nobody has run that. If true, it means the field's
-move to single-nucleus eQTL mapping buys statistical power and cell-type
-attribution — both valuable — but is not, by itself, the answer to the missing
-regulation problem. The residual gap survives at every resolution tested.
+| From → to | Donor change | Gap | Closure [95% CI] |
+|---|---|---|---|
+| GTEx cortex → PsychENCODE | **×6.77** | 0.357 → 0.371 | **−4.1%** [−17.4%, +7.7%] |
+| PsychENCODE → SingleBrain | **×0.71** | 0.371 → 0.143 | **+61.4%** [52.3%, 70.5%] |
+
+Nearly a sevenfold increase in donors closes **nothing**. A 29% *decrease* in
+donors, accompanied by a change of assay, closes **61%**.
+
+### What actually closes it: the assay
+
+Scoring all five arms on one common gene set — the 2,489 constrained and 1,174
+control genes Bryois tested, so no arm is advantaged by which genes it covers
+(figure 5):
+
+| Arm | Assay | Donors | Gap [95% CI] |
+|---|---|---|---|
+| GTEx cortex | bulk tissue RNA-seq | 205 | 0.367 [0.324, 0.414] |
+| PsychENCODE | bulk tissue RNA-seq | 1,387 | 0.367 [0.322, 0.410] |
+| Bryois pseudobulk | snRNA-seq, nuclei pooled | 192 | 0.144 [0.105, 0.187] |
+| Bryois, 8 cell types | snRNA-seq | 192 | 0.150 [0.104, 0.197] |
+| SingleBrain, 7 cell types | snRNA-seq | 983 | 0.114 [0.077, 0.149] |
+
+- **Bulk arms: spread 0.000** across a 6.8× range of donors. The two bulk
+  studies agree to three decimal places.
+- **Single-nucleus arms: spread 0.035** across a 5.1× range of donors.
+- **Between classes: 0.217** — six times the larger within-class spread.
+
+The decisive single comparison is **Bryois pseudobulk**: single-nucleus data
+with all nuclei pooled per donor, the *smallest* study on the ladder at 192
+donors, and it shows the closed gap (0.144) — less than half PsychENCODE's
+0.367 at seven times the donors.
+
+**So all three candidate explanations can now be tested, and two are excluded:**
+
+| Explanation | Test | Verdict |
+|---|---|---|
+| Donor count | ×6.8 donors within bulk | **excluded** — gap unchanged |
+| Cell-type granularity | splitting and pooling, both directions | **excluded** — bounded ≤10% |
+| Assay (nuclei vs tissue) | bulk vs snRNA-seq at matched genes | **survives** — 0.217 separation |
+
+### My read
+
+The constrained-gene eQTL deficit is **a property of bulk tissue RNA-seq that
+largely disappears in single-nucleus RNA-seq**, and neither sample size nor
+cell-type resolution accounts for it.
+
+That is a third account, distinct from both hypotheses this project set out to
+adjudicate. Mostafavi's selection account predicts the gap persists at any
+resolution; it does not. Rosen's power account predicts it closes with sample
+size; it does not do that either. What closes it is changing what you measure.
+
+**Candidate mechanisms — hypotheses, not findings.** I cannot distinguish these
+and am not claiming to:
+
+1. **Nuclear vs cytoplasmic RNA.** snRNA-seq captures largely nascent,
+   unspliced transcript; bulk captures mature, stability-buffered cytoplasmic
+   mRNA. Constrained genes are dosage-sensitive, and post-transcriptional
+   buffering would damp genotype effects on steady-state mRNA while leaving
+   them visible in nascent transcription. This is the mechanistically most
+   interesting possibility and it is testable with nuclear/cytoplasmic
+   fractionation data.
+2. **Cell-composition noise.** Variation in cellular composition between bulk
+   samples adds variance that could specifically mask eQTLs at broadly
+   expressed genes, which constrained genes are.
+3. **Normalisation and quantification differences** between the two assay
+   families.
+
+**What I cannot rule out.** The bulk and single-nucleus studies differ in more
+than assay — ancestry, brain region, pipeline, GENCODE vintage. The evidence
+that this is assay rather than a study-level accident is that the two bulk
+studies agree exactly despite 6.8× different N and different consortia, and the
+three single-nucleus arms agree despite 5.1× different N and two different
+consortia. A confound would have to track assay class across four independent
+datasets.
 
 **What would change this conclusion**, stated so it can be checked:
 

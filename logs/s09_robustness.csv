@@ -1,3 +1,3 @@
 label,n_in,n_out,detail,examples_dropped,n_dropped,pct_retained
 universe x gnomAD v4.1 constraint,18481,17169,genes without a v4.1 LOEUF cannot enter the v4.1 variant,,1312,92.9
-robustness of the headline closure,5,5,"closure ranges 47.8% to 59.9% across 5 variants of the constraint source, constraint metric and multiple-testing rule",,0,100.0
+robustness of the headline closure,5,5,"closure ranges 47.4% to 59.9% across 5 variants of the constraint source, constraint metric and multiple-testing rule",,0,100.0

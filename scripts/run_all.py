@@ -40,6 +40,7 @@ STAGES = [
     ("s08_resolution_test", "within-SingleBrain resolution test"),
     ("s09_robustness", "robustness across constraint and correction choices"),
     ("s10_schema_switch", "which SCHEMA genes switch on, and where"),
+    ("s11_assay_contrast", "assay vs donor count vs granularity"),
 ]
 
 

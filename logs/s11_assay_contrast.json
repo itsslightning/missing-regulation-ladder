@@ -1,0 +1,25 @@
+{
+  "pipeline": "s11_assay_contrast",
+  "started_utc": "2026-09-06T02:37:17+00:00",
+  "finished_utc": "2026-09-06T02:37:17+00:00",
+  "steps": [
+    {
+      "label": "restrict every arm to one common gene set",
+      "n_in": 2767,
+      "n_out": 2489,
+      "detail": "The genes Bryois tested. Without this the bulk arms score on ~17,000 genes and the single-nucleus arms on ~14,700, and the denominator difference would contaminate the assay contrast.",
+      "examples_dropped": "",
+      "n_dropped": 278,
+      "pct_retained": 89.95
+    },
+    {
+      "label": "assay vs donor count",
+      "n_in": 5,
+      "n_out": 3,
+      "detail": "bulk gap spread 0.000 over 6.8x donors; single-nucleus spread 0.035 over 5.1x donors; between-class separation 0.217. ASSAY, not donor count: the classes separate and neither is ordered by N",
+      "examples_dropped": "",
+      "n_dropped": 2,
+      "pct_retained": 60.0
+    }
+  ]
+}

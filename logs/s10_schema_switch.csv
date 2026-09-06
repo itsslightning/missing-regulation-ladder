@@ -1,2 +1,2 @@
 label,n_in,n_out,detail,examples_dropped,n_dropped,pct_retained
-SCHEMA genes gaining an eQTL at single-nucleus resolution,32,15,"15 switch on, 4 already visible in bulk, 11 still undetected at single-nucleus resolution",,17,46.88
+SCHEMA genes gaining an eQTL at single-nucleus resolution,32,13,"13 switch on, 6 already visible in bulk, 10 still undetected at single-nucleus resolution",,19,40.62

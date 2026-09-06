@@ -365,6 +365,75 @@ def fig_resolution_test(res: pd.DataFrame) -> None:
     plt.close(fig)
 
 
+def fig_assay_contrast(res: pd.DataFrame) -> None:
+    """Figure 5: the gap is set by assay, not by donor count.
+
+    Plotted against donors on a log x-axis, because the claim is precisely
+    that the gap does NOT track N: two bulk studies 6.8x apart in donors sit on
+    top of each other, and three single-nucleus arms 5.1x apart sit on top of
+    each other far below. Two flat lines rather than one sloping one.
+    """
+    fig, ax = plt.subplots(figsize=(7.6, 4.6))
+
+    styles = {
+        "bulk": (RUST, "o", "bulk tissue RNA-seq"),
+        "single-nucleus": (TEAL, "s", "single-nucleus RNA-seq"),
+    }
+    for assay, (colour, marker, label) in styles.items():
+        d = res[res["assay"] == assay].sort_values("n_donors")
+        ax.errorbar(
+            d["n_donors"], d["gap"],
+            yerr=[d["gap"] - d["gap_lo"], d["gap_hi"] - d["gap"]],
+            fmt=marker + "-", color=colour, ms=8, lw=2, capsize=4,
+            label=label, zorder=3,
+        )
+        # A band across each class makes the flatness the visual point.
+        ax.axhspan(
+            d["gap"].min(), d["gap"].max(), color=colour, alpha=0.10, zorder=0
+        )
+
+    # Bryois contributes two arms at the same donor count, so their labels
+    # collide unless placed individually.
+    offsets = {
+        "gtex_cortex": (0, 14, "center"),
+        "bulk_brain": (0, 14, "center"),
+        "bryois_celltype": (10, 12, "left"),
+        "bryois_pb": (10, -18, "left"),
+        "sn_major": (0, -20, "center"),
+    }
+    for _, r in res.iterrows():
+        dx, dy, ha = offsets.get(r["rung"], (0, 14, "center"))
+        ax.annotate(
+            r["label"],
+            (r["n_donors"], r["gap"]),
+            textcoords="offset points",
+            xytext=(dx, dy),
+            ha=ha, fontsize=7.5, color=GREY,
+        )
+
+    ax.set_xscale("log")
+    ax.set_xlabel("Donors  (log scale)")
+    ax.set_ylabel("Constrained-gene gap")
+    ax.set_ylim(0, 0.47)
+    ax.set_xlim(140, 2100)
+    ax.legend(loc="center right", fontsize=8, framealpha=0.9)
+    ax.set_title(
+        "The gap is set by assay, not by sample size\n"
+        "two bulk studies 6.8× apart in donors give the same gap (0.367); "
+        "three single-nucleus arms 5.1× apart give 0.114–0.150",
+        fontsize=10, loc="left",
+    )
+    fig.text(
+        0.01, -0.02,
+        f"All arms scored on the same {int(res['n_cases'].iloc[0]):,} constrained "
+        f"and {int(res['n_controls'].iloc[0]):,} matched control genes.",
+        fontsize=7.5, color=GREY, ha="left",
+    )
+    fig.tight_layout()
+    fig.savefig(FIG_DIR / "fig5_assay_contrast.png", bbox_inches="tight")
+    plt.close(fig)
+
+
 def main() -> None:
     FIG_DIR.mkdir(parents=True, exist_ok=True)
     curve = pd.read_parquet(cfg.RECOVERY_TABLE)
@@ -380,6 +449,10 @@ def main() -> None:
     res_path = cfg.DIR_PROCESSED / "resolution_test.parquet"
     if res_path.exists():
         fig_resolution_test(pd.read_parquet(res_path))
+
+    assay_path = cfg.DIR_PROCESSED / "assay_contrast.parquet"
+    if assay_path.exists():
+        fig_assay_contrast(pd.read_parquet(assay_path))
 
     for p in sorted(FIG_DIR.glob("*.png")):
         print(f"  wrote {p.relative_to(cfg.ROOT).as_posix()}  "

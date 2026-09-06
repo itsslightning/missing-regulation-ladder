@@ -17,20 +17,29 @@ data, no wet lab.
 
 Going from bulk cortex to single-nucleus major cell types closes **59.9%
 [49.5%, 70.5%]** of the constrained-gene eQTL gap. The residual 40% does not
-close. Closure spans 47.9%–59.9% across every structural variant tested
-(constraint source, constraint metric, multiple-testing rule). Of the 32
-published SCHEMA genes,
-**4 have a detectable cis-eQTL in bulk cortex and 19 do at single-nucleus
-resolution**.
+close, and closure spans 47.9%–59.9% across every structural variant tested.
 
-The important qualification: single-nucleus resolution arrives with 4.8× the
-donor count, so this is closure by *resolution-plus-power*, and the two are not
-yet separated.
+**And the cause is neither of the two hypotheses this project set out to
+adjudicate.** All three candidate explanations were tested directly:
 
-What evidence there is points at the **power** half. Splitting each SingleBrain
-cell class into its own subtypes — same donors, same nuclei, same pipeline,
-only the grouping changes — moves the gap by **−0.007 [−0.021, +0.005]**. That
-bounds cell-type resolution at **at most ~10% of the observed closure**. See
+| Explanation | Test | Verdict |
+|---|---|---|
+| Donor count (the power account) | ×6.8 donors within bulk tissue | **excluded** — gap unchanged |
+| Cell-type resolution | splitting *and* pooling, two studies | **excluded** — bounded ≤10% |
+| **Assay: nuclei vs whole tissue** | bulk vs snRNA-seq, matched genes | **survives** |
+
+![Assay contrast](docs/figures/fig5_assay_contrast.png)
+
+Two bulk studies **6.8× apart in donors** give the same gap to three decimal
+places (0.367). Three single-nucleus arms **5.1× apart in donors** give
+0.114–0.150. The sharpest single comparison: **Bryois pseudobulk**, 192 donors,
+gap **0.144** — against **PsychENCODE** bulk tissue, **1,387 donors**, gap
+**0.367**.
+
+So ~60% of the constrained-gene deficit is a property of **bulk tissue
+RNA-seq** that single-nucleus RNA-seq does not share; the residual ~40%
+survives every assay, resolution and sample size tested, and is the part
+consistent with selection. See
 [`docs/stage1_report.md`](docs/stage1_report.md) §4.
 
 ---

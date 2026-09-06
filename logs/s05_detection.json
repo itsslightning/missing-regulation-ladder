@@ -1,17 +1,8 @@
 {
   "pipeline": "s05_detection",
-  "started_utc": "2026-09-06T02:07:14+00:00",
-  "finished_utc": "2026-09-06T02:15:56+00:00",
+  "started_utc": "2026-09-06T02:19:20+00:00",
+  "finished_utc": "2026-09-06T02:34:41+00:00",
   "steps": [
-    {
-      "label": "rung 2 (PsychENCODE)",
-      "n_in": 0,
-      "n_out": 0,
-      "detail": "using the significant-only release: absence from the file cannot be distinguished from tested-and-null, so rung 2 detection is an upper bound on the numerator with an assumed denominator.",
-      "examples_dropped": "",
-      "n_dropped": 0,
-      "pct_retained": NaN
-    },
     {
       "label": "Bryois arm (D-007)",
       "n_in": 0,
@@ -23,12 +14,12 @@
     },
     {
       "label": "restrict all rungs to the fixed gene universe",
-      "n_in": 575929,
-      "n_out": 509956,
+      "n_in": 609619,
+      "n_out": 521874,
       "detail": "Tests on genes outside the 18,481-gene universe are dropped. The universe is the denominator (D-012), so a test on a gene it does not contain has nowhere to land.",
       "examples_dropped": "",
-      "n_dropped": 65973,
-      "pct_retained": 88.54
+      "n_dropped": 87745,
+      "pct_retained": 85.61
     },
     {
       "label": "rung gtex_cortex: tested -> detected (uniform)",
@@ -58,6 +49,15 @@
       "pct_retained": 12.52
     },
     {
+      "label": "rung bulk_brain: tested -> detected (uniform)",
+      "n_in": 17169,
+      "n_out": 8594,
+      "detail": "1 cell type(s); native call would give 17,107",
+      "examples_dropped": "",
+      "n_dropped": 8575,
+      "pct_retained": 50.06
+    },
+    {
       "label": "rung sn_major: tested -> detected (uniform)",
       "n_in": 14047,
       "n_out": 9906,
@@ -74,15 +74,6 @@
       "examples_dropped": "",
       "n_dropped": 5356,
       "pct_retained": 62.86
-    },
-    {
-      "label": "rung bulk_brain: tested -> detected (uniform)",
-      "n_in": 5251,
-      "n_out": 5251,
-      "detail": "1 cell type(s); native call would give 5,251",
-      "examples_dropped": "",
-      "n_dropped": 0,
-      "pct_retained": 100.0
     }
   ]
 }
