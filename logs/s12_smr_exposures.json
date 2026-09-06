@@ -1,7 +1,7 @@
 {
   "pipeline": "s12_smr_exposures",
-  "started_utc": "2026-09-06T02:52:28+00:00",
-  "finished_utc": "2026-09-06T02:53:10+00:00",
+  "started_utc": "2026-09-06T03:11:58+00:00",
+  "finished_utc": "2026-09-06T03:12:38+00:00",
   "steps": [
     {
       "label": "restrict exposures to the fixed gene universe",

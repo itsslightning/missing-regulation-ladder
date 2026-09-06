@@ -71,8 +71,8 @@ def load_gtex(tissue: str = "Brain_Cortex") -> pd.DataFrame:
         cfg.DIR_RAW / "gtex_v10" / f"{tissue}.v10.eGenes.txt.gz",
         sep="\t",
         usecols=[
-            "gene_id", "rs_id_dbSNP155_GRCh38p13", "slope", "slope_se",
-            "pval_nominal", "num_var",
+            "gene_id", "rs_id_dbSNP155_GRCh38p13", "variant_id", "ref", "alt",
+            "slope", "slope_se", "pval_nominal", "num_var",
         ],
         low_memory=False,
     )
@@ -84,6 +84,9 @@ def load_gtex(tissue: str = "Brain_Cortex") -> pd.DataFrame:
             "rung": "gtex_cortex",
             "cell": tissue,
             "rsid": df["rs_id_dbSNP155_GRCh38p13"].astype("string"),
+            # GTEx reports `slope` with respect to the ALT allele.
+            "effect_allele": df["alt"].astype("string").str.upper(),
+            "other_allele": df["ref"].astype("string").str.upper(),
             "beta": df["slope"].astype(float),
             "se": df["slope_se"].astype(float),
             "p_nominal": df["pval_nominal"].astype(float),
@@ -102,8 +105,8 @@ def load_singlebrain() -> pd.DataFrame:
         df = _read_gz(
             path,
             sep="\t",
-            usecols=["feature", "variant_id", "fixed_beta", "fixed_sd",
-                     "Fixed_P", "Fixed_bonf"],
+            usecols=["feature", "variant_id", "ref", "alt", "Allele",
+                     "fixed_beta", "fixed_sd", "Fixed_P", "Fixed_bonf"],
             low_memory=False,
         )
         if df is None:
@@ -111,6 +114,12 @@ def load_singlebrain() -> pd.DataFrame:
         # Fixed_bonf = Fixed_P x n_var, so the variant count is recoverable.
         with np.errstate(divide="ignore", invalid="ignore"):
             n_var = df["Fixed_bonf"].astype(float) / df["Fixed_P"].astype(float)
+        # `Allele` is the tested (effect) allele; the other is whichever of
+        # ref/alt it is not.
+        eff = df["Allele"].astype("string").str.upper()
+        ref = df["ref"].astype("string").str.upper()
+        alt = df["alt"].astype("string").str.upper()
+        oth = ref.where(eff != ref, alt)
         frames.append(
             pd.DataFrame(
                 {
@@ -118,6 +127,8 @@ def load_singlebrain() -> pd.DataFrame:
                     "rung": "sn_major" if cell in SB_MAJOR else "sn_subtype",
                     "cell": cell,
                     "rsid": df["variant_id"].astype("string"),
+                    "effect_allele": eff,
+                    "other_allele": oth,
                     "beta": df["fixed_beta"].astype(float),
                     "se": df["fixed_sd"].astype(float),
                     "p_nominal": df["Fixed_P"].astype(float),

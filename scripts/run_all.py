@@ -43,6 +43,7 @@ STAGES = [
     ("s11_assay_contrast", "assay vs donor count vs granularity"),
     ("record_stage2_decisions", "record D-004"),
     ("s12_smr_exposures", "eQTL side of SMR, harmonised on rsID"),
+    ("s13_smr", "SMR of SCZ risk on expression, per rung"),
 ]
 
 

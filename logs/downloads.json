@@ -805,6 +805,22 @@
       "version": "v10"
     }
   },
+  "pgc3_scz": {
+    "PGC3_SCZ_wave3.european.autosome.public.v3.vcf.tsv.gz": {
+      "bytes": 239710564,
+      "citation": "Trubetskoy et al. 2022, Nature 604:502-508 (PGC3 SCZ); figshare 10.6084/m9.figshare.19426775",
+      "downloaded_utc": "2026-09-06T03:10:19+00:00",
+      "file": "PGC3_SCZ_wave3.european.autosome.public.v3.vcf.tsv.gz",
+      "licence": "CC-BY-4.0",
+      "redistributable": true,
+      "relative_path": "data/raw/pgc3_scz/PGC3_SCZ_wave3.european.autosome.public.v3.vcf.tsv.gz",
+      "sha256": "dbba3a85575c99fd1c2e3497d0c7a44539ccfdbf2e69742f8bdbda879230bcd7",
+      "source_key": "pgc3_scz",
+      "source_name": "PGC3 schizophrenia GWAS summary statistics (wave 3, European)",
+      "url": "https://ndownloader.figshare.com/files/34517828",
+      "version": "wave3 v3 public release, European autosomes"
+    }
+  },
   "psychencode": {
     "DER-08b_hg38_eQTL.bonferroni.txt": {
       "bytes": 90811985,
