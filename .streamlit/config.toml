@@ -1,6 +1,65 @@
+# Appearance lives here rather than in injected CSS, which is the Streamlit
+# guidance and also survives version upgrades. Both a light and a dark variant
+# are defined, which is what puts the light/dark switch in the app's own menu.
+
 [theme]
+base = "light"
+font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+codeFont = "'JetBrains Mono':https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+baseFontSize = 15
+headingFontSizes = ["30px", "22px", "18px", "15px", "14px", "13px"]
+headingFontWeights = [600, 600, 600, 600, 600, 600]
+baseRadius = "8px"
+buttonRadius = "8px"
+showWidgetBorder = true
+linkUnderline = false
+
+# Teal is the case series (constrained genes) and rust the control series, in
+# that order, so a chart that does not name its colours still reads correctly.
+chartCategoricalColors = [
+  "#3d7a6f", "#b5651d", "#6b6b6b", "#4a6fa5", "#8f5b8f", "#9a7b2f", "#7a5c4a",
+]
+
+[theme.light]
 primaryColor = "#3d7a6f"
-font = "sans-serif"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f4f7f6"
+textColor = "#161b19"
+linkColor = "#3d7a6f"
+borderColor = "#e0e5e3"
+dataframeBorderColor = "#e0e5e3"
+dataframeHeaderBackgroundColor = "#f4f7f6"
+codeBackgroundColor = "#f4f7f6"
+greenColor = "#3d7a6f"
+redColor = "#a8412a"
+grayColor = "#6b6b6b"
+
+[theme.dark]
+primaryColor = "#63b3a1"
+backgroundColor = "#101614"
+secondaryBackgroundColor = "#1a2220"
+textColor = "#e4ebe8"
+linkColor = "#63b3a1"
+borderColor = "#2b3532"
+dataframeBorderColor = "#2b3532"
+dataframeHeaderBackgroundColor = "#1a2220"
+codeBackgroundColor = "#1a2220"
+greenColor = "#63b3a1"
+redColor = "#e08163"
+grayColor = "#9aa5a1"
+chartCategoricalColors = [
+  "#63b3a1", "#e08a4a", "#9aa5a1", "#7fa3d8", "#c08ac0", "#c8a94f", "#b08a72",
+]
+
+[theme.light.sidebar]
+backgroundColor = "#f4f7f6"
+secondaryBackgroundColor = "#e8eeec"
+borderColor = "#e0e5e3"
+
+[theme.dark.sidebar]
+backgroundColor = "#0b100f"
+secondaryBackgroundColor = "#1a2220"
+borderColor = "#2b3532"
 
 [server]
 headless = true

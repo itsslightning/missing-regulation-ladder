@@ -62,6 +62,17 @@ ARM_LABEL = {
     "effect": "Uniform + |β| ≥ 0.1  (sensitivity)",
 }
 
+#: The same three arms named for a narrow sidebar control, where the full
+#: label wraps to three lines and stops being readable.
+ARM_SHORT = {
+    "uniform": "Uniform Bonferroni + BH",
+    "native": "Each study's own q ≤ 0.05",
+    "effect": "Uniform + |β| ≥ 0.1",
+}
+
+#: Which arm D-001 actually selected. Everything else is a shipped sensitivity.
+PRIMARY_ARM = "uniform"
+
 #: The sibling repo's Streamlit primaryColor, plus a warm contrast.
 TEAL = "#3d7a6f"
 RUST = "#b5651d"

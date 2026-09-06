@@ -6,38 +6,63 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from lib import data as D
+from lib import ui as U
 
 st.header("What closes the gap")
 st.markdown(
-    "Three explanations were on the table. All three are directly testable "
-    "here, and **two are excluded**."
+    "Three things change as you climb the ladder: the number of donors, how "
+    "finely cells are split, and whether the assay reads whole tissue or "
+    "isolated nuclei. Each one is separable here, and two of them are ruled "
+    "out."
 )
 
 assay = D.assay_contrast()
 res = D.resolution_test()
 
 if assay.empty:
-    st.error("No assay contrast table. Run `python scripts/run_all.py` first.")
-    st.stop()
+    U.missing("The assay contrast table")
 
-# --- verdict table -------------------------------------------------------
-with st.container(border=True):
-    st.markdown("**The three candidate explanations**")
-    st.markdown(
-        """
-| Explanation | Test | Verdict |
-|---|---|---|
-| **Donor count** — the power account | ×6.8 donors within bulk tissue | :red[**excluded**] — gap unchanged |
-| **Cell-type resolution** | splitting *and* pooling, two studies | :red[**excluded**] — bounded ≤10% |
-| **Assay** — nuclei vs whole tissue | bulk vs snRNA-seq, matched genes | :green[**survives**] |
-"""
-    )
+#: verdicts ---------------------------------------------------------------
+verdicts = [
+    (
+        "Donor count",
+        "excluded", "red",
+        "The power account. Tested across a 6.8-fold range of donors within "
+        "bulk tissue, where nothing else changes.",
+        "The gap does not move.",
+    ),
+    (
+        "Cell-type resolution",
+        "excluded", "red",
+        "Tested twice, by splitting classes into subtypes and by pooling "
+        "subtypes back together, in two independent studies.",
+        "Bounded at 10% of the closure, in both directions.",
+    ),
+    (
+        "Assay",
+        "survives", "green",
+        "Whole tissue against isolated nuclei, scored on one shared gene set "
+        "so no arm is helped by which genes it happens to cover.",
+        "The only variable that separates the arms.",
+    ),
+]
+cols = st.columns(3, border=True)
+for col, (name, verdict, colour, how, result) in zip(cols, verdicts):
+    with col:
+        st.markdown(f"**{name}**")
+        st.badge(
+            verdict,
+            icon=":material/close:" if colour == "red" else ":material/check:",
+            color=colour,
+        )
+        st.caption(how)
+        st.markdown(result)
 
-# --- the assay figure ----------------------------------------------------
+#: the assay figure -------------------------------------------------------
 fig = go.Figure()
 for label, colour, name in (
-    ("bulk", D.RUST, "Bulk tissue RNA-seq"),
-    ("single-nucleus", D.TEAL, "Single-nucleus RNA-seq"),
+    ("bulk", U.RUST, "Bulk tissue"),
+    ("single-nucleus", U.TEAL, "Single-nucleus"),
 ):
     d = assay[assay["assay"] == label].sort_values("n_donors")
     # Bryois contributes two arms at the same donor count, so a single
@@ -51,9 +76,14 @@ for label, colour, name in (
         x=d["n_donors"], y=d["gap"], name=name, mode="lines+markers+text",
         text=d["label"],
         textposition=[positions.get(r, "top center") for r in d["rung"]],
-        textfont=dict(size=10, color=D.GREY),
+        textfont=dict(size=10, color=U.GREY),
         line=dict(color=colour, width=3),
-        marker=dict(size=12),
+        # Shape as well as hue, so the two classes stay distinguishable
+        # without relying on colour vision.
+        marker=dict(
+            size=13,
+            symbol="circle" if label == "bulk" else "diamond",
+        ),
         error_y=dict(
             type="data", symmetric=False,
             array=d["gap_hi"] - d["gap"], arrayminus=d["gap"] - d["gap_lo"],
@@ -64,96 +94,118 @@ for label, colour, name in (
         ),
     ))
 
-fig.update_layout(
-    height=470,
-    xaxis=dict(title="Donors (log scale)", type="log"),
-    yaxis=dict(title="Constrained-gene gap", range=[0, 0.47]),
-    legend=dict(orientation="h", y=1.12, x=0),
-    margin=dict(t=40, b=10, l=10, r=10),
-)
-st.plotly_chart(fig, use_container_width=True)
-
 bulk = assay[assay["assay"] == "bulk"]
 sn = assay[assay["assay"] == "single-nucleus"]
 n_cases = int(assay["n_cases"].iloc[0])
 n_ctrl = int(assay["n_controls"].iloc[0])
 
+with st.container(border=True):
+    st.markdown("**Constrained-gene gap against donor count, every arm**")
+    U.plot(
+        fig, height=470,
+        # Padded well past the 192-1,387 donor range: the arm labels sit
+        # beside their markers and would otherwise run off the plot. Ticks are
+        # named explicitly because a log axis that spans less than a decade
+        # falls back to labelling its minor ticks, which reads as 2,3,4...
+        xaxis=dict(
+            title="Donors (log scale)", type="log", range=[2.12, 3.32],
+            tickmode="array",
+            tickvals=[200, 300, 500, 700, 1000, 1400],
+            ticktext=["200", "300", "500", "700", "1,000", "1,400"],
+        ),
+        yaxis=dict(title="Constrained-gene gap", range=[0, 0.47]),
+    )
+    st.caption(
+        f"All arms scored on the same {n_cases:,} constrained and {n_ctrl:,} "
+        "matched control genes. Circles are bulk tissue, diamonds are "
+        "single-nucleus. If donors drove the gap the two series would trend "
+        "downward together; instead each series is flat and they sit apart."
+    )
+
 with st.container(horizontal=True):
     st.metric(
         "Bulk spread, across 6.8× donors",
         f"{bulk['gap'].max() - bulk['gap'].min():.3f}",
-        "two studies, same answer", delta_color="off", border=True,
+        "two studies, same answer",
+        delta_color="off", delta_arrow="off", border=True,
     )
     st.metric(
         "Single-nucleus spread, across 5.1× donors",
         f"{sn['gap'].max() - sn['gap'].min():.3f}",
-        "three arms, same answer", delta_color="off", border=True,
+        "three arms, same answer",
+        delta_color="off", delta_arrow="off", border=True,
     )
     st.metric(
-        "Separation between assays",
+        "Separation between the two assays",
         f"{bulk['gap'].min() - sn['gap'].max():.3f}",
         "six times the larger within-class spread",
-        delta_color="off", border=True,
+        delta_color="off", delta_arrow="off", border=True,
     )
 
 st.caption(
-    f"All arms scored on the same {n_cases:,} constrained and {n_ctrl:,} "
-    "matched control genes, so no arm is advantaged by which genes it covers. "
-    "The sharpest single comparison is **Bryois pseudobulk** — single-nucleus "
-    "data with all nuclei pooled, the *smallest* study here at 192 donors — "
-    "showing a gap of 0.144 against **PsychENCODE** bulk tissue at 1,387 "
-    "donors showing 0.367. Seven times the donors, more than twice the gap."
+    "The sharpest single comparison is **Bryois pseudobulk**: single-nucleus "
+    "data with all nuclei pooled, the smallest study here at 192 donors, with "
+    "a gap of 0.144, against **PsychENCODE** bulk tissue at 1,387 donors "
+    "showing 0.367. Seven times the donors, more than twice the gap."
 )
 
-# --- resolution test -----------------------------------------------------
+#: resolution test --------------------------------------------------------
 if not res.empty:
     st.subheader("Why resolution is excluded")
+    st.markdown(
+        "Resolution was varied in both directions, in two studies that share "
+        "no donors, and neither move shifts the gap."
+    )
     pooled = res[res["major"] == "POOLED"]
     bry = res[res["major"].str.startswith("Bryois") & (res["arm"] == "split")]
 
     cols = st.columns(2, border=True)
     with cols[0]:
-        st.markdown("**Splitting** — SingleBrain classes into their subtypes")
+        st.markdown("**Splitting**")
+        st.caption("SingleBrain classes into their subtypes")
         if not pooled.empty:
             p = pooled.iloc[0]
             st.metric(
-                "Change in gap (pooled across 6 classes)",
+                "Change in gap, pooled across 6 classes",
                 f"{p['delta']:+.3f}",
                 f"95% CI [{p['delta_lo']:+.3f}, {p['delta_hi']:+.3f}]",
-                delta_color="off",
+                delta_color="off", delta_arrow="off",
             )
         st.caption(
-            "Same donors, same nuclei, same pipeline — only the grouping "
-            "changes. Every per-class interval spans zero."
+            "Same donors, same nuclei, same pipeline. Only the grouping "
+            "changes, and every per-class interval spans zero."
         )
     with cols[1]:
-        st.markdown("**Pooling** — Bryois pseudobulk vs its own 8 cell types")
+        st.markdown("**Pooling**")
+        st.caption("Bryois pseudobulk against its own 8 cell types")
         if not bry.empty:
             b = bry.iloc[0]
             st.metric(
                 "Change in gap",
                 f"{b['delta']:+.3f}",
                 f"95% CI [{b['delta_lo']:+.3f}, {b['delta_hi']:+.3f}]",
-                delta_color="off",
+                delta_color="off", delta_arrow="off",
             )
         st.caption(
-            "The same donors again, varying resolution in the **opposite** "
-            "direction. A matched-gene-set control confirms the two studies "
-            "do not disagree."
+            "The same donors again, varying resolution the opposite way. A "
+            "matched-gene-set control confirms the two studies do not disagree."
         )
 
-    st.info(
-        "Resolution and per-context power are **intrinsically coupled** in "
-        "single-cell data: at fixed sequencing depth you cannot resolve more "
-        "contexts without fewer reads in each. Neither test isolates "
-        "resolution alone — but they vary it in opposite directions, and both "
-        "land on zero. That brackets the answer.",
-        icon=":material/info:",
-    )
+    with st.expander(
+        "What these two tests can and cannot rule out",
+        icon=":material/help:",
+    ):
+        st.markdown(
+            "Resolution and per-context power are coupled in single-cell data: "
+            "at fixed sequencing depth you cannot resolve more contexts "
+            "without putting fewer reads in each. So neither test isolates "
+            "resolution on its own. What they do is vary it in opposite "
+            "directions, which brackets the answer: if resolution were doing "
+            "the work, splitting and pooling could not both land on zero."
+        )
 
-# --- per-arm table -------------------------------------------------------
-with st.container(border=True):
-    st.markdown("**Every arm, one gene set**")
+#: per-arm table ----------------------------------------------------------
+with U.card("Every arm, one gene set"):
     show = assay.assign(
         Arm=assay["label"],
         Assay=assay["assay"],
@@ -164,7 +216,7 @@ with st.container(border=True):
             lambda r: f"{r['gap']:.3f} [{r['gap_lo']:.3f}, {r['gap_hi']:.3f}]",
             axis=1),
     )
-    st.dataframe(
+    U.table(
         show[["Arm", "Assay", "Donors", "Constrained", "Control", "Gap"]],
-        hide_index=True, use_container_width=True,
+        column_config={"Donors": st.column_config.NumberColumn(format="%d")},
     )

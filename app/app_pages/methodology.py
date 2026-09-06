@@ -1,10 +1,11 @@
-"""Decisions, provenance and limitations -- the audit trail behind every number."""
+"""Decisions, provenance and limitations, the audit trail behind every number."""
 
 from __future__ import annotations
 
 import streamlit as st
 
 from lib import data as D
+from lib import ui as U
 
 st.header("Methods")
 st.markdown(
@@ -17,51 +18,52 @@ tabs = st.tabs(
     ["Decisions", "Data provenance", "Limitations", "Detection rule"]
 )
 
-# --- decisions -----------------------------------------------------------
+#: decisions --------------------------------------------------------------
 with tabs[0]:
     st.markdown(
         "Four choices could each move the headline on their own, so the "
-        "pipeline held them as sentinels that **raise on use** until recorded. "
-        "Analysis code depending on one could not run and silently default."
+        "pipeline held them as sentinels that raise on use until recorded. "
+        "Analysis code that depended on one could not run and quietly fall "
+        "back to a default."
     )
     for d in D.decisions():
         with st.container(border=True):
             st.markdown(f"**{d['key']} — {d['question']}**")
             st.markdown(f"Chosen: `{d['chosen']}` — {d['meaning']}")
-            with st.expander("Why, and what was rejected"):
+            with st.expander("Why, and what was rejected",
+                             icon=":material/history:"):
                 st.markdown(d.get("rationale") or "_no rationale recorded_")
                 rejected = d.get("rejected") or {}
                 if rejected:
-                    st.markdown("**Alternatives not taken:**")
+                    st.markdown("**Alternatives not taken**")
                     for k, v in rejected.items():
                         st.markdown(f"- `{k}` — {v}")
             st.caption(f"Recorded {d['timestamp_utc']}")
 
-# --- provenance ----------------------------------------------------------
+#: provenance -------------------------------------------------------------
 with tabs[1]:
     dl = D.downloads()
     if dl.empty:
-        st.info("No download log found.")
+        st.caption("No download log found in this checkout.")
     else:
         st.markdown(
             f"**{len(dl)} files**, each stamped with the URL it came from, the "
-            "UTC date, the byte count and a sha256. eQTL catalogues are "
+            "UTC date, the byte count and a sha256. eQTL catalogues get "
             "re-released, so *“I downloaded GTEx brain eQTLs”* is not a "
-            "reproducible statement — a hash and a date are."
+            "reproducible statement. A hash and a date are."
         )
         by_source = dl.groupby(
             ["source_name", "licence", "redistributable"], as_index=False
         ).agg(files=("file", "count"), bytes=("bytes", "sum"))
         by_source["Size"] = (by_source["bytes"] / 1e6).map("{:,.0f} MB".format)
         by_source["Redistributable"] = by_source["redistributable"].map(
-            {True: "yes", False: "no — restricted"}
+            {True: "yes", False: "no, restricted"}
         )
-        st.dataframe(
+        U.table(
             by_source[["source_name", "files", "Size", "licence",
                        "Redistributable"]].rename(
                 columns={"source_name": "Source", "files": "Files",
-                         "licence": "Licence"}),
-            hide_index=True, use_container_width=True,
+                         "licence": "Licence"})
         )
         st.caption(
             "Sources marked restricted are written to `data/restricted/`, "
@@ -69,17 +71,17 @@ with tabs[1]:
             "outputs are published from them, and only where they cannot be "
             "used to reconstruct the source table (D-013)."
         )
-        with st.expander("Every file, with hashes"):
+        with st.expander("Every file, with hashes", icon=":material/tag:"):
             show = dl.copy()
             show["MB"] = (show["bytes"] / 1e6).round(2)
             show["sha256"] = show["sha256"].str.slice(0, 16) + "…"
-            st.dataframe(
+            U.table(
                 show[["source_name", "file", "version", "MB",
                       "downloaded_utc", "sha256"]],
-                hide_index=True, use_container_width=True, height=340,
+                height=340,
             )
 
-# --- limitations ---------------------------------------------------------
+#: limitations ------------------------------------------------------------
 with tabs[2]:
     st.markdown(
         """
@@ -87,10 +89,10 @@ with tabs[2]:
 
 - **Not a winner between the two hypotheses.** The output is a decomposition
   with uncertainty. Mostafavi's selection account predicts the gap persists at
-  any resolution — it does not. Rosen's power account predicts it closes with
-  sample size — it does not do that either. What closes it is the assay, which
+  any resolution, and it does not. Rosen's power account predicts it closes
+  with sample size, and it does not do that either. What closes it is the assay, which
   is a third account neither proposed.
-- **Not a mechanism.** Bulk and single-nucleus differ in more than assay —
+- **Not a mechanism.** Bulk and single-nucleus differ in more than assay:
   ancestry, brain region, pipeline, GENCODE vintage. The evidence that this is
   assay rather than a study-level accident is that two bulk studies agree
   exactly despite 6.8× different N and different consortia, and three
@@ -122,7 +124,7 @@ with tabs[2]:
 """
     )
 
-# --- detection rule ------------------------------------------------------
+#: detection rule ---------------------------------------------------------
 with tabs[3]:
     st.markdown(
         """
@@ -130,7 +132,7 @@ with tabs[3]:
 
 Each rung ships a different significance column and they are **not on a common
 evidential scale**. GTEx and SingleBrain both ship Storey q-values, and a
-Storey q depends on π₀ — the estimated fraction of true nulls — computed
+Storey q depends on π₀, the estimated fraction of true nulls, computed
 *within each study*. A better-powered study has a lower π₀, which makes
 q ≤ 0.05 a **more permissive** bar there.
 
@@ -141,13 +143,13 @@ against **60%** under the uniform rule.
 
 So detection is recomputed identically at every rung:
 
-1. **Per-gene Bonferroni** over the cis variants tested for that gene —
+1. **Per-gene Bonferroni** over the cis variants tested for that gene,
    computable everywhere from what each source ships.
 2. **Benjamini–Hochberg across genes within the rung** (D-003), applied over
    all gene × cell-type tests so a rung with 28 cell types pays for its 28
    opportunities.
 
-Use the toggle on the *Recovery curve* page to see the rejected rules.
+The sidebar control switches between this rule and the two it was chosen over.
 """
     )
     rob = D.robustness()
@@ -157,5 +159,5 @@ Use the toggle on the *Recovery curve* page to see the rejected rules.
             "Closure across every structural variant tested",
             f"{r['closure'].min():.1%} – {r['closure'].max():.1%}",
             "residual gap excludes zero in all of them",
-            delta_color="off", border=True,
+            delta_color="off", delta_arrow="off", border=True,
         )
