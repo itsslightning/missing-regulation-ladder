@@ -25,6 +25,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -77,11 +78,21 @@ def fetch_one(name: str, expected: int, timeout: int = 1800) -> tuple[bool, int]
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--chrom", type=int, default=22, help="stop after this chromosome")
+    ap.add_argument(
+        "--workers",
+        type=int,
+        default=4,
+        help="concurrent downloads. Zenodo throttles per connection rather "
+        "than per client, so a few in parallel is several times faster than "
+        "one. Kept deliberately small -- this is someone else's archive.",
+    )
     args = ap.parse_args()
 
     manifest = json.loads((DEST / "manifest.json").read_text(encoding="utf-8"))
 
-    done, fixed, failed = 0, 0, []
+    # Chromosome-major, so each chromosome completes across all nine arms
+    # together and the D-007 contrast becomes valid as early as possible.
+    todo, done = [], 0
     for chrom in range(1, args.chrom + 1):
         for cell in BRYOIS_ARMS:
             name = f"{cell}.{chrom}.gz"
@@ -89,19 +100,35 @@ def main() -> int:
             if expected is None:
                 continue
             path = DEST / name
-            had = path.stat().st_size if path.exists() else 0
-            if had == expected:
+            if path.exists() and path.stat().st_size == expected:
                 done += 1
                 continue
+            todo.append((chrom, name, expected))
 
-            ok, size = fetch_one(name, expected)
-            if ok:
-                fixed += 1
-                note = "resumed" if had else "fetched"
-                print(f"  chr{chrom:<2} {name:<28} {note} -> {size:,}")
-            else:
-                failed.append(name)
-                print(f"  chr{chrom:<2} {name:<28} SHORT {size:,}/{expected:,}")
+    print(f"{done} already complete, {len(todo)} to fetch, "
+          f"{args.workers} workers")
+
+    fixed, failed = 0, []
+    if todo:
+        with ThreadPoolExecutor(max_workers=args.workers) as pool:
+            futures = {
+                pool.submit(fetch_one, name, expected): (chrom, name, expected)
+                for chrom, name, expected in todo
+            }
+            for fut in as_completed(futures):
+                chrom, name, expected = futures[fut]
+                try:
+                    ok, size = fut.result()
+                except Exception as exc:  # noqa: BLE001 - report, do not abort
+                    ok, size = False, 0
+                    print(f"  chr{chrom:<2} {name:<28} {type(exc).__name__}: {exc}")
+                if ok:
+                    fixed += 1
+                    print(f"  chr{chrom:<2} {name:<28} ok {size:,}"
+                          f"   ({fixed}/{len(todo)})")
+                else:
+                    failed.append(name)
+                    print(f"  chr{chrom:<2} {name:<28} SHORT {size:,}/{expected:,}")
 
     print(f"\n{done} already complete, {fixed} fetched, {len(failed)} failed")
     if failed:
