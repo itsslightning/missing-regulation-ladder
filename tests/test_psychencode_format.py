@@ -66,7 +66,7 @@ def test_takes_the_best_variant_and_the_files_own_variant_count(
 ) -> None:
     """p_bonf must be min(p) x the study's number_of_SNPs_tested, capped at 1.
 
-    Counting rows instead would give 2 here rather than 4558 -- the bug this
+    Counting rows instead would give 2 here rather than 4558, the bug this
     pins. With the real count the correction saturates, which is correct: one
     weak variant among 4,558 tested is not evidence.
     """

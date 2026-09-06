@@ -8,13 +8,13 @@ Machine-readable twin: `logs/decisions.jsonl` (appended by
 `pipeline/decisions.py` whenever a decision is recorded in code, and replayed at
 import so a choice survives across runs).
 
-**Status key** — `OPEN`: needs a human call before dependent code can run.
+**Status key.** `OPEN`: needs a human call before dependent code can run.
 `SET`: decided, with rationale. `PROVISIONAL`: decided but expected to be
 revisited when a blocker clears.
 
 ---
 
-## Load-bearing decisions — the four sentinels
+## Load-bearing decisions: the four sentinels
 
 These can move the headline conclusion on their own, so `pipeline/decisions.py`
 holds them as sentinels that raise on use rather than defaulting. Analysis code
@@ -31,19 +31,19 @@ the cis variants tested, applied identically at every rung, then one common
 across-gene FDR** (D-003).
 
 **Why not `study_native_threshold`.** GTEx and SingleBrain both ship Storey
-q-values, and a Storey q depends on π₀ — the estimated fraction of true nulls —
+q-values, and a Storey q depends on π₀, the estimated fraction of true nulls,
 computed *within each study*. A better-powered study has a lower π₀, which makes
-q ≤ 0.05 a **more permissive** bar there than in a weaker study. The threshold
-therefore loosens exactly where power is highest, which is precisely the
-direction that manufactures the recovery the power account predicts. Measured:
-this arm reports **88.2% gap closure vs 59.9%** under the uniform rule. Using it
-as primary would have let the significance calling produce the answer.
+q ≤ 0.05 a **more permissive** bar there than in a weaker study. So the
+threshold loosens exactly where power is highest, which is the direction that
+manufactures the recovery the power account predicts. Measured, this arm reports
+**88.2% gap closure vs 59.9%** under the uniform rule. Using it as primary would
+have let the significance calling produce the answer.
 
 **Why not `fixed_nominal_p`.** The number of cis variants tested per gene differs
 across rungs, so a fixed nominal threshold rewards rungs with denser coverage.
 
 **Why not `effect_size_floor` as primary.** It targets the power confound most
-directly, but the rungs do not ship a common effect-size scale: GTEx slopes are
+directly, but the rungs don't ship a common effect-size scale. GTEx slopes are
 on inverse-normal-transformed expression, SingleBrain betas on
 scaled/quantile-normalised expression, and Bryois ships betas without standard
 errors. Retained as a sensitivity arm where the scales are close enough to be
@@ -77,17 +77,17 @@ Controls drawn from LOEUF ≥ 1.0; cases are LOEUF < 0.35. Recorded in
 score over all covariates; no matching with LOEUF-decile stratification instead.
 
 **Why these covariates:** matches the report's stated caveat exactly and carries
-the fewest assumptions. Gene length is deliberately *not* matched on — it is a
+the fewest assumptions. Gene length is deliberately *not* matched on. It is a
 partial proxy for regulatory-landscape complexity, which is part of Mostafavi's
 proposed mechanism rather than a nuisance covariate, so matching on it would
 risk conditioning on a mediator and regressing away the effect being measured.
 
-**Why with replacement — this was not the obvious default.** 1:1 matching
-without replacement at 0.25 SD left 40% of constrained genes unmatched, and the
+**Why with replacement.** This was not the obvious default. 1:1 matching without
+replacement at 0.25 SD left 40% of constrained genes unmatched, and the
 unmatched 40% were not random: they had more coding exons (SMD −1.37), higher
 expression (−0.61) and *lower* LOEUF (+0.40) than the matched ones. The genes
 the hypothesis is most about were the ones being dropped, because
-highly-expressed many-exon genes are rare among unconstrained genes — which is
+highly-expressed many-exon genes are rare among unconstrained genes, which is
 exactly the confound the matching exists to handle. Measured comparison:
 
 | Strategy | Cases kept | SMD expr | SMD exons | Case bias (LOEUF) |
@@ -99,9 +99,9 @@ exactly the confound the matching exists to handle. Measured comparison:
 **Cost, and how it is handled:** 1,294 unique control genes serve 2,767 cases,
 so control observations are reused and correlated. Reuse is mild (median 1×,
 90th percentile 4×, max 21×; 828 controls used once). Every control-side
-statistic therefore carries a frequency weight, confidence intervals on the
-control curve must be cluster-robust by control gene (1,294 clusters), and
-effective sample size (513 for a weighted mean) is reported next to raw counts.
+statistic carries a frequency weight. Confidence intervals on the control curve
+are cluster-robust by control gene (1,294 clusters), and effective sample size
+(513 for a weighted mean) is reported next to raw counts.
 
 **Known residual imbalance:** log gene length, SMD 0.670. Expected and accepted
 per the mediator argument above; reported, not hidden.
@@ -110,13 +110,13 @@ per the mediator argument above; reported, not hidden.
 
 **Delegated to Claude by the project owner**, same caveat as D-001.
 
-**Chosen:** `bh_within_rung` — Benjamini-Hochberg across **all gene × cell-type
+**Chosen:** `bh_within_rung`. Benjamini-Hochberg across **all gene × cell-type
 tests within a rung**, then a gene counts as detected at that rung if any of its
 cell types is significant.
 
 **The decisive argument is coherence, not conservatism.** Correcting across the
 full gene × rung grid would make a gene's eQTL status at rung 1 depend on how
-many rungs the analysis happens to include — adding a 29th SingleBrain subtype
+many rungs the analysis happens to include. Adding a 29th SingleBrain subtype
 would change whether GTEx cortex is called as having an eQTL for gene X. The
 number of rungs is *my design choice, not a property of the data*, so it must
 not enter the per-rung detection call. That rules out both `bh_across_all` and
@@ -136,35 +136,36 @@ would suppress detection at every rung severely enough that the curve would
 flatten toward zero and read as support for selection through sheer
 conservatism.
 
-**Why not `permutation_null`.** Not rejected on merit — **deferred**. It is the
-most defensible option and is the natural upgrade if the headline gap turns out
+**Why not `permutation_null`.** Not rejected on merit, but **deferred**. It is
+the most defensible option and the natural upgrade if the headline gap turns out
 marginal. It needs permutation of gene labels within matched strata at every
-rung: substantial compute and substantially more code to get right. The gap is
-currently far from marginal (0.143, CI [0.105, 0.180]), so it is not needed yet.
+rung, which is substantial compute and substantially more code to get right. The
+gap is currently far from marginal (0.143, CI [0.105, 0.180]), so it isn't
+needed yet.
 
 **Cross-rung multiplicity** is handled where it belongs: the constrained-vs-control
 gap is reported per rung with bootstrap CIs, and the small family of rung-level
 gap contrasts carries its own BH correction (`gap_q` in
 `recovery_by_rung.parquet`).
 
-**Sensitivity arm run 2026-09-04 (`s09_robustness.py`).** `by_across_all` — the
-most conservative correction available and the one rejected above — still gives
-**47.9% closure [34.4, 60.3]**, with the residual gap excluding zero. So the
-headline is not an artefact of a permissive multiple-testing rule. It is the
-variant that moves the number most, which is worth stating.
+**Sensitivity arm run 2026-09-04 (`s09_robustness.py`).** `by_across_all`, the
+most conservative correction available and the one rejected above, still gives
+**47.9% closure [34.4, 60.3]** with the residual gap excluding zero. So the
+headline is not an artefact of a permissive multiple-testing rule. It is also
+the variant that moves the number most, which is worth stating.
 
 ### D-004 — Colocalization method and thresholds — **SET** (2026-09-06)
 
 **Delegated to Claude by the project owner**, same caveat as D-001 and D-003:
 the rejected options run as sensitivity arms wherever the data allows.
 
-**Chosen:** `smr_heidi` — SMR at every rung from top-SNP statistics, with BH
+**Chosen:** `smr_heidi`. SMR at every rung from top-SNP statistics, with BH
 within rung at 0.05 (matching D-003). HEIDI as a **supplementary** filter where
 regional data exists. coloc as a **sensitivity** arm on the same two arms.
 
-**Why coloc is excluded as primary — a data fact, not a preference.** coloc
-needs full regional summary statistics for both traits at every gene. Those
-exist for only two of five arms:
+**Why coloc is excluded as primary. This is a data fact, not a preference.**
+coloc needs full regional summary statistics for both traits at every gene.
+Those exist for only two of five arms:
 
 | Arm | Full regional data? |
 |---|---|
@@ -178,7 +179,7 @@ At the ~650 KB/s this project has measured against Zenodo, SingleBrain's full
 associations are about **64 hours** of download, and they are not indexed for
 range extraction, so even a targeted per-gene pull would require fetching each
 file whole. Running coloc only where the data happens to be complete would mean
-comparing rungs scored by **different methods** — precisely the error D-001 was
+comparing rungs scored by **different methods**, which is the error D-001 was
 chosen to avoid.
 
 **Why SMR works everywhere.** It needs only the top eQTL SNP's effect and
@@ -211,10 +212,10 @@ though the absolute numbers should not be quoted against published coloc counts.
 **Consequence for Stage 2 engineering:** the join key becomes the **variant**,
 not the gene. rsID is the common key for three of four rungs (SingleBrain's
 `variant_id` *is* an rsID; GTEx ships `rs_id_dbSNP155_GRCh38p13`; Bryois is
-rsID-native). PsychENCODE gives `chr:pos` on hg19 and needs a lookup — Bryois's
-`snp_pos.txt.gz` supplies exactly that mapping. This is the variant-level
-analogue of the unversioned-ENSG problem from Stage 0 and will need the same
-loss accounting.
+rsID-native). PsychENCODE gives `chr:pos` on hg19 and needs a lookup, and
+Bryois's `snp_pos.txt.gz` supplies exactly that mapping. This is the
+variant-level analogue of the unversioned-ENSG problem from Stage 0 and needs
+the same loss accounting.
 
 ---
 
@@ -290,8 +291,8 @@ costs this project nothing: every PsychENCODE-derived number it publishes is a
 summary, not the source.
 
 **What IS published from it, and why that is not redistribution.**
-`smr_exposures.parquet` carries one row per gene — the top cis variant and its
-effect — for 12,267 PsychENCODE genes. That is a reduction of roughly four
+`smr_exposures.parquet` carries one row per gene, the top cis variant and its
+effect, for 12,267 PsychENCODE genes. That is a reduction of roughly four
 orders of magnitude from a ~50-million-row source file, it cannot be used to
 reconstruct that file, and it is the same class of top-association summary that
 GTEx and SingleBrain publish openly and that PsychENCODE itself publishes in
@@ -309,14 +310,14 @@ cases but not citable, and requires inventing an FDR).
 **Why:** the published table ships `Q meta`, the FDR the paper's own thresholds
 are defined on, so the primary set needs no invented significance rule. The
 browser release ships p-values only, so any gene set drawn from it requires a
-locally computed FDR — a judgment layered on top of the gene-set definition.
+locally computed FDR, a judgment layered on top of the gene-set definition.
 Running both shows the conclusion is robust to the choice.
 
-**Validation:** the pipeline reproduces the published result exactly — **32
+**Validation:** the pipeline reproduces the published result exactly. **32
 genes at FDR < 0.05** and **10 at exome-wide significance** (SETD1A, CUL1,
 XPO7, TRIO, CACNA1G, SP4, GRIA3, GRIN2A, HERC1, RB1CC1).
 
-**Flag for Stage 1 — the two releases disagree substantially.** Browser release
+**Flag for Stage 1: the two releases disagree substantially.** Browser release
 under local BH FDR < 0.05 gives 50 genes, of which only **12 overlap** the
 published 32 (20 published-only, 38 browser-only). Do not present them as
 interchangeable, and expect to explain the discordance.
@@ -342,7 +343,7 @@ neocortical nuclei. A union of 13 tissues would have far more power and would
 inflate rung 1, flattening the very curve being measured.
 
 **Supporting observation:** GTEx cerebellum reaches 0.568 of tested genes,
-essentially matching SingleBrain excitatory neurons (0.579 of universe) — a bulk
+essentially matching SingleBrain excitatory neurons (0.579 of universe). A bulk
 tissue matching the best single-nucleus cell type. Tissue choice at rung 1 is
 worth as much as a rung of the ladder, which is why it is recorded rather than
 assumed.
@@ -356,7 +357,7 @@ LOEUF, has GTEx brain expression), used for every rung.
 against all protein-coding genes regardless of annotation coverage.
 
 **Why this is load-bearing, not bookkeeping.** Measured against genes tested,
-97% of the genes SingleBrain excitatory neurons tested are eGenes — the measure
+97% of the genes SingleBrain excitatory neurons tested are eGenes. The measure
 has no headroom, and a constrained-gene recovery fraction would rise to ≈1 at
 rungs 3–4 *whatever the biology*, "supporting" the power account by
 construction. A per-rung denominator also rewards a cell type for testing fewer
@@ -368,8 +369,8 @@ best single-nucleus cell type 0.579.
 
 **Cost:** genes not tested at a rung count as "no detectable eQTL" there, which
 conflates "tested and null" with "not expressed in this cell type". That is the
-right default for this question — a gene with no eQTL detectable in a cell type
-is missing regulation in that cell type either way — but it must be stated, and
+right default for this question, since a gene with no eQTL detectable in a cell
+type is missing regulation there either way, but it must be stated, and
 the per-rung tested counts are kept in `docs/stage0_audit.md` so the alternative
 can be computed.
 
@@ -383,15 +384,15 @@ adds `schema_p_published` and `schema_q_published`.
 **Why:** those two columns are Singh et al.'s Supplementary Table 5 reproduced
 for 17,740 genes. Crossref reports the paper under **Springer Nature
 text-and-data-mining terms, not CC-BY**, so shipping them is republishing a
-substantial part of a restricted table — which the project brief explicitly
-rules out — rather than publishing a derived result.
+substantial part of a restricted table, which the project brief explicitly rules
+out, rather than publishing a derived result.
 
 The boolean memberships are a different matter: the 32-gene and 10-gene sets
 are the paper's own headline result, freely citable, and reproducible from the
 flags alone. Nothing analytically necessary is lost.
 
 **Alternative:** publish the full table and rely on the data being "public
-anyway". Rejected — freely downloadable is not the same as licensed to rehost,
+anyway". Rejected: freely downloadable is not the same as licensed to rehost,
 which is the distinction `sources.py` exists to enforce.
 
 **Generalises to:** any future derived table touching PsychENCODE (D-008) or
@@ -416,8 +417,8 @@ and it may be redistributed with attribution.
 This matters beyond convenience: accepting a data-use agreement on someone
 else's behalf would bind them to terms neither party had read, and a PGC DUA
 names an investigator and institution. The public deposit avoids the question
-entirely. The 240 MB file is still not committed — `data/raw` is gitignored and
-only derived SMR results are published — but that is a size decision, not a
+entirely. The 240 MB file is still not committed, since `data/raw` is gitignored
+and only derived SMR results are published, but that is a size decision, not a
 licence one.
 
 **2. Which ancestry subset.** European, not the larger `core` (443 MB) or
@@ -425,7 +426,7 @@ licence one.
 
 **Why:** SMR assumes the exposure and outcome samples share an LD structure,
 because it propagates an effect through a variant whose correlation with the
-causal variant must be the same in both. The eQTL arms are European —
+causal variant must be the same in both. The eQTL arms are European:
 SingleBrain is explicitly European-ancestry only, Bryois is European, GTEx is
 predominantly so. Pairing a multi-ancestry GWAS with European eQTLs would
 violate that assumption and bias the SMR estimates by an unknown amount.

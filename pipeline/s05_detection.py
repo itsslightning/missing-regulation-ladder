@@ -7,7 +7,7 @@ THE UNIFORM STATISTIC
 ---------------------
 Each rung ships a different significance column, and they are not on a common
 evidential scale. GTEx and SingleBrain both ship Storey q-values, and a Storey
-q depends on pi0 estimated within that study -- so q <= 0.05 is a *more*
+q depends on pi0 estimated within that study, so q <= 0.05 is a *more*
 permissive bar in a better-powered study. Using each study's native call would
 therefore loosen the threshold exactly where power is highest, manufacturing
 the recovery the power account predicts.
@@ -22,7 +22,7 @@ So detection is recomputed identically at every rung, in two steps:
        Bryois       min nominal p x variants tested for that gene
   2. Benjamini-Hochberg across genes within the rung (D-003).
 
-Bonferroni over cis variants is conservative -- it ignores LD, so it is
+Bonferroni over cis variants is conservative: it ignores LD, so it is
 stricter than the permutation p-value GTEx would use. That is accepted
 deliberately: it is conservative *by the same construction at every rung*,
 which is what a cross-rung comparison needs. Absolute eGene counts will be
@@ -33,8 +33,8 @@ WHAT COUNTS AS A RUNG
 ---------------------
 Rungs 3 and 4 contain many cell types, and rung 4 contains four times as many
 as rung 3. A gene is called detected at a rung if it is detected in ANY cell
-type of that rung -- which is the natural reading of "does the regulatory
-signal appear at this resolution" -- but that gives rung 4 more chances purely
+type of that rung, which is the natural reading of "does the regulatory
+signal appear at this resolution", but that gives rung 4 more chances purely
 by having more columns. So BH is applied across ALL gene x cell-type tests
 within the rung, not per cell type. A rung with 28 cell types is therefore
 penalised for its 28 opportunities, and the extra detections it keeps are real
@@ -81,7 +81,7 @@ FDR_ALPHA = 0.05
 #: on inverse-normal-transformed expression and SingleBrain betas on
 #: scaled/quantile-normalised expression, so both are roughly in SD units of
 #: normalised expression. 0.1 SD is a small but non-trivial effect. This arm is
-#: indicative, not definitive -- see D-001.
+#: indicative, not definitive, see D-001.
 MIN_ABS_BETA = 0.1
 
 
@@ -125,7 +125,7 @@ def load_singlebrain() -> pd.DataFrame:
     """Rungs 3 and 4.
 
     `Fixed_bonf` is already the per-gene Bonferroni over cis variants, so no
-    recomputation is needed -- which is also the check that the construction
+    recomputation is needed, which is also the check that the construction
     used for the other rungs is the right one.
 
     MiGA3 is excluded: it is a different meta-analysis that additionally
@@ -165,7 +165,7 @@ def load_psychencode() -> pd.DataFrame | None:
 
     Prefers the full association file, which contains every tested gene and so
     supplies a real denominator. Falls back to the Bonferroni-filtered release,
-    which contains only significant genes -- usable as a numerator but flagged,
+    which contains only significant genes, usable as a numerator but flagged,
     because absence from that file cannot be distinguished from "tested and
     null".
     """
@@ -178,7 +178,7 @@ def load_psychencode() -> pd.DataFrame | None:
             return _load_psychencode_full(full)
         print(
             f"  PsychENCODE full file is {size / 1e9:.2f} GB of "
-            f"{sources.PSYCHENCODE_FULL_BYTES / 1e9:.2f} GB -- still "
+            f"{sources.PSYCHENCODE_FULL_BYTES / 1e9:.2f} GB: still "
             "downloading; falling back to the significant-only release."
         )
 
@@ -241,7 +241,7 @@ def _load_psychencode_full(path: Path) -> pd.DataFrame:
 
     The file does not fit comfortably in memory, so it is streamed in chunks
     and reduced as it goes to the best variant per gene. Coordinates are read
-    but never used, which is why the hg19 build costs nothing here -- gene-level
+    but never used, which is why the hg19 build costs nothing here, gene-level
     detection needs no liftOver.
 
     `number_of_SNPs_tested` is taken from the file rather than counted. It is
@@ -300,7 +300,7 @@ def _load_psychencode_full(path: Path) -> pd.DataFrame:
             "cell": "PsychENCODE_PFC",
             "p_bonf": [min(1.0, best[g] * max(n_var[g], 1)) for g in genes],
             # The full file ships no FDR, so the native-arm sensitivity value is
-            # computed here -- BH across genes on the top-variant p-value, the
+            # computed here. BH across genes on the top-variant p-value, the
             # closest analogue to what the DER-08b release reports.
             "q_native": multipletests(p_min, method="fdr_bh")[1],
             "beta": [slopes[g] for g in genes],
@@ -334,7 +334,7 @@ def bryois_complete_chromosomes() -> list[int]:
     """Chromosomes for which every Bryois arm is present AND complete.
 
     The comparison is pseudobulk against cell types, so it is only valid on
-    chromosomes where BOTH arms have data -- otherwise one arm would be scored
+    chromosomes where BOTH arms have data, otherwise one arm would be scored
     on a gene set the other never saw. Restricting to complete chromosomes
     keeps the contrast internally valid while the remaining files download,
     which matters because there are 198 of them.
@@ -342,7 +342,7 @@ def bryois_complete_chromosomes() -> list[int]:
     Completeness is checked by BYTE SIZE against the Zenodo manifest, not by
     file existence. A file being downloaded right now exists and is non-empty
     but is truncated, and a truncated gzip either raises mid-read or silently
-    yields fewer genes -- which would look like a real difference between the
+    yields fewer genes, which would look like a real difference between the
     arms rather than a partial file.
     """
     d = cfg.DIR_RAW / "bryois"
@@ -368,7 +368,7 @@ def load_bryois(min_chromosomes: int = 1) -> pd.DataFrame | None:
     per gene, then the same Bonferroni.
 
     Runs on whatever chromosomes are complete across all nine arms, so a
-    partial download still yields a valid -- if lower-powered -- contrast. The
+    partial download still yields a valid, if lower-powered, contrast. The
     chromosomes used are recorded on the frame so the report can state them.
     """
     d = cfg.DIR_RAW / "bryois"
@@ -486,7 +486,7 @@ def main() -> None:
 
     pec = load_psychencode()
     if pec is None:
-        prov.note("rung 2 (PsychENCODE)", "NOT AVAILABLE -- no file on disk")
+        prov.note("rung 2 (PsychENCODE)", "NOT AVAILABLE, no file on disk")
     else:
         if pec.attrs.get("partial_denominator"):
             prov.note(
@@ -502,7 +502,7 @@ def main() -> None:
     if bry is None:
         prov.note(
             "Bryois arm (D-007)",
-            "NOT AVAILABLE -- fewer than 2 chromosomes complete across all "
+            "NOT AVAILABLE: fewer than 2 chromosomes complete across all "
             "nine arms",
         )
     else:

@@ -6,7 +6,7 @@ CHRM4/muscarinic mechanisms.
 
 The framing matters more than the lookup. A gene that is druggable AND newly
 visible is interesting precisely because it was invisible to the assay the
-field has been using -- it is a candidate that bulk-tissue eQTL screens would
+field has been using, it is a candidate that bulk-tissue eQTL screens would
 have missed. A gene that is druggable and was always visible is not news.
 So genes are split three ways before any tractability is attached:
 

@@ -8,7 +8,7 @@ Date: 2026-09-04. Figures: [`figures/`](figures/). Decisions:
 ## 1. Headline
 
 Going from bulk cortex to single-nucleus major cell types, the
-constrained-gene eQTL gap falls from **0.357 to 0.143** — a closure of
+constrained-gene eQTL gap falls from **0.357 to 0.143**, a closure of
 
 > **59.9% of the gap, 95% CI [49.5%, 70.5%].**
 >
@@ -26,7 +26,7 @@ two of them:
 | **Assay: nuclei vs whole tissue** | bulk vs snRNA-seq, matched genes | **survives** — 0.217 separation |
 
 The single sharpest number: **Bryois pseudobulk**, single-nucleus data with all
-nuclei pooled, 192 donors — the smallest study here — has a gap of **0.144**,
+nuclei pooled and 192 donors, the smallest study here, has a gap of **0.144**,
 against PsychENCODE bulk tissue at **1,387 donors** with a gap of **0.367**.
 Seven times the donors, and more than twice the gap.
 
@@ -48,19 +48,19 @@ matched unconstrained genes, frequency-weighted (D-002).
 | SingleBrain, 7 major types | 983 | 0.624 | 0.767 | **0.143** [0.105, 0.180] |
 | SingleBrain, 28 subtypes | 983 | 0.542 | 0.708 | 0.166 [0.124, 0.204] |
 
-† provisional — see §5.
+† provisional, see §5.
 
 Every gap is significant at the bootstrap resolution limit (p = 0.0005 = 1/2000
 replicates, BH-adjusted across the rung contrasts).
 
 **The SCHEMA genes move further than the constrained set as a whole.** Of the 32
 published SCHEMA genes (FDR < 0.05), **4 have a detectable cis-eQTL in bulk
-cortex; 19 do at single-nucleus major-cell-type resolution** — 12.5% → 59.4%.
+cortex; 19 do at single-nucleus major-cell-type resolution**, 12.5% → 59.4%.
 
 Splitting the 32 three ways, now that rung 2 has a real denominator (full
 table: [`schema_switch.md`](schema_switch.md)):
 
-- **13 switch on** — invisible in bulk, detectable in single-nucleus data. This
+- **13 switch on**: invisible in bulk, detectable in single-nucleus data. This
   is the Stage 2 colocalization target list, and the cell types matter for
   which SingleBrain full-association files to pull (4–10 GB each, so they are
   fetched per gene, per D-006):
@@ -80,7 +80,7 @@ table: [`schema_switch.md`](schema_switch.md)):
 - **10 remain undetected** in any assay at any resolution: ASH1L, RB1CC1,
   FAM120A, GRIA3, HCN4, HERC1, SLC22A11, OR4P4, HIST1H1E, MAGEC1. This is the
   residual missing regulation, and the most interesting group for the selection
-  hypothesis — it includes RB1CC1 and HERC1, two of the ten exome-wide
+  hypothesis. It includes RB1CC1 and HERC1, two of the ten exome-wide
   significant genes.
 
 **A correction from the provisional rung 2.** With the significant-only
@@ -90,7 +90,7 @@ than neurons. With a real bulk denominator, GRIN2A and CACNA1G are detectable
 in bulk after all. The oligodendrocyte observation was an artefact of the broken
 rung and has been withdrawn.
 
-What survives is that several genes switch on in a **single** cell type — SRRM2
+What survives is that several genes switch on in a **single** cell type: SRRM2
 in astrocytes, CUL1 in microglia, SP4 in excitatory neurons, NR3C2 in
 oligodendrocytes. That is genuine cell-type-specific regulatory signal, and it
 is worth holding alongside §4's finding that granularity does not move the
@@ -114,7 +114,7 @@ puts closure at 88%, nearly double the effect-size arm's 53%.
 
 This is exactly why the native arm was rejected as primary. Both GTEx and
 SingleBrain ship Storey q-values, and a Storey q depends on π₀ estimated
-*within each study* — so q ≤ 0.05 is a **more permissive** bar in a
+*within each study*, so q ≤ 0.05 is a **more permissive** bar in a
 better-powered study. It loosens precisely where power is highest, which
 inflates apparent recovery. Anyone quoting "single-nucleus resolution closes
 ~90% of the gap" from published eGene counts is, in part, quoting that artefact.
@@ -122,7 +122,7 @@ inflates apparent recovery. Anyone quoting "single-nucleus resolution closes
 ### The other three choices the headline rests on
 
 D-001 is the largest lever, but not the only one. The remaining structural
-choices were re-run end to end — each rebuilding its own matched control set
+choices were re-run end to end, each rebuilding its own matched control set
 under the same D-002 rules and seed, since a different case set needs its own
 controls:
 
@@ -136,7 +136,7 @@ controls:
 | SCHEMA release | published 32 genes (primary) | 32 | recovery 0.125 → 0.594 | — |
 | | browser 50 genes | 50 | recovery 0.140 → 0.620 | — |
 
-The primary row appears in both tables with slightly different intervals —
+The primary row appears in both tables with slightly different intervals,
 [49.5, 70.5] above, [49.1, 70.0] here. That is Monte Carlo noise: the two
 tables draw independent 2,000-replicate bootstraps of the same quantity. A
 difference of ~0.4 percentage points is the resolution of the bootstrap, not a
@@ -149,12 +149,12 @@ zero in every one.** Two results are worth calling out:
   ~730k exomes reorders genes and more than halves the case set (2,767 → 1,292,
   because v4.1 LOEUF values shift), yet closure is 59.0% against 59.9%. The
   conclusion does not depend on the gnomAD vintage.
-- **BY across the whole grid — the most conservative correction available and
-  the one I rejected on coherence grounds — still gives 47.9% closure.** So the
+- **BY across the whole grid, the most conservative correction available and
+  the one I rejected on coherence grounds, still gives 47.9% closure.** So the
   headline is not an artefact of a permissive multiple-testing rule. It is,
   however, the variant that moves the number most, which is worth knowing.
 
-## 4. The power confound — the thing that qualifies everything above
+## 4. The power confound, which qualifies everything above
 
 **The rungs differ in donor count as much as in resolution.** GTEx cortex has
 205 donors; SingleBrain has 983. That is a 4.8× increase in N accompanying the
@@ -165,8 +165,8 @@ Four pieces of internal evidence bear on it, and they point the same way:
 
 **(a) Splitting a cell class into its subtypes does not measurably change the
 gap** (figure 4). This is the tightest test currently available. SingleBrain
-reports each major class both pooled and split — Ast against Ast1–Ast4, Ext
-against Ext1–Ext8, and so on — from the **same donors, the same nuclei, the
+reports each major class both pooled and split (Ast against Ast1–Ast4, Ext
+against Ext1–Ext8, and so on) from the **same donors, the same nuclei, the
 same pipeline**. The only thing that changes is the grouping.
 
 | Class | Pooled gap | Split gap | Δ [95% CI] |
@@ -184,7 +184,7 @@ replicate and the difference taken within it, so the strong correlation between
 them cancels rather than inflating the interval.
 
 **Every per-class interval spans zero**, so no individual class shows an
-effect — an earlier version of this report said the gap "narrows in 3 of 6
+effect. An earlier version of this report said the gap "narrows in 3 of 6
 classes and widens in 3", which was reporting the sign of noise and has been
 corrected. The pooled estimate is what carries the claim: **−0.007 [−0.021,
 +0.005]**.
@@ -197,7 +197,7 @@ contributes nothing; it puts a ceiling on how much it could contribute.
 
 **(b) The same holds at ladder scale.** Rungs 3 and 4 differ only in grouping
 (7 classes vs 28 subtypes) at identical donor count, and the gap goes 0.143 →
-0.166 — slightly *wider*.
+0.166, slightly *wider*.
 
 **(c) A bulk tissue already matches the best cell type.** From the Stage 0
 audit, GTEx *cerebellum* calls eGenes for 0.568 of tested genes, essentially
@@ -206,7 +206,7 @@ reaches single-nucleus territory.
 
 **(d) eGene yield across SingleBrain cell types tracks cell abundance.**
 Ext > IN > Ast > OD > MG > End is close to the ordering of how many nuclei each
-type contributes — a power ordering, not a biological one.
+type contributes. That is a power ordering, not a biological one.
 
 ### The caveat that limits (a) and (b), and probably limits any such test
 
@@ -215,7 +215,7 @@ even though donor count is unchanged. Both arms of both tests therefore trade
 resolution against reads-per-context rather than isolating resolution.
 
 That is not a flaw in this design; it is a property of the data. **In
-single-cell data, resolution and per-context power are intrinsically coupled** —
+single-cell data, resolution and per-context power are intrinsically coupled**:
 at fixed sequencing depth you cannot resolve more contexts without putting
 fewer reads in each. The Bryois pseudobulk arm has the identical confound
 running the other way: pooling all nuclei raises reads-per-context while
@@ -228,7 +228,7 @@ in either direction, and the closure on the main ladder must be coming from
 donor count. That is a bounded, defensible conclusion, and it is the one this
 project can actually reach.
 
-### The Bryois arm, complete — and it agrees
+### The Bryois arm, complete, and it agrees
 
 All 198 files (4.5 GB, 22 chromosomes) are downloaded and size-verified, so
 D-007 now runs at full coverage on **2,489 constrained genes**.
@@ -241,7 +241,7 @@ D-007 now runs at full coverage on **2,489 constrained genes**.
 
 **The chr1–2 negative was noise, exactly as flagged.** At 2 of 22 chromosomes
 this read −0.037 [−0.075, +0.004] and looked like it might contradict the
-SingleBrain result. At full coverage it is **+0.005** — as close to zero as the
+SingleBrain result. At full coverage it is **+0.005**, as close to zero as the
 data can put it. This is why that number was not quoted at the time.
 
 **Matched-gene-set control:** SingleBrain restricted to the same 2,489 genes
@@ -257,8 +257,8 @@ disagree.
 | SingleBrain on the Bryois gene set | more resolution | +0.019 [−0.015, +0.052] | ≤24% |
 
 Two independent studies, with different donors, pipelines and normalisations,
-varying resolution in **opposite directions** — Bryois by pooling nuclei
-together, SingleBrain by splitting them apart — and all three intervals centre
+varying resolution in **opposite directions** (Bryois by pooling nuclei
+together, SingleBrain by splitting them apart) and all three intervals centre
 on zero.
 
 That is the bracket the design was built to produce. If cell-type resolution
@@ -268,14 +268,14 @@ have widened it, and the two tests should have disagreed in sign. They do not.
 **Conclusion: cell-type resolution does not detectably close the
 constrained-gene gap, bounded at ~10% of the observed closure by the tighter
 test.** The ~60% closure on the main ladder is therefore attributable to donor
-count — 205 to 983, a 4.8× increase in power — and not to seeing cell types
+count, 205 to 983 and a 4.8× increase in power, not to seeing cell types
 separately.
 
 ### CORRECTION: it is not donor count either
 
 An earlier version of this report concluded that the closure was "attributable
 to the 4.8× increase in donor count". **That was wrong**, and it was wrong
-because rung 2 was still the provisional significant-only file — the single
+because rung 2 was still the provisional significant-only file, the single
 data point that could separate donor count from assay was the broken one.
 
 With rung 2 repaired, PsychENCODE has the **highest donor count on the ladder**
@@ -291,7 +291,7 @@ donors, accompanied by a change of assay, closes **61%**.
 
 ### What actually closes it: the assay
 
-Scoring all five arms on one common gene set — the 2,489 constrained and 1,174
+Scoring all five arms on one common gene set, the 2,489 constrained and 1,174
 control genes Bryois tested, so no arm is advantaged by which genes it covers
 (figure 5):
 
@@ -306,11 +306,11 @@ control genes Bryois tested, so no arm is advantaged by which genes it covers
 - **Bulk arms: spread 0.000** across a 6.8× range of donors. The two bulk
   studies agree to three decimal places.
 - **Single-nucleus arms: spread 0.035** across a 5.1× range of donors.
-- **Between classes: 0.217** — six times the larger within-class spread.
+- **Between classes: 0.217**, six times the larger within-class spread.
 
 The decisive single comparison is **Bryois pseudobulk**: single-nucleus data
 with all nuclei pooled per donor, the *smallest* study on the ladder at 192
-donors, and it shows the closed gap (0.144) — less than half PsychENCODE's
+donors, and it shows the closed gap (0.144), less than half PsychENCODE's
 0.367 at seven times the donors.
 
 **So all three candidate explanations can now be tested, and two are excluded:**
@@ -332,7 +332,7 @@ adjudicate. Mostafavi's selection account predicts the gap persists at any
 resolution; it does not. Rosen's power account predicts it closes with sample
 size; it does not do that either. What closes it is changing what you measure.
 
-**Candidate mechanisms — hypotheses, not findings.** I cannot distinguish these
+**Candidate mechanisms, stated as hypotheses rather than findings.** I cannot distinguish these
 and am not claiming to:
 
 1. **Nuclear vs cytoplasmic RNA.** snRNA-seq captures largely nascent,
@@ -349,7 +349,7 @@ and am not claiming to:
    families.
 
 **What I cannot rule out.** The bulk and single-nucleus studies differ in more
-than assay — ancestry, brain region, pipeline, GENCODE vintage. The evidence
+than assay: ancestry, brain region, pipeline, GENCODE vintage. The evidence
 that this is assay rather than a study-level accident is that the two bulk
 studies agree exactly despite 6.8× different N and different consortia, and the
 three single-nucleus arms agree despite 5.1× different N and two different
@@ -359,7 +359,7 @@ datasets.
 **What would change this conclusion**, stated so it can be checked:
 
 - a bulk brain eQTL study at ~1,000 donors closing the gap much *less* than
-  SingleBrain does at the same N — that would restore a resolution effect;
+  SingleBrain does at the same N. That would restore a resolution effect;
 - a resolution axis this design cannot reach, e.g. spatial or activity-state
   contexts rather than cell-type labels;
 - the residual gap disappearing under a detection rule that is uniform across
@@ -368,7 +368,7 @@ datasets.
 ## 5. What is provisional
 
 **Rung 2 (PsychENCODE) should not be read yet.** The available file is the
-Bonferroni-filtered release, which contains only significant pairs — 8,190
+Bonferroni-filtered release, which contains only significant pairs: 8,190
 genes, every one an eGene by construction. Genes absent from it cannot be
 distinguished from tested-and-null, so its rates are deflated by an unknown
 amount and its position on the curve is not meaningful. The full association
@@ -385,7 +385,7 @@ filtered file. Either way it should not be interpreted now.
 
 **The unadjusted LOEUF-decile view is misleading and must not be shown alone**
 (figure 3). Across LOEUF deciles 0 → 9, median cortex TPM falls from 12.71 to
-0.18 — a 70-fold drop — coding exons from 17.9 to 3.4, and brain tissues
+0.18 (a 70-fold drop), coding exons from 17.9 to 3.4, and brain tissues
 expressed from 12.1 to 4.5. The least-constrained decile is barely expressed, so
 it has few detectable eQTLs for reasons unrelated to selection. The confound is
 strong enough that **at single-nucleus rungs the unadjusted view inverts, making
@@ -396,7 +396,7 @@ matched control set (D-002) exists.
 
 **Constrained genes are detected in fewer cell types when detected at all**:
 mean 1.56 vs 1.96 major cell types, and 2.41 vs 4.01 subtypes, against matched
-controls. Consistent with more restricted, more context-specific regulation —
+controls. Consistent with more restricted, more context-specific regulation,
 which is the direction both hypotheses predict, so it discriminates neither, but
 it is a real feature of the data.
 

@@ -8,13 +8,13 @@ result.
 
 Why matching is needed at all. Constrained genes are not a random sample of the
 genome. They are longer, more broadly and highly expressed, and have more coding
-exons than average -- and every one of those independently raises the chance an
+exons than average, and every one of those independently raises the chance an
 eQTL study finds a signal. So a raw constrained-vs-rest comparison confounds
 constraint with discovery power in the same direction the hypotheses disagree
 about. Matching removes that.
 
 Why matching can also destroy the result. Mostafavi's proposed mechanism is that
-constrained genes have *complex regulatory landscapes* -- more enhancers, more
+constrained genes have *complex regulatory landscapes*: more enhancers, more
 distributed regulation. Number of cis variants tested and gene length are
 partial proxies for exactly that. Matching on them is therefore matching on a
 mediator, which would regress away the effect being measured. There is no
@@ -66,7 +66,7 @@ CONTROL_LOEUF_MIN = 1.0
 # exons (SMD -1.37), higher expression (-0.61) and *lower* LOEUF (+0.40) than
 # the matched ones. That is, the genes the hypothesis is most about were the
 # ones being dropped, because highly-expressed many-exon genes are rare among
-# unconstrained genes -- which is precisely the confound the matching exists to
+# unconstrained genes, which is precisely the confound the matching exists to
 # handle. Allowing replacement retains 94% of cases and improves balance.
 #
 # The cost is real and is handled rather than ignored: 1,294 unique control
@@ -110,7 +110,7 @@ def _greedy_caliper_match(
     The order is drawn from the seeded generator, so it is reproducible.
 
     With replacement, a control may serve several cases and the draw order stops
-    mattering -- every case simply takes its nearest control. Without it, the
+    mattering, and every case simply takes its nearest control. Without it, the
     pool is consumed as matching proceeds and cases matched late do worse.
     """
     all_rows = pd.concat([cases[cols], pool[cols]])
@@ -139,7 +139,7 @@ def build(caliper: float = CALIPER_SD) -> pd.DataFrame:
 
     `caliper` is in pooled standard deviations of the matching covariates. It is
     a parameter rather than a constant because its value is part of D-002 --
-    "matching tolerance" in the project brief -- and should be recorded with the
+    "matching tolerance" in the project brief, and should be recorded with the
     strategy.
     """
     strategy = decisions.CONTROL_MATCHING.value  # raises until D-002 is recorded
@@ -175,7 +175,7 @@ def build(caliper: float = CALIPER_SD) -> pd.DataFrame:
 
     # Frequency weights. A case is matched once and weighs 1. A control weighs
     # the number of cases it was matched to, so that a control serving three
-    # cases counts three times in any control-side rate -- which is what makes
+    # cases counts three times in any control-side rate, which is what makes
     # the two curves comparable under replacement.
     control_use = pairs["control_gene"].value_counts()
 

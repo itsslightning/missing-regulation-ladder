@@ -5,16 +5,16 @@
 
 Truncated downloads have been the single most common failure in this project:
 Bryois pb.1.gz, Bryois Astrocytes.8.gz, and the 3.3 GB PsychENCODE full file
-twice -- every time with curl exiting 0. A short gzip either raises mid-read or,
+twice, every time with curl exiting 0. A short gzip either raises mid-read or,
 worse, yields fewer genes and looks like a real biological difference rather
 than a broken file.
 
 Two sources of truth, and the order matters:
 
-  1. UPSTREAM manifests -- data/raw/bryois/manifest.json (Zenodo byte sizes)
+  1. UPSTREAM manifests: data/raw/bryois/manifest.json (Zenodo byte sizes)
      and the PsychENCODE Content-Length in sources.py. These are authoritative
      because they come from the server, not from this machine.
-  2. logs/downloads.json -- the size and sha256 stamped locally, used only for
+  2. logs/downloads.json, the size and sha256 stamped locally, used only for
      files no upstream manifest covers.
 
 The order was originally the other way round and was wrong: s00 stamps whatever
@@ -85,7 +85,7 @@ def main() -> int:
                 "manifest.json", "zenodo_record.json",
             ):
                 continue
-            # Derived outputs, not downloads -- see s00_record_downloads.
+            # Derived outputs, not downloads: see s00_record_downloads.
             if path.suffix == ".parquet":
                 continue
 

@@ -1,7 +1,7 @@
 """The decision gate is a safety mechanism, so it gets tested like one.
 
-If these tests fail, the project's central claim -- that no conclusion-shaping
-choice was made implicitly -- stops being true.
+If these tests fail, the project's central claim, that no conclusion-shaping
+choice was made implicitly: stops being true.
 """
 
 from __future__ import annotations

@@ -3,7 +3,7 @@
 Named `downloads` rather than `provenance` deliberately: in the sibling
 scz-target-prioritization repo `provenance.py` means gene-loss accounting, and
 that module is carried over here unchanged. This one answers a different
-question -- not "how many genes survived this step" but "which version of the
+question, not "how many genes survived this step" but "which version of the
 upstream file did this run read".
 
 eQTL catalogues are living resources. GTEx has had ten releases, the SCHEMA
@@ -18,7 +18,7 @@ generated from that file, so a stale download cannot be described as a fresh one
 
 Re-running is cheap and safe: a file already on disk whose sha256 matches its
 recorded entry is left alone and not re-fetched. A file on disk whose hash does
-*not* match the record is an error rather than an overwrite -- that means the
+*not* match the record is an error rather than an overwrite, because that means the
 upstream file changed under a stable URL, which is exactly the failure this
 module exists to catch.
 """
@@ -67,7 +67,7 @@ def _save(log: dict) -> None:
 def record(source: Source, path: Path, *, url: str | None = None) -> dict:
     """Stamp a file that is already on disk, and return its record entry.
 
-    Used both by `fetch` and by the manual-acquisition paths -- MetaBrain and
+    Used both by `fetch` and by the manual-acquisition paths. MetaBrain and
     PGC3 arrive through a form and a data-use agreement respectively, so they
     are copied in by hand but still have to be recorded the same way.
     """
@@ -129,7 +129,7 @@ def already_have(source: Source, path: Path, *, deep: bool = False) -> bool:
         raise DownloadError(
             f"{path} is on disk but its sha256 does not match the one recorded on "
             f"{entry['downloaded_utc']}. Either the file was edited locally or the "
-            "upstream release changed under the same URL. Resolve deliberately -- "
+            "upstream release changed under the same URL. Resolve deliberately: "
             "delete the file to re-fetch, and note the version change in "
             "DECISIONS.md."
         )

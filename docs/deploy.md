@@ -2,7 +2,7 @@
 
 Everything the deployed app needs is already committed, so this is a
 configuration step rather than a build step. **It has to be done from your own
-account** — authorising a Community Cloud app against your GitHub is yours to
+account.** Authorising a Community Cloud app against your GitHub is yours to
 click, not something to automate on your behalf.
 
 ## Why it should just work
@@ -27,8 +27,8 @@ click, not something to automate on your behalf.
 4. Deploy. First build takes a few minutes while it installs pandas, pyarrow,
    plotly, scipy and statsmodels.
 
-Optionally set a custom subdomain under **Advanced settings** — something like
-`missing-regulation-ladder` — so the URL is quotable in an application.
+Optionally set a custom subdomain under **Advanced settings**, something like
+`missing-regulation-ladder`, so the URL is quotable in an application.
 
 ## After it is live
 
@@ -41,12 +41,12 @@ directions.
 - **Memory.** Community Cloud gives ~1 GB. The committed tables total ~35 MB
   and the largest single one is `smr_exposures.parquet` at 17 MB, so this
   should be comfortable. If it ever becomes tight, `detection_long.parquet`
-  (12 MB) is the one to drop — only the SCHEMA heatmap reads it, and it could
+  (12 MB) is the one to drop. Only the SCHEMA heatmap reads it, and it could
   be pre-aggregated to just the 32 SCHEMA genes.
 - **A missing table.** The pages degrade with an explicit error rather than a
   traceback if a parquet is absent; run `uv run python scripts/run_all.py` and
   commit the regenerated `data/processed/`.
 - **Package resolution.** `requirements.txt` pins floors, not exact versions,
-  deliberately — Community Cloud resolves against its own Python. If a
+  deliberately, because Community Cloud resolves against its own Python. If a
   resolution conflict appears, pin the offending package to the version in
   `uv.lock`.

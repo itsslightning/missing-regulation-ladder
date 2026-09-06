@@ -66,7 +66,7 @@ class Provenance:
         self.started = datetime.now(timezone.utc).isoformat(timespec="seconds")
         self.steps: list[Step] = []
 
-    # -- recording ----------------------------------------------------------
+    #, recording ----------------------------------------------------------
 
     def record(
         self,
@@ -149,7 +149,7 @@ class Provenance:
         """Record something worth knowing that is not a count transition."""
         self.record(label, 0, 0, detail=detail, **extra)
 
-    # -- output -------------------------------------------------------------
+    # -- output -----------------------------------------------------------
 
     def to_frame(self) -> pd.DataFrame:
         return pd.DataFrame([s.as_row() for s in self.steps])

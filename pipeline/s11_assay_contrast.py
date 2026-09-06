@@ -1,4 +1,4 @@
-"""Stage 1, step 7: what actually closes the gap -- donors, granularity, or assay?
+"""Stage 1, step 7: what actually closes the gap, donors, granularity, or assay?
 
 This module exists because the answer changed once rung 2 was repaired, and it
 changed in a way that overturned the previous conclusion.
@@ -25,7 +25,7 @@ Two bulk studies differing 6.8x in donors, three single-nucleus arms differing
 assay class. If assay drove it, the two classes would separate and each class
 would be internally flat.
 
-Everything is computed on ONE gene set -- the genes Bryois tested -- so the
+Everything is computed on ONE gene set: the genes Bryois tested, so the
 comparison is not confounded by which genes each study happened to cover.
 Without that restriction the bulk arms are scored on ~17,000 genes and the
 Bryois arms on ~14,700, and the difference in denominators would contaminate

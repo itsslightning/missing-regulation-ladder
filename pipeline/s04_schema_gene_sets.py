@@ -2,7 +2,7 @@
 
 D-009 was settled as "both, published primary": the peer-reviewed Singh et al.
 2022 set drives the headline result, and the 2026-08-21 browser release --
-roughly 3.6x the cases -- runs alongside as a sensitivity analysis. This module
+roughly 3.6x the cases, runs alongside as a sensitivity analysis. This module
 builds both and keeps them clearly labelled, because the two are not
 interchangeable and a figure that silently mixed them would be indefensible.
 
@@ -13,7 +13,7 @@ The two releases differ in more than sample size:
   Browser 2026-08-21       18,573 genes, keyed by ENSG, ships p-values ONLY
 
 So the published set can use the paper's own significance calls, while any set
-drawn from the browser release requires computing an FDR here -- a judgment the
+drawn from the browser release requires computing an FDR here: a judgment the
 published table does not force. That asymmetry is the main reason the published
 set is primary.
 

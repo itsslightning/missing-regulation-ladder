@@ -1,7 +1,7 @@
 """Stage 2, step 2: SMR of SCZ risk on brain gene expression, per rung.
 
 D-004 chose SMR over coloc because it is the only method computable identically
-at every rung -- see DECISIONS.md for why coloc is not, and for the cost of
+at every rung, see DECISIONS.md for why coloc is not, and for the cost of
 that choice.
 
 THE STATISTIC
@@ -24,15 +24,15 @@ WHAT SMR DOES NOT DO, AND WHY IT IS STILL THE RIGHT CHOICE HERE
 It cannot distinguish a shared causal variant from linkage between two distinct
 causal variants, so counts are inflated relative to true colocalization. That is
 accepted deliberately: the bias has the same construction at every rung, and
-Stage 2 asks a CROSS-RUNG question -- how many more loci gain an eQTL
-explanation as the assay changes -- not an absolute count comparable to a
+Stage 2 asks a CROSS-RUNG question: how many more loci gain an eQTL
+explanation as the assay changes, not an absolute count comparable to a
 published coloc figure. HEIDI, the usual remedy, needs regional data that only
 two arms have; it runs separately.
 
 THREE THINGS THAT SILENTLY BREAK SMR, ALL HANDLED HERE
 ------------------------------------------------------
 1. **Allele orientation.** If the eQTL and GWAS report effects against opposite
-   alleles and it is not detected, b_xy flips sign -- a risk-increasing gene
+   alleles and it is not detected, b_xy flips sign: a risk-increasing gene
    reads as protective. Every variant is harmonised on its allele pair and
    dropped if the pair cannot be reconciled.
 2. **Strand-ambiguous variants.** A/T and C/G variants look identical on either
@@ -40,7 +40,7 @@ THREE THINGS THAT SILENTLY BREAK SMR, ALL HANDLED HERE
    the primary and counted, rather than silently kept.
 3. **Weak instruments.** b_xy is a ratio, so a near-zero denominator explodes
    it. SMR's convention is to test only genes with an eQTL at p < 5e-8, which
-   is applied here and reported per rung -- the number of TESTABLE genes is
+   is applied here and reported per rung, the number of TESTABLE genes is
    itself part of the answer.
 
 Writes: data/processed/smr_results.parquet

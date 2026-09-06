@@ -1,8 +1,8 @@
 """Stage 0, step 1: build the gene universe every rung is scored against.
 
 The recovery curve is a fraction, and a fraction needs a denominator that does
-not move between rungs. If each rung supplied its own denominator -- the genes
-that study happened to test -- then a cell type expressing fewer genes would
+not move between rungs. If each rung supplied its own denominator, the genes
+that study happened to test, then a cell type expressing fewer genes would
 score a higher recovery fraction purely by testing fewer genes, and constrained
 genes, which are more broadly expressed, would be systematically advantaged.
 So the denominator is fixed here, once, and every rung is scored against it.
@@ -23,8 +23,8 @@ same GENCODE vintage:
   Bryois          SYMBOL_ENSG compound, unversioned
 
 Stripping the version suffix and joining on bare ENSG is the only key that
-reaches all six. That is not free -- genes retired or merged between GENCODE
-v19 and v38 drop out -- so this script reports the loss at every join rather
+reaches all six. That is not free, genes retired or merged between GENCODE
+v19 and v38 drop out, so this script reports the loss at every join rather
 than letting it disappear silently.
 
 Writes: data/processed/gene_universe.parquet
@@ -81,7 +81,7 @@ def strip_version(series: pd.Series) -> pd.Series:
 def load_constraint() -> pd.DataFrame:
     """gnomAD v2.1.1 LoF constraint, one row per gene.
 
-    The file is one row per *transcript* -- the canonical transcript per gene --
+    The file is one row per *transcript*, the canonical transcript per gene --
     so it is already gene-level, but a handful of genes appear twice where two
     transcripts were scored. The lower LOEUF (more constrained) is kept, which
     matches how gnomAD's own browser presents a gene.
@@ -161,7 +161,7 @@ def load_schema() -> pd.DataFrame:
 
     Deliberately does NOT define "a SCHEMA gene". The browser release ships no
     q-value column, so any gene set requires choosing a p-value column and a
-    correction -- and choosing between this release and the published Singh et
+    correction, and choosing between this release and the published Singh et
     al. 2022 set (DECISIONS.md D-009). Both are conclusion-shaping, so this
     loader carries the statistics through and stops there.
     """
@@ -213,7 +213,7 @@ def build() -> pd.DataFrame:
         detail=(
             "Inner join on unversioned ENSG. Losses are genes present in gnomAD "
             "v2.1.1 (GENCODE v19 era) with no counterpart in the GTEx v10 "
-            "median-TPM matrix -- retired or merged IDs, mostly."
+            "median-TPM matrix, retired or merged IDs, mostly."
         ),
         dropped=sorted(set(constraint.index) - set(universe.index)),
     )
@@ -226,14 +226,14 @@ def build() -> pd.DataFrame:
         matched,
         detail=(
             "LEFT join: genes without SCHEMA statistics stay in the universe. "
-            "They are still valid denominator entries -- a gene can lack an "
+            "They are still valid denominator entries: a gene can lack an "
             "exome association and still have, or lack, a cis-eQTL."
         ),
         dropped=sorted(universe.index[universe["schema_cc_p"].isna()]),
     )
 
     # Constraint labels. These are gnomAD's and SCHEMA's own conventional cut
-    # points, not a threshold invented here -- see config.py.
+    # points, not a threshold invented here, see config.py.
 
     universe["is_constrained_loeuf"] = universe["loeuf"] < LOEUF_CONSTRAINED_MAX
     universe["is_constrained_pli"] = universe["pli"] >= PLI_CONSTRAINED_MIN

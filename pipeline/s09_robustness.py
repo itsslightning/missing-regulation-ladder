@@ -1,7 +1,7 @@
 """Stage 1, step 5: does the headline survive the choices it rests on?
 
-The Stage 1 result is one number -- 59.9% of the constrained-gene gap closes
-between bulk cortex and single-nucleus major cell types -- and it sits on top of
+The Stage 1 result is one number, 59.9% of the constrained-gene gap closes
+between bulk cortex and single-nucleus major cell types, and it sits on top of
 four choices that could each have gone another way. Two of those were promised
 a robustness check in DECISIONS.md and had not been run. This runs them all.
 
@@ -19,7 +19,7 @@ a robustness check in DECISIONS.md and had not been run. This runs them all.
 
 Every variant rebuilds the matched control set from scratch under the same
 D-002 rules and the same seed, because a different case set needs its own
-controls -- reusing the primary controls would silently mismatch.
+controls, reusing the primary controls would silently mismatch.
 
 Writes: data/processed/robustness.parquet
 """
@@ -53,8 +53,8 @@ def load_v4_constraint() -> pd.DataFrame:
     """gnomAD v4.1 LOEUF, one row per gene.
 
     v4.1 ships one row per transcript with MANE Select and canonical flags.
-    MANE Select is preferred where present -- it is the transcript the field
-    now treats as the gene's representative -- falling back to canonical, then
+    MANE Select is preferred where present: it is the transcript the field
+    now treats as the gene's representative, falling back to canonical, then
     to the lowest LOEUF, which is how the gnomAD browser presents a gene.
     """
     path = (
@@ -195,7 +195,7 @@ def main() -> None:
         res = gap_and_closure(hits, cases, ctrls, w, rng)
         rows.append({"family": family, "variant": label, **res})
 
-    # SCHEMA sets are not matched -- they are a named gene list, so the
+    # SCHEMA sets are not matched: they are a named gene list, so the
     # comparison is the raw recovery of that list, not a gap.
     for label, col in (
         ("published, FDR < 0.05  (primary)", "is_schema_published_fdr"),

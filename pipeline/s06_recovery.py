@@ -208,7 +208,7 @@ def by_constraint_bin(
 
     `metric` is "loeuf" (gnomAD deciles) or "pli" (four conventional bands).
     Both are reported because the project brief asks for LOEUF/pLI
-    stratification and the two do not select the same genes -- LOEUF < 0.35
+    stratification and the two do not select the same genes. LOEUF < 0.35
     gives 2,937 genes and pLI >= 0.9 gives 3,025, overlapping but not nested.
 
     Stratification is on the whole universe rather than the matched sets: the
@@ -283,7 +283,7 @@ def gap_closure(
     closure = (gap_from - gap_to) / gap_from
 
     Both gaps are computed on the SAME bootstrap replicate so the ratio's
-    interval accounts for the correlation between them -- the two rungs share
+    interval accounts for the correlation between them: the two rungs share
     the same genes, so computing the intervals separately and dividing would
     overstate the uncertainty considerably.
 
@@ -346,7 +346,7 @@ def by_loeuf_within_expression(
     cortex TPM falls from 12.71 to 0.18, coding exons from 17.9 to 3.4, and the
     number of brain tissues expressed from 12.1 to 4.5. The least-constrained
     decile is barely expressed, so it has few detectable eQTLs for reasons that
-    have nothing to do with selection -- and at the single-nucleus rungs that
+    have nothing to do with selection, and at the single-nucleus rungs that
     confound is strong enough to make the MOST constrained genes look like the
     BEST recovered.
 
@@ -464,7 +464,7 @@ def main() -> None:
         cfg.DIR_PROCESSED / "recovery_schema.parquet", index=False
     )
 
-    # -- report -------------------------------------------------------------
+    # -- report -----------------------------------------------------------
     for arm in ARMS:
         sub = curve[curve["arm"] == arm]
         print(f"\n=== {arm} ===")

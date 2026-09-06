@@ -7,8 +7,8 @@ docs/stage0_audit.md.
 What it is looking for, in order of how much damage each does if missed:
 
 1. Whether a rung supplies a *denominator*. Recovery is a fraction. A file of
-   significant associations only -- which is what PsychENCODE's Bonferroni
-   release is -- gives a numerator and nothing else. Scoring it against the
+   significant associations only, which is what PsychENCODE's Bonferroni
+   release is, gives a numerator and nothing else. Scoring it against the
    fixed gene universe is possible; scoring it against "genes tested" is not,
    because that set is not in the file.
 
@@ -66,13 +66,13 @@ def _read_gz(path: Path, **kwargs) -> pd.DataFrame | None:
 def _universe() -> set[str]:
     if not GENE_UNIVERSE.exists():
         raise FileNotFoundError(
-            f"{GENE_UNIVERSE} missing -- run pipeline.s01_gene_universe first."
+            f"{GENE_UNIVERSE} missing, run pipeline.s01_gene_universe first."
         )
     return set(pd.read_parquet(GENE_UNIVERSE).index)
 
 
 # ---------------------------------------------------------------------------
-# Rungs 3 and 4 -- SingleBrain
+# Rungs 3 and 4: SingleBrain
 # ---------------------------------------------------------------------------
 
 
@@ -133,7 +133,7 @@ def _add_fractions(out: pd.DataFrame, universe: set[str]) -> pd.DataFrame:
 
 
 # ---------------------------------------------------------------------------
-# Rung 1 -- GTEx
+# Rung 1: GTEx
 # ---------------------------------------------------------------------------
 
 
@@ -171,7 +171,7 @@ def audit_gtex(universe: set[str]) -> pd.DataFrame:
 
 
 # ---------------------------------------------------------------------------
-# Rung 2 -- PsychENCODE
+# Rung 2: PsychENCODE
 # ---------------------------------------------------------------------------
 
 
@@ -195,7 +195,7 @@ def audit_psychencode(universe: set[str]) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Power contrast -- Bryois
+# Power contrast: Bryois
 # ---------------------------------------------------------------------------
 
 
@@ -221,7 +221,7 @@ def audit_bryois(universe: set[str]) -> list[dict]:
             )
         except EOFError:
             # A truncated download, not a format problem. Worth surfacing
-            # loudly rather than skipping quietly -- a short file would
+            # loudly rather than skipping quietly, since a short file would
             # otherwise show up as a genuinely smaller gene count.
             print(f"  WARNING: {path.name} is truncated; re-download it.")
             continue
@@ -276,13 +276,13 @@ def main() -> None:
     parts.append(f"Gene universe: **{len(universe):,}** genes "
                  "(protein-coding, gnomAD v2.1.1 LOEUF, GTEx brain expression).\n")
 
-    parts.append("\n## Rung 1 — GTEx v10 brain\n")
+    parts.append("\n## Rung 1: GTEx v10 brain\n")
     if gtex.empty:
         parts.append("_Not yet extracted._\n")
     else:
         parts.append(_md_table(gtex, fl) + "\n")
 
-    parts.append("\n## Rung 2 — PsychENCODE\n")
+    parts.append("\n## Rung 2: PsychENCODE\n")
     if not pec["available"]:
         parts.append("_Not downloaded._\n")
     else:
@@ -293,10 +293,10 @@ def main() -> None:
             f"- **supplies a denominator: no.** {pec['note']}\n"
         )
 
-    parts.append("\n## Rungs 3–4 — SingleBrain\n")
+    parts.append("\n## Rungs 3–4: SingleBrain\n")
     parts.append(_md_table(sb, fl) + "\n")
 
-    parts.append("\n## Power contrast — Bryois\n")
+    parts.append("\n## Power contrast: Bryois\n")
     if bry:
         parts.append(_md_table(pd.DataFrame(bry), ("id_parsed_ok", "min_p")) + "\n")
     else:

@@ -22,14 +22,14 @@ Of **184** genome-wide significant SCZ loci (PGC3 European, MHC excluded,
 > single-nucleus explains 71.
 
 Single-nucleus roughly **doubles** the share of schizophrenia loci with a
-causal expression explanation, against the best bulk study — while using 29%
+causal expression explanation, against the best bulk study, while using 29%
 *fewer* donors.
 
 ## 2. This refines Stage 1 rather than merely repeating it
 
 Stage 1 found that the constrained-gene *gap* is set by assay and is completely
 flat with donor count (0.367 at N=205 and at N=1,387). Stage 2's outcome is a
-different quantity — absolute locus counts — and there donor count **does**
+different quantity, absolute locus counts, and there donor count **does**
 help:
 
 | Comparison | Donor change | Loci explained |
@@ -38,7 +38,7 @@ help:
 | PsychENCODE → SingleBrain (across assay) | ×0.71 | 27 → 59 (**+119%**) |
 
 Both are real and they are not in conflict. More donors raise the overall
-detection level, so more genes clear the instrument threshold — testable genes
+detection level, so more genes clear the instrument threshold. Testable genes
 go 2,648 → 4,553 within bulk. What donors do **not** do is close the
 constrained-gene deficit specifically. The assay does both.
 
@@ -51,14 +51,14 @@ to be causal, it makes **more genes testable at all**.
 The pipeline was checked against known biology before any of the above was
 believed.
 
-**C4A is the top-ranked non-MHC-artefact gene, b_xy = +0.189** — higher
+**C4A is the top-ranked non-MHC-artefact gene, b_xy = +0.189.** Higher
 expression raises risk. That is the best-established causal direction in
 schizophrenia genetics (Sekar et al. 2016) and the analysis recovers it with
 the correct sign. CACNA1C, FURIN, KCTD13, ASPHD1, BTN3A2, GATAD2A and GLT8D1
 also appear in the top 15.
 
 **Sign balance across significant results is 0.501**, so there is no systematic
-orientation error — the thing most likely to be silently wrong in an SMR
+orientation error, the thing most likely to be silently wrong in an SMR
 analysis.
 
 **A near-universal allele flip was investigated, not assumed.** Harmonisation
@@ -93,7 +93,7 @@ target class for a decade:
 
 A bulk-tissue eQTL screen would not have surfaced these as causal.
 
-## 5. The CHRM4 callback — an informative negative
+## 5. The CHRM4 callback: an informative negative
 
 The brief asked to flag any connection back to CHRM4 and the muscarinic
 mechanism. The honest answer is that **there is none, and the reason is the
@@ -109,22 +109,22 @@ point of the project.**
 | SLC5A7 | 1 | 1 | 1 |
 
 No muscarinic receptor reaches SMR significance. Only SLC5A7, the choline
-transporter, does — in bulk only.
+transporter, does, and only in bulk.
 
 **CHRM4 is this project's thesis in a single gene.** It is:
 
-- **in the constrained case set of this very study** — LOEUF 0.265, decile 0
+- **in the constrained case set of this very study**: LOEUF 0.265, decile 0
   (the most constrained), pLI 0.974;
 - **well expressed in cortex** (11.14 TPM), so its invisibility is not a
   detection failure from low expression;
-- **an approved drug target** — the M1/M4 agonist xanomeline-trospium
+- **an approved drug target**: the M1/M4 agonist xanomeline-trospium
   (Cobenfy) was approved in 2024;
 - **and it has no detectable cis-eQTL in brain at any assay or resolution
   tested here.**
 
-A genetics-led target discovery pipeline built on eQTLs — including the sibling
+A genetics-led target discovery pipeline built on eQTLs, including the sibling
 [scz-target-prioritization](https://github.com/itsslightning/scz-target-prioritization)
-repo, which surfaced CHRM4 by a route that did not depend on eQTLs — would
+repo, which surfaced CHRM4 by a route that did not depend on eQTLs, would
 never have found it through regulatory evidence. CHRM4 lives in the residual
 ~40% of the constrained-gene gap that **no assay and no resolution closes**.
 
@@ -143,11 +143,11 @@ genes most likely to matter.
   data are not yet run.
 - **Locus definition is distance-based**, not LD-based, because an
   ancestry-matched LD reference is not in hand. The same definition applies to
-  every rung, so the ratio is what this measures — not the absolute locus count.
+  every rung, so the ratio is what this measures, not the absolute locus count.
 - **The MHC is excluded** as a single megabase-spanning LD block that distance
   clumping would collapse into one locus holding hundreds of genes.
 - **rung 2 uses a reconstructed standard error** (from beta and nominal p),
   exact for a Wald test but a reconstruction nonetheless.
-- **Ancestry is matched but not perfectly** — PGC3 European against
+- **Ancestry is matched but not perfectly.** PGC3 European against
   European-ancestry eQTLs (D-014), which is the right pairing for SMR's LD
   assumption, but GTEx is only predominantly European.

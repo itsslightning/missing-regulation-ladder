@@ -10,7 +10,7 @@ sentinels loaded once, so a stage that would trip an unmade decision fails at
 that stage rather than after the rest of the work is thrown away.
 
 Stages that depend on data still downloading are skipped with a note rather
-than failing the run -- rung 2 and the Bryois arm both behave this way, and a
+than failing the run, rung 2 and the Bryois arm both behave this way, and a
 partial pipeline is the normal state of this project until those land.
 """
 
@@ -72,7 +72,7 @@ def main() -> int:
 
     failed = []
     for name, what in stages:
-        print(f"\n{'=' * 78}\n{name}  --  {what}\n{'=' * 78}")
+        print(f"\n{'=' * 78}\n{name} :  {what}\n{'=' * 78}")
         t0 = time.time()
         try:
             mod = importlib.import_module(f"pipeline.{name}")

@@ -7,13 +7,13 @@ Replaces the inline shell loop this project started with, which had two flaws
 that both cost real time:
 
   1. It skipped any file that existed and was non-empty, so a file truncated by
-     an interrupted run was never repaired -- it just sat there looking done.
+     an interrupted run was never repaired, it just sat there looking done.
      This checks the byte size against the Zenodo manifest instead.
   2. It walked the record cell-type-major. Alphabetically the pseudobulk files
      sort last, so it would have fetched all eight cell types before the arm
      they are compared against. This goes chromosome-major, so every
      chromosome completes across all nine arms together and the D-007 contrast
-     becomes valid -- if imprecise -- as early as possible.
+     becomes valid: if imprecise, as early as possible.
 
 Resumes with an HTTP Range request, so an interrupted 45 MB file costs only the
 bytes still missing. Verifies each file against the manifest after writing and
@@ -84,7 +84,7 @@ def main() -> int:
         default=4,
         help="concurrent downloads. Zenodo throttles per connection rather "
         "than per client, so a few in parallel is several times faster than "
-        "one. Kept deliberately small -- this is someone else's archive.",
+        "one. Kept deliberately small: this is someone else's archive.",
     )
     args = ap.parse_args()
 

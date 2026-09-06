@@ -12,7 +12,7 @@ other into one locus. No LD reference is used.
 
 That is a deliberate simplification and it is stated rather than buried.
 LD-based clumping is more standard, but it needs a reference panel matched to
-the GWAS ancestry, and the result here is a COUNT COMPARED ACROSS RUNGS -- the
+the GWAS ancestry, and the result here is a COUNT COMPARED ACROSS RUNGS, the
 same locus definition applies to every rung, so a locus that is slightly too
 wide or too narrow affects all rungs identically. The absolute number of loci
 should not be quoted against a published locus count; the ratio between rungs
@@ -25,7 +25,7 @@ conventional and is reported.
 
 ATTRIBUTING A GENE TO A LOCUS
 -----------------------------
-An SMR result is a statement about a specific variant -- the gene's top cis
+An SMR result is a statement about a specific variant: the gene's top cis
 instrument. So a gene is attributed to the locus containing THAT variant, not
 to the locus nearest its transcription start site. This is the honest mapping:
 it is the variant the causal claim runs through.
@@ -166,7 +166,7 @@ def main() -> None:
     res = pd.DataFrame(rows)
     res["frac_explained"] = res["loci_explained"] / res["loci_total"]
 
-    # Which loci are explained ONLY at single-nucleus resolution -- the
+    # Which loci are explained ONLY at single-nucleus resolution, the
     # question the brief actually asks.
     bulk = set(sig.loc[sig["rung"].isin(["gtex_cortex", "bulk_brain"]), "locus"])
     sn = set(sig.loc[sig["rung"].isin(["sn_major", "sn_subtype"]), "locus"])

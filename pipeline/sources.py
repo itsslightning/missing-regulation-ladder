@@ -5,7 +5,7 @@ Two things are recorded here that are usually left implicit and later cost a
 day each.
 
 The first is redistribution. `redistributable` is not "is this data public" --
-all of it is public -- it is "may this repository host a copy". CC-BY-4.0 says
+all of it is public, it is "may this repository host a copy". CC-BY-4.0 says
 yes with attribution; a registration form or a data-use agreement says no,
 regardless of how freely the file downloads. Sources marked False are written
 to data/restricted/, which .gitignore excludes as a whole directory, and only
@@ -75,8 +75,8 @@ GNOMAD_CONSTRAINT = Source(
         "v2.1.1 rather than v4.1 because LOEUF (oe_lof_upper) from v2.1.1 is the "
         "vintage Mostafavi et al. 2023 and the SCHEMA papers used, and the "
         "decile field oe_lof_upper_bin ships with it. It also carries the exact "
-        "covariates the control matching needs -- num_coding_exons, cds_length, "
-        "gene_length, brain_expression -- in one table. v4.1 is downloaded "
+        "covariates the control matching needs: num_coding_exons, cds_length, "
+        "gene_length, brain_expression, in one table. v4.1 is downloaded "
         "alongside it as a robustness check, not as the primary."
     ),
 )
@@ -117,7 +117,7 @@ SCHEMA_GENES = Source(
         "WARNING, this is a live decision, see the Stage 0 report. The browser "
         "release carries 87,959 cases / 150,587 controls, roughly 3.6x the "
         "24,248 cases of the published Singh et al. 2022 analysis, and it ships "
-        "no q-value column -- only per-gene p-values. Using it means the gene "
+        "no q-value column: only per-gene p-values. Using it means the gene "
         "set is larger and better powered but not the one in the citable paper; "
         "using Singh 2022's supplementary table means the published set but "
         "fewer genes. Do not treat this file as 'the SCHEMA gene set' without "
@@ -138,7 +138,7 @@ SCHEMA_PUBLISHED = Source(
     version="Supplementary Table 5",
     notes=(
         "The PRIMARY SCHEMA gene set (D-009). 18,324 genes with `P meta` and, "
-        "crucially, `Q meta` -- the FDR the paper's own 10-gene and 32-gene "
+        "crucially, `Q meta`, the FDR the paper's own 10-gene and 32-gene "
         "thresholds are defined on. The browser release ships no q-value, so "
         "using it would mean inventing an FDR; this table does not force that "
         "choice, which is why it is primary.\n\n"
@@ -149,7 +149,7 @@ SCHEMA_PUBLISHED = Source(
 )
 
 # ---------------------------------------------------------------------------
-# Rung 1 -- bulk, single tissue
+# Rung 1: bulk, single tissue
 # ---------------------------------------------------------------------------
 
 GTEX_V10 = Source(
@@ -169,13 +169,13 @@ GTEX_V10 = Source(
         "Despite the .tar extension the archive is gzip-compressed, so it needs "
         "tar -xz. Only *Brain*.egenes.txt.gz members are extracted. The egenes "
         "files list every gene tested, not only significant ones, which is what "
-        "makes a denominator possible -- recovery fraction needs the tested set, "
+        "makes a denominator possible, recovery fraction needs the tested set, "
         "not just the hits."
     ),
 )
 
 # ---------------------------------------------------------------------------
-# Rung 2 -- bulk brain, meta-analysed
+# Rung 2: bulk brain, meta-analysed
 # ---------------------------------------------------------------------------
 
 PSYCHENCODE = Source(
@@ -192,7 +192,7 @@ PSYCHENCODE = Source(
     version="DER-08b (hg38)",
     notes=(
         "Held as restricted until the resource.psychencode.org terms page is "
-        "read and quoted in DECISIONS.md -- the data downloads without a click "
+        "read and quoted in DECISIONS.md, the data downloads without a click "
         "through, which is not the same as a licence to rehost. Derived counts "
         "are publishable either way."
     ),
@@ -223,7 +223,7 @@ METABRAIN = Source(
 )
 
 # ---------------------------------------------------------------------------
-# Rungs 3 and 4 -- single-nucleus, major cell types and subtypes
+# Rungs 3 and 4: single-nucleus, major cell types and subtypes
 # ---------------------------------------------------------------------------
 
 SINGLEBRAIN = Source(
@@ -245,13 +245,13 @@ SINGLEBRAIN = Source(
         "recovery-curve input. The matching *_full_assoc.tsv.gz files are 4-10 "
         "GB each (~150 GB for the set) and are needed only for Stage 2 "
         "colocalization; they are fetched per gene of interest, never in bulk. "
-        "Phenotypes are on GENCODE v38, which does not match GTEx v10 -- see the "
+        "Phenotypes are on GENCODE v38, which does not match GTEx v10, see the "
         "gene-ID harmonisation note in the Stage 0 report."
     ),
 )
 
 # ---------------------------------------------------------------------------
-# Replication / power contrast -- deliberately not a rung
+# Replication / power contrast: deliberately not a rung
 # ---------------------------------------------------------------------------
 
 BRYOIS = Source(
@@ -270,7 +270,7 @@ BRYOIS = Source(
     notes=(
         "The most useful thing in this project that the report did not ask for. "
         "The Feb-2023 update added pb[1-22].gz, a 'tissue-like' pseudobulk "
-        "analysis aggregating reads across all nuclei per individual -- the same "
+        "analysis aggregating reads across all nuclei per individual, the same "
         "donors, pipeline and normalisation as the 8 cell-type files, differing "
         "only in resolution. That is a within-study bulk-vs-cell-type contrast "
         "at fixed N, which is the one comparison in this whole design where "
@@ -301,7 +301,7 @@ PGC3_SCZ = Source(
         "agreement-gated distribution. The figshare record reports "
         "is_public=True, is_embargoed=False and CC-BY-4.0, and the files are "
         "named '.public.v3' by the depositors. So no data-use agreement is "
-        "accepted to obtain it and it may be redistributed with attribution -- "
+        "accepted to obtain it and it may be redistributed with attribution: "
         "which is why this entry is redistributable=True where an earlier "
         "version of this file assumed otherwise.\n\n"
         "The EUROPEAN subset is used rather than the larger core or primary "
@@ -333,5 +333,5 @@ SOURCES_BY_KEY = {s.key: s for s in ALL_SOURCES}
 
 
 def restricted_sources() -> tuple[Source, ...]:
-    """Sources that may not be rehosted -- the Stage 3 pre-publication check."""
+    """Sources that may not be rehosted, the Stage 3 pre-publication check."""
     return tuple(s for s in ALL_SOURCES if not s.redistributable)

@@ -2,7 +2,7 @@
 
 No two sources here share a GENCODE vintage, so bare unversioned ENSG is the
 only key that reaches all six. A silent failure in this function would not
-crash anything -- it would just quietly drop genes from the denominator and
+crash anything, it would just quietly drop genes from the denominator and
 shift the recovery curve.
 """
 

@@ -1,6 +1,6 @@
 """Stage 0, step 0: stamp every downloaded file into logs/provenance.json.
 
-Downloads during exploration happen with whatever tool is to hand -- curl, a
+Downloads during exploration happen with whatever tool is to hand, curl, a
 browser, a colleague's USB stick. That is fine, but it leaves no record, and
 "which version of GTEx did this number come from" is unanswerable six weeks
 later. This script walks the data directories, matches each file to its entry
@@ -93,7 +93,7 @@ def main() -> None:
 
             # Never stamp a file that is still arriving. A record made
             # mid-download captures a truncated size and the hash of a partial
-            # file, and then *looks* authoritative -- which is exactly how a
+            # file, and then *looks* authoritative, which is exactly how a
             # completed file later came to read as "164% of expected".
             expected = _expected_size(path)
             if expected is not None and path.stat().st_size != expected:

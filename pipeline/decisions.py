@@ -10,7 +10,7 @@ So each one is an `OpenDecision`. It has a question, the alternatives that were
 actually on the table, and no value. Reading `.value` before the decision is
 recorded raises `UndecidedError` naming the decision and pointing at DECISIONS.md.
 Code that depends on one of these therefore cannot run early and quietly pick a
-default -- it stops.
+default, it stops.
 
 Recording a decision is a deliberate, auditable act:
 
@@ -22,7 +22,7 @@ Recording a decision is a deliberate, auditable act:
 
 `decide()` refuses anything not in `alternatives`, so a decision cannot drift
 into an option nobody wrote down and weighed. It also refuses to silently
-overwrite an existing choice -- changing your mind requires `force=True`, which
+overwrite an existing choice: changing your mind requires `force=True`, which
 is logged, because a mid-analysis redefinition of significance is exactly the
 kind of thing a methods section has to disclose.
 
@@ -54,7 +54,7 @@ class OpenDecision:
 
     `key` matches the D-00x identifier used in DECISIONS.md so the two records
     can be lined up by eye. `alternatives` maps an option name to the one-line
-    statement of what choosing it would mean -- written before the data is
+    statement of what choosing it would mean, written before the data is
     seen, so the menu is not quietly rewritten to fit the result.
     """
 
@@ -140,7 +140,7 @@ class OpenDecision:
 #
 # Each is registered here with its alternatives stated *before* any result is
 # known. The wording is deliberately about what the option means, not which is
-# preferable -- the argument for a particular choice belongs in DECISIONS.md
+# preferable: the argument for a particular choice belongs in DECISIONS.md
 # next to the date it was made.
 # ---------------------------------------------------------------------------
 
@@ -154,8 +154,8 @@ DETECTABLE_EQTL = OpenDecision(
         "every rung look successful and flatters the power account; a strict one "
         "suppresses the small effects that single-nucleus data is supposed to "
         "reveal and flatters the selection account. The rungs also do not ship "
-        "the same statistics -- GTEx and SingleBrain provide per-gene "
-        "permutation q-values, Bryois provides only nominal p-values -- so any "
+        "the same statistics. GTEx and SingleBrain provide per-gene "
+        "permutation q-values, Bryois provides only nominal p-values, so any "
         "definition has to say how that gap is bridged."
     ),
     alternatives={
@@ -218,7 +218,7 @@ CONTROL_MATCHING = OpenDecision(
             "a viva and hides which covariate is doing the work."
         ),
         "stratified_no_matching": (
-            "No matched control set at all -- compare across LOEUF deciles and "
+            "No matched control set at all, compare across LOEUF deciles and "
             "adjust for covariates in a regression instead. Avoids discarding "
             "genes and makes the adjustment explicit; loses the simple, "
             "interpretable two-curve plot the report asks for."
@@ -273,8 +273,8 @@ COLOC_PRIORS = OpenDecision(
     why_it_matters=(
         "coloc's p12 prior directly sets how readily a shared causal variant is "
         "declared. The default p12=1e-5 is known to be generous, and the number "
-        "of loci that 'gain an eQTL explanation' at higher resolution -- the "
-        "Stage 2 headline -- moves with it. Cell-subtype rungs test more "
+        "of loci that 'gain an eQTL explanation' at higher resolution: the "
+        "Stage 2 headline, moves with it. Cell-subtype rungs test more "
         "features, compounding the effect."
     ),
     alternatives={

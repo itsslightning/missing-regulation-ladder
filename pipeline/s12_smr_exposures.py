@@ -2,7 +2,7 @@
 
 SMR needs, per gene per rung, the top cis-eQTL variant and its effect and
 standard error. This builds that table for every arm, keyed on rsID, and does
-so without any GWAS input -- so it runs before PGC3 access arrives and is the
+so without any GWAS input, so it runs before PGC3 access arrives and is the
 thing PGC3 is joined onto when it does.
 
 WHY rsID
@@ -145,7 +145,7 @@ VARIANT_MAP = cfg.DIR_PROCESSED / "variant_map.parquet"
 
 
 def load_variant_map() -> pd.DataFrame:
-    """rsID, both genome builds, and the allele pair -- the Stage 2 keystone.
+    """rsID, both genome builds, and the allele pair: the Stage 2 keystone.
 
     Bryois's snp_pos.txt.gz turns out to carry far more than positions:
 
@@ -162,7 +162,7 @@ def load_variant_map() -> pd.DataFrame:
     3. **Allele alignment, which SMR cannot be correct without.** An SMR
        estimate is an eQTL effect propagated through a GWAS effect at the same
        variant. If the two studies report effects relative to opposite alleles
-       and that is not detected, the estimate's SIGN flips -- turning a gene
+       and that is not detected, the estimate's SIGN flips, turning a gene
        whose increased expression raises risk into one that appears protective.
        That is a silent, plausible-looking error, so the allele pair is carried
        from here rather than assumed.
@@ -205,7 +205,7 @@ def load_psychencode(vmap: pd.DataFrame) -> pd.DataFrame:
     rsID and harmonised on alleles. The variant map supplies both.
 
     Streamed in chunks like s05's reducer, but keeping the SNP identity of the
-    best variant rather than only its p-value -- SMR needs to know WHICH
+    best variant rather than only its p-value. SMR needs to know WHICH
     variant the instrument is.
     """
     from pipeline.s05_detection import PSYCHENCODE_FULL_COLUMNS
@@ -335,8 +335,8 @@ def main() -> None:
                 "be correct without: if the eQTL and GWAS report effects "
                 "against opposite alleles and that is missed, the SMR estimate "
                 "flips sign and a risk-increasing gene reads as protective. "
-                "Uncovered variants are not lost -- PGC3 supplies its own "
-                "alleles -- but they lose the independent cross-check."
+                "Uncovered variants are not lost. PGC3 supplies its own "
+                "alleles, but they lose the independent cross-check."
             ),
         )
 

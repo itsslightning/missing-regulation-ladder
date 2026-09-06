@@ -4,7 +4,7 @@ Run once. `decide()` refuses to overwrite an existing choice without
 `force=True`, so re-running is a no-op that reports what is already set rather
 than quietly re-stamping the log.
 
-Only D-002 lives in decisions.py -- it is one of the four sentinels that gate
+Only D-002 lives in decisions.py, it is one of the four sentinels that gate
 analysis code. D-007, D-009 and D-010 are recorded in DECISIONS.md as prose,
 because they shape the design rather than a single parameter the pipeline reads.
 """

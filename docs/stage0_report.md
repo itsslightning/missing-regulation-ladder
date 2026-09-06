@@ -30,7 +30,7 @@ what makes the whole comparison interpretable.
 | Power contrast | Bryois, 8 cell types + pseudobulk | **Yes** | Nominal p-values only; needs its own correction. |
 
 Downloaded and hash-stamped so far: 47 files, 0.29 GB, all recorded in
-`logs/provenance.json` with URL, UTC date and sha256.
+`logs/downloads.json` with URL, UTC date and sha256.
 
 ---
 
@@ -58,7 +58,7 @@ Consequence: rung 2 currently rests on PsychENCODE alone. See **D-011**.
 ### 3.3 PsychENCODE supplies a numerator but not a denominator
 
 `DER-08b_hg38_eQTL.bonferroni.txt` contains 674,626 significant variant–gene
-pairs across **8,190 unique genes — every one of which is an eGene by
+pairs across **8,190 unique genes, every one of which is an eGene by
 construction**. The set of genes tested-but-not-significant is not in the file.
 
 You cannot compute "fraction of genes with a detectable eQTL" from a file that
@@ -66,7 +66,7 @@ only contains genes with detectable eQTLs. Two ways out:
 
 - score PsychENCODE against the fixed gene universe (what the pipeline now
   does), accepting that its denominator is assumed rather than observed; or
-- pull `Full_hg19_cis-eQTL.txt.gz` (3.3 GB, hg19 only — needs a liftOver that
+- pull `Full_hg19_cis-eQTL.txt.gz` (3.3 GB, hg19 only, needing a liftOver that
   the other rungs do not).
 
 The first is implemented. The second is available if rung 2 turns out to be
@@ -104,7 +104,7 @@ One mismatch turned out **not** to be real. I initially flagged SingleBrain's
 `qval` as under-corrected relative to GTEx's, which would have invalidated the
 cross-rung comparison. Checking directly: SingleBrain `qval` is a rank-preserving
 transform of `Random_FDR` (Spearman ρ = 1.000000), which is a within-gene
-variant correction — the same two-stage structure as GTEx's Storey-on-permutation
+variant correction, the same two-stage structure as GTEx's Storey-on-permutation
 q. **The two are comparable.** Recorded here because the opposite conclusion
 would have been a serious error.
 
@@ -129,8 +129,8 @@ neurons tested are eGenes. A constrained-gene recovery fraction measured that wa
 would rise to ≈1 at rungs 3–4 **whatever the biology**, and the curve would
 "support" the power account by construction.
 
-Read the right-hand column — everything scored against one fixed 18,481-gene
-universe — and the ladder becomes interpretable: bulk cortex 0.445 → best
+Read the right-hand column, where everything is scored against one fixed
+18,481-gene universe, and the ladder becomes interpretable: bulk cortex 0.445 → best
 single-nucleus cell type 0.579. A real but modest 13-percentage-point step.
 
 The pipeline therefore fixes the denominator in `s01_gene_universe.py`. This was
@@ -146,13 +146,13 @@ question and a foregone conclusion.
 2. **eGene yield tracks cell abundance, not resolution.** Ext > IN > Ast > OD >
    MG > End is very close to the ordering of how many nuclei each cell type
    contributes. And GTEx *cerebellum* (0.568 of tested) essentially matches
-   SingleBrain excitatory neurons (0.579 of universe) — a bulk tissue matching
+   SingleBrain excitatory neurons (0.579 of universe). A bulk tissue matching
    the best single-nucleus cell type. This is the power confound, visible in the
    data before any constraint stratification. It is exactly why the Bryois
    pseudobulk arm (**D-007**) matters.
 
 Nothing above is stratified by constraint yet. These are whole-transcriptome
-rates and say nothing directly about the hypotheses — but they set the ceiling
+rates and say nothing directly about the hypotheses, but they set the ceiling
 and the confound structure Stage 1 has to work inside.
 
 ---
@@ -221,7 +221,7 @@ Case representativeness: retained vs all constrained genes, LOEUF SMD 0.027.
 Matching **with** replacement was not the default and the reason is recorded in
 full under D-002: 1:1 without replacement dropped 40% of constrained genes, and
 the dropped 40% were systematically the most constrained, longest and
-most-expressed — the genes the hypothesis is most about.
+most-expressed: the genes the hypothesis is most about.
 
 ### 8.2 SCHEMA sets (D-009)
 
@@ -234,7 +234,7 @@ most-expressed — the genes the hypothesis is most about.
 The pipeline reproduces the published result exactly: SETD1A, CUL1, XPO7, TRIO,
 CACNA1G, SP4, GRIA3, GRIN2A, HERC1, RB1CC1 as the exome-wide ten.
 
-**Two flags for Stage 1.** First, the two releases disagree more than expected —
+**Two flags for Stage 1.** First, the two releases disagree more than expected.
 only **12 of the published 32** are also significant in the browser release (20
 published-only, 38 browser-only). They are not interchangeable and the
 discordance will need explaining. Second, **32 genes is a small set**;
@@ -254,10 +254,10 @@ provisional pending a terms read before Stage 3.
 
 **Open, needed at Stage 1 kickoff:**
 
-- **D-001** — what counts as a detectable eQTL. Section 5 is the evidence: this
+- **D-001**, what counts as a detectable eQTL. Section 5 is the evidence: this
   choice is worth a factor of 2–4 at rungs 3–4 and is the largest single lever
   in the project.
-- **D-003** — multiple-testing correction across genes and rungs.
+- **D-003**, multiple-testing correction across genes and rungs.
 
 **Open, lower stakes:** **D-011**, whether rung 2 is PsychENCODE alone, waits
 for MetaBrain, or is dropped for a three-rung ladder.
