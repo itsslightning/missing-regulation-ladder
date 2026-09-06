@@ -213,53 +213,99 @@ def load_psychencode() -> pd.DataFrame | None:
     return out
 
 
+#: Column layout of Full_hg19_cis-eQTL.txt.gz. The file has NO HEADER and is
+#: WHITESPACE-separated, unlike the DER-08b release which is a headed TSV --
+#: a difference worth stating because assuming otherwise fails only after the
+#: 3.3 GB download completes. Order matches DER-08b's first 14 fields; the
+#: full file simply omits DER-08b's trailing FDR column.
+PSYCHENCODE_FULL_COLUMNS = [
+    "gene_id",
+    "gene_chr",
+    "gene_start",
+    "gene_end",
+    "strand",
+    "number_of_SNPs_tested",
+    "SNP_distance_to_TSS",
+    "SNP_id",
+    "SNP_chr",
+    "SNP_start",
+    "SNP_end",
+    "nominal_pval",
+    "regression_slope",
+    "top_SNP",
+]
+
+
 def _load_psychencode_full(path: Path) -> pd.DataFrame:
     """Reduce the 3.3 GB full association file to one row per gene.
 
-    Only three columns are needed and the file does not fit comfortably in
-    memory, so it is streamed in chunks and reduced as it goes: the minimum
-    nominal p-value per gene, and the number of variants tested for that gene.
-    Coordinates are ignored entirely, which is why the hg19 build of this file
-    costs nothing -- gene-level detection needs no liftOver.
+    The file does not fit comfortably in memory, so it is streamed in chunks
+    and reduced as it goes to the best variant per gene. Coordinates are read
+    but never used, which is why the hg19 build costs nothing here -- gene-level
+    detection needs no liftOver.
+
+    `number_of_SNPs_tested` is taken from the file rather than counted. It is
+    the study's own count of variants tested in the gene's cis window, which is
+    what the Bonferroni correction needs; counting rows would instead count
+    rows *present*, which is the same thing only if the release is complete and
+    unfiltered, and is silently wrong if it is not.
     """
     best: dict[str, float] = {}
-    counts: dict[str, int] = {}
     slopes: dict[str, float] = {}
+    n_var: dict[str, int] = {}
 
     reader = pd.read_csv(
         path,
-        sep="\t",
-        usecols=["gene_id", "nominal_pval", "regression_slope"],
+        sep=r"\s+",
+        header=None,
+        names=PSYCHENCODE_FULL_COLUMNS,
+        usecols=[
+            "gene_id",
+            "number_of_SNPs_tested",
+            "nominal_pval",
+            "regression_slope",
+        ],
+        dtype={
+            "gene_id": "string",
+            "number_of_SNPs_tested": "int32",
+            "nominal_pval": "float64",
+            "regression_slope": "float64",
+        },
         chunksize=5_000_000,
-        low_memory=False,
+        engine="c",
     )
     for chunk in reader:
         chunk["gene_id"] = strip_version(chunk["gene_id"])
         grp = chunk.groupby("gene_id", sort=False)
-        for gid, n in grp.size().items():
-            counts[gid] = counts.get(gid, 0) + int(n)
-        idx = grp["nominal_pval"].idxmin()
-        top = chunk.loc[idx]
-        for gid, p, b in zip(top["gene_id"], top["nominal_pval"], top["regression_slope"]):
+        top = chunk.loc[grp["nominal_pval"].idxmin()]
+        for gid, p, b, n in zip(
+            top["gene_id"],
+            top["nominal_pval"],
+            top["regression_slope"],
+            top["number_of_SNPs_tested"],
+        ):
             if gid not in best or p < best[gid]:
                 best[gid] = float(p)
                 slopes[gid] = abs(float(b))
+            # Constant within a gene, but a gene can straddle a chunk boundary,
+            # so keep the largest seen rather than the last.
+            n_var[gid] = max(n_var.get(gid, 0), int(n))
 
     genes = list(best)
-    df = pd.DataFrame(
+    p_min = pd.Series([best[g] for g in genes])
+    return pd.DataFrame(
         {
             "gene_id": genes,
             "rung": "bulk_brain",
             "cell": "PsychENCODE_PFC",
-            "p_bonf": [min(1.0, best[g] * counts[g]) for g in genes],
-            "q_native": np.nan,  # recomputed below; the full file ships no FDR
+            "p_bonf": [min(1.0, best[g] * max(n_var[g], 1)) for g in genes],
+            # The full file ships no FDR, so the native-arm sensitivity value is
+            # computed here -- BH across genes on the top-variant p-value, the
+            # closest analogue to what the DER-08b release reports.
+            "q_native": multipletests(p_min, method="fdr_bh")[1],
             "beta": [slopes[g] for g in genes],
         }
     )
-    df["q_native"] = multipletests(
-        pd.Series([best[g] for g in genes]), method="fdr_bh"
-    )[1]
-    return df
 
 
 #: Bryois arms: the 8 cell types, plus pseudobulk from the same donors.
