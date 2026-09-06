@@ -3,7 +3,7 @@
 Gene universe: **18,481** genes (protein-coding, gnomAD v2.1.1 LOEUF, GTEx brain expression).
 
 
-## Rung 1 — GTEx v10 brain
+## Rung 1: GTEx v10 brain
 
 | rung | cell | genes_tested | in_universe | egenes_qval | egenes_bonf | frac_of_tested | frac_bonf_of_tested | frac_of_universe |
 |---|---|---|---|---|---|---|---|---|
@@ -22,14 +22,14 @@ Gene universe: **18,481** genes (protein-coding, gnomAD v2.1.1 LOEUF, GTEx brain
 | bulk tissue (rung 1) | Brain_Substantia_nigra | 25195 | 16078 | 3920 | - | 0.244 | - | 0.212 |
 
 
-## Rung 2 — PsychENCODE
+## Rung 2: PsychENCODE
 
 - rows: 674,626
 - unique genes: 8,190 (5,252 in universe)
 - **supplies a denominator: no.** Significant pairs only. Every gene in this file is an eGene, so the file cannot supply the set of genes tested-but-not-significant.
 
 
-## Rungs 3–4 — SingleBrain
+## Rungs 3–4: SingleBrain
 
 | rung | cell | genes_tested | in_universe | egenes_qval | egenes_bonf | frac_of_tested | frac_bonf_of_tested | frac_of_universe |
 |---|---|---|---|---|---|---|---|---|
@@ -71,7 +71,7 @@ Gene universe: **18,481** genes (protein-coding, gnomAD v2.1.1 LOEUF, GTEx brain
 | major (rung 3) | OPC | 12029 | 11031 | 8569 | 3187 | 0.777 | 0.289 | 0.464 |
 
 
-## Power contrast — Bryois
+## Power contrast: Bryois
 
 | file | arm | rows_chr1 | genes_chr1 | in_universe_chr1 | id_parsed_ok | min_p | has_per_gene_correction |
 |---|---|---|---|---|---|---|---|

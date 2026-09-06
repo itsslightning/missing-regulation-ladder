@@ -6,9 +6,9 @@ the only route to a number.
 
 Three figures, in the order an argument needs them:
 
-  fig1  the recovery curve itself -- constrained vs matched control, per rung
+  fig1  the recovery curve itself, constrained vs matched control, per rung
   fig2  the gap, under all three D-001 arms, which is the robustness claim
-  fig3  why the raw LOEUF-decile view cannot be read on its own -- it is
+  fig3  why the raw LOEUF-decile view cannot be read on its own: it is
         dominated by expression and inverts the matched result
 
 Colours come from the sibling repo's Streamlit theme so the two projects look
@@ -44,7 +44,11 @@ GREY = "#6b6b6b"
 
 #: Rungs whose numbers are not yet trustworthy get drawn, but hatched and
 #: annotated. Hiding them would be worse: a reader would not know rung 2 exists.
-PROVISIONAL = {"bulk_brain"}
+#: Rungs still shown with a provisional shading. bulk_brain sat here while
+#: PsychENCODE was only available as a significant-only file; s05 now loads the
+#: full association table, so nothing is provisional. Kept as a mechanism
+#: rather than deleted, since a re-released catalogue could put a rung back.
+PROVISIONAL: set[str] = set()
 
 plt.rcParams.update(
     {
@@ -187,7 +191,7 @@ def fig_loeuf(loeuf: pd.DataFrame, loeuf_expr: pd.DataFrame, universe) -> None:
     the truth and it is worth showing exactly why.
 
     Left: recovery by LOEUF decile, unadjusted. At the single-nucleus rungs the
-    MOST constrained decile scores HIGHEST -- the reverse of the matched result.
+    MOST constrained decile scores HIGHEST, the reverse of the matched result.
     Middle: the reason. Median cortex TPM falls 70-fold across the deciles.
     Right: the same recovery curves inside one expression tertile, where the
     confound is largely held fixed and the direction agrees with the matched
@@ -202,7 +206,7 @@ def fig_loeuf(loeuf: pd.DataFrame, loeuf_expr: pd.DataFrame, universe) -> None:
 
     fig, axes = plt.subplots(1, 3, figsize=(12.6, 4.1))
 
-    # -- left: raw, confounded ---------------------------------------------
+    #: left: raw, confounded ---------------------------------------------
     ax = axes[0]
     for rung in present:
         g = d[d["rung"] == rung].sort_values("loeuf_decile")
@@ -215,13 +219,13 @@ def fig_loeuf(loeuf: pd.DataFrame, loeuf_expr: pd.DataFrame, universe) -> None:
     ax.set_xlabel("LOEUF decile  (0 = most constrained)")
     ax.set_ylabel("Fraction with a detectable cis-eQTL")
     ax.set_title(
-        "A. Unadjusted — misleading\nmost-constrained decile scores HIGHEST at "
+        "A. Unadjusted, and misleading\nmost-constrained decile scores HIGHEST at "
         "single-nucleus rungs",
         fontsize=9, loc="left",
     )
     ax.legend(loc="lower left", fontsize=7, framealpha=0.9)
 
-    # -- middle: the confound ----------------------------------------------
+    #, middle: the confound ----------------------------------------------
     ax = axes[1]
     expr = universe.groupby("loeuf_decile").agg(
         median_tpm=("tpm_reference", "median"),
@@ -239,12 +243,12 @@ def fig_loeuf(loeuf: pd.DataFrame, loeuf_expr: pd.DataFrame, universe) -> None:
     ax2.tick_params(axis="y", labelcolor=GREY)
     ax2.grid(False)
     ax.set_title(
-        "B. Why — expression tracks constraint\nmedian TPM 12.7 → 0.2 across "
+        "B. Why: expression tracks constraint\nmedian TPM 12.7 → 0.2 across "
         "the deciles (70-fold)",
         fontsize=9, loc="left",
     )
 
-    # -- right: expression held fixed --------------------------------------
+    #: right: expression held fixed --------------------------------------
     ax = axes[2]
     e = loeuf_expr[(loeuf_expr["arm"] == "uniform")
                    & (loeuf_expr["expr_tertile"] == "high")]
@@ -268,7 +272,7 @@ def fig_loeuf(loeuf: pd.DataFrame, loeuf_expr: pd.DataFrame, universe) -> None:
 
     fig.suptitle(
         "The unadjusted constraint gradient is dominated by expression and "
-        "inverts the matched result — this is what the matched control set "
+        "inverts the matched result. This is what the matched control set "
         "(D-002) exists to remove",
         fontsize=10, y=1.02, x=0.01, ha="left",
     )
@@ -321,7 +325,7 @@ def fig_resolution_test(res: pd.DataFrame) -> None:
     ax.set_ylabel("Constrained-gene gap")
     ax.legend(fontsize=8, framealpha=0.9)
     ax.set_title(
-        "A. Same donors, same nuclei — only the grouping changes",
+        "A. Same donors, same nuclei; only the grouping changes",
         fontsize=9, loc="left",
     )
 
@@ -355,7 +359,7 @@ def fig_resolution_test(res: pd.DataFrame) -> None:
         fig.text(
             0.01, 0.985,
             f"Pooled across the {len(classes)} classes: {p_d:+.3f} "
-            f"[{p_lo:+.3f}, {p_hi:+.3f}] — rules out a change larger than "
+            f"[{p_lo:+.3f}, {p_hi:+.3f}], ruling out a change larger than "
             f"~{max(abs(p_lo), abs(p_hi)):.3f}, against a bulk→single-nucleus "
             f"closure of 0.214.",
             fontsize=8, ha="left", va="top", color=GREY,

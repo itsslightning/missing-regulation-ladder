@@ -1,13 +1,13 @@
 {
   "pipeline": "s01_gene_universe",
-  "started_utc": "2026-09-04T05:39:06+00:00",
-  "finished_utc": "2026-09-04T05:39:07+00:00",
+  "started_utc": "2026-09-06T12:22:32+00:00",
+  "finished_utc": "2026-09-06T12:22:33+00:00",
   "steps": [
     {
       "label": "constraint x GTEx brain expression",
       "n_in": 19183,
       "n_out": 18481,
-      "detail": "Inner join on unversioned ENSG. Losses are genes present in gnomAD v2.1.1 (GENCODE v19 era) with no counterpart in the GTEx v10 median-TPM matrix -- retired or merged IDs, mostly.",
+      "detail": "Inner join on unversioned ENSG. Losses are genes present in gnomAD v2.1.1 (GENCODE v19 era) with no counterpart in the GTEx v10 median-TPM matrix, retired or merged IDs, mostly.",
       "examples_dropped": "ENSG00000005955, ENSG00000006074, ENSG00000006075, ENSG00000006114, ENSG00000011052, ENSG00000017373, ENSG00000017621, ENSG00000056661",
       "n_dropped": 702,
       "pct_retained": 96.34
@@ -16,7 +16,7 @@
       "label": "universe x SCHEMA statistics",
       "n_in": 18481,
       "n_out": 17630,
-      "detail": "LEFT join: genes without SCHEMA statistics stay in the universe. They are still valid denominator entries -- a gene can lack an exome association and still have, or lack, a cis-eQTL.",
+      "detail": "LEFT join: genes without SCHEMA statistics stay in the universe. They are still valid denominator entries: a gene can lack an exome association and still have, or lack, a cis-eQTL.",
       "examples_dropped": "ENSG00000015479, ENSG00000031698, ENSG00000034510, ENSG00000036549, ENSG00000046647, ENSG00000067646, ENSG00000068438, ENSG00000068781",
       "n_dropped": 851,
       "pct_retained": 95.4

@@ -1,3 +1,4 @@
 label,n_in,n_out,detail,examples_dropped,n_dropped,pct_retained
-Bryois pseudobulk vs cell types (D-007),0,0,"change in constrained-gene gap on going from pseudobulk to 8 cell types, same donors: -0.030 [-0.077, +0.020]. Interval spans zero -- uninformative at this chromosome coverage.",,0,
-within-SingleBrain resolution test,6,3,"mean change in constrained-gene gap on splitting a class into subtypes: -0.007; narrowed in 3 of 6 classes. Donors, pipeline and normalisation are identical between arms.",,3,50.0
+SingleBrain on the Bryois gene set,2489,1174,"delta +0.019 [-0.015, +0.052] against Bryois +0.005 [-0.035, +0.048]; intervals overlap",,1315,47.17
+Bryois pseudobulk vs cell types (D-007),0,0,"change in constrained-gene gap on going from pseudobulk to 8 cell types, same donors: +0.005 [-0.035, +0.048]. Interval spans zero but is bounded at 0.048, 22% of the ladder closure: an informative null.",,0,
+within-SingleBrain resolution test,6,6,"change in constrained-gene gap on splitting a class into its subtypes, pooled across 6 classes: -0.007 [-0.021, +0.005]. Every one of the 6 per-class intervals spans zero, so the per-class signs are noise and only the pooled estimate is quoted. Donors, pipeline and normalisation are identical between arms.",,0,100.0

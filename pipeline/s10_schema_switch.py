@@ -8,7 +8,7 @@ switches on in.
 That second part is the useful bit. A SCHEMA gene that becomes visible only in
 microglia is a different therapeutic proposition from one visible in every
 neuronal subtype, and Stage 2's colocalization work needs to know which
-cell-type summary statistics to pull -- the SingleBrain full-association files
+cell-type summary statistics to pull, the SingleBrain full-association files
 are 4-10 GB each, so pulling them per gene of interest rather than in bulk is
 the whole reason D-006 deferred them.
 
@@ -56,10 +56,8 @@ def main() -> None:
             else False
         )
 
-    # `bulk` is the union of the bulk rungs. Rung 2 is provisional (its file
-    # holds only significant genes), but for THIS question that limitation is
-    # harmless: it can only add bulk detections, so it makes the "switches on"
-    # set conservative rather than inflated.
+    # `bulk` is the union of the bulk rungs, both of which are now scored
+    # from full association tables rather than significant-only files.
     tbl["bulk_any"] = tbl[[r for r in BULK_RUNGS if r in tbl]].any(axis=1)
     tbl["switches_on"] = (~tbl["bulk_any"]) & tbl[SN_RUNG]
     tbl["already_visible"] = tbl["bulk_any"] & tbl[SN_RUNG]
@@ -100,7 +98,7 @@ def main() -> None:
         "# SCHEMA genes across the ladder\n",
         f"The {len(tbl)} published SCHEMA genes (Singh et al. 2022, FDR < 0.05), "
         "scored under the uniform detection rule (D-001).\n",
-        f"- **{n_switch} switch on** — no detectable cis-eQTL in bulk, one at "
+        f"- **{n_switch} switch on**: no detectable cis-eQTL in bulk, one at "
         "single-nucleus major-cell-type resolution. This is the Stage 2 "
         "colocalization target list.",
         f"- **{n_already} were already visible** in bulk.",
@@ -116,11 +114,6 @@ def main() -> None:
             f"{tick[bool(r['bulk_brain'])]} | {tick[bool(r[SN_RUNG])]} | "
             f"{tick[bool(r['sn_subtype'])]} | {r['cell_types'] or '—'} |"
         )
-    lines.append(
-        "\nRung 2 (bulk brain) is provisional — its file contains only "
-        "significant genes. For this table that is harmless: it can only add "
-        "bulk detections, which makes the switches-on set conservative."
-    )
     DOC.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
     # ASCII for the console: the markdown file is UTF-8, but a Windows console

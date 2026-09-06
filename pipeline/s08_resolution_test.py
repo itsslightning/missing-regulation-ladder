@@ -11,7 +11,7 @@ Neither isolates resolution on its own, because resolution and per-context
 power are intrinsically coupled: at fixed sequencing depth you cannot resolve
 more contexts without putting fewer reads in each. Splitting loses reads per
 context; pooling gains them. Running both directions is what brackets the
-answer -- if resolution were doing the work, splitting should narrow the gap
+answer, if resolution were doing the work, splitting should narrow the gap
 and pooling should widen it, and the two should disagree in sign.
 
 They do not. Both centre on zero (see the constants below and the Stage 1
@@ -27,7 +27,7 @@ constituent subtypes:
     OD   <->  OD1 OD2 OD3
     OPC  <->  OPC1 OPC2
 
-Same donors, same study, same pipeline, same normalisation, same nuclei -- the
+Same donors, same study, same pipeline, same normalisation, same nuclei: the
 ONLY difference is whether those nuclei were pooled into one class or split.
 So this isolates cell-type resolution with sample size held exactly fixed,
 which is the comparison the main ladder cannot make.
@@ -39,7 +39,7 @@ ladder is coming from donor count, not from resolution.
 One asymmetry is handled explicitly: the subtype arm gets several tests per
 gene where the pooled arm gets one, so BH is applied within each arm over that
 arm's own gene x column tests. Without that the subtype arm would win on
-multiplicity alone. End is excluded -- it has no subtypes.
+multiplicity alone. End is excluded, it has no subtypes.
 
 Writes: data/processed/resolution_test.parquet
 """
@@ -120,8 +120,8 @@ def _delta_with_ci(
 
     The two arms are computed on the same genes, so their gaps are strongly
     correlated. Comparing their separate intervals for overlap would be far too
-    conservative, and comparing point estimates against a fixed cutoff -- which
-    is what an earlier version of this module did -- ignores uncertainty
+    conservative, and comparing point estimates against a fixed cutoff, which
+    is what an earlier version of this module did, ignores uncertainty
     entirely and can call a difference that is pure noise.
 
     Both gaps are therefore evaluated on each shared replicate and the
@@ -163,7 +163,7 @@ def singlebrain_on_bryois_genes(
     Without this, comparing the two studies' resolution effects confounds the
     study with the gene set. Bryois is currently restricted to whichever
     chromosomes have downloaded, which is a small and chromosome-specific
-    subset -- so a disagreement between "Bryois says -0.037" and "SingleBrain
+    subset, so a disagreement between "Bryois says -0.037" and "SingleBrain
     says -0.007" could be about those genes rather than about the studies.
 
     Holding the gene set fixed and re-running the SingleBrain contrast on it
@@ -182,7 +182,7 @@ def singlebrain_on_bryois_genes(
     if len(c) < 50 or len(k) < 50:
         return None
 
-    # All SingleBrain major classes pooled, versus all their subtypes -- the
+    # All SingleBrain major classes pooled, versus all their subtypes, the
     # same contrast as the per-class test, aggregated so it is comparable to
     # Bryois's single 1-vs-8 comparison.
     majors = [m for m in SUBTYPES if m in set(long["cell"])]
@@ -214,8 +214,8 @@ def pooled_delta(
 ) -> tuple[float, float, float]:
     """CI on the MEAN delta across cell classes, from shared replicates.
 
-    Each class on its own is underpowered -- the per-class intervals span
-    roughly +/-0.05 -- so six inconclusive tests cannot be read as "no effect"
+    Each class on its own is underpowered: the per-class intervals span
+    roughly +/-0.05, so six inconclusive tests cannot be read as "no effect"
     by counting signs. Averaging the deltas within each bootstrap replicate
     gives one interval on the aggregate, which is the quantity the report's
     claim actually rests on.
@@ -268,8 +268,8 @@ def bryois_contrast(
     cell-type arm keeps them separate. So this varies resolution in the
     opposite direction from splitting a SingleBrain class.
 
-    Neither isolates resolution -- pooling raises reads per context as it
-    lowers resolution, splitting does the reverse -- but if BOTH leave the gap
+    Neither isolates resolution: pooling raises reads per context as it
+    lowers resolution, splitting does the reverse, but if BOTH leave the gap
     unmoved, resolution is not the active ingredient in either direction, and
     the closure seen on the main ladder has to be coming from donor count.
     """
@@ -284,7 +284,7 @@ def bryois_contrast(
     # covers the whole genome. Bryois may be running on a subset of
     # chromosomes while its 198 files download, and treating every gene on an
     # unfetched chromosome as undetected would deflate BOTH arms by the same
-    # large factor -- compressing the gap toward zero and making the contrast
+    # large factor: compressing the gap toward zero and making the contrast
     # look null for a purely clerical reason.
     #
     # Both arms are restricted to the same tested-gene set, so the comparison
@@ -375,7 +375,7 @@ def main() -> None:
     else:
         prov.note(
             "Bryois contrast (D-007)",
-            "not available yet -- needs both bryois_pb and bryois_celltype in "
+            "not available yet, needs both bryois_pb and bryois_celltype in "
             "the detection table",
         )
 
@@ -384,7 +384,6 @@ def main() -> None:
     print("Splitting a cell class into its subtypes, donors held fixed")
     print(f"  {'class':<6}{'cols':>5}{'arm':>9}{'constr':>9}{'ctrl':>8}"
           f"{'gap':>9}{'95% CI':>18}")
-    deltas = []
     bryois_delta = None
     for major, g in out.groupby("major", sort=False):
         for _, r in g.iterrows():
@@ -401,15 +400,12 @@ def main() -> None:
             "finer NARROWS" if d < 0 else "finer WIDENS"
         )
         # Bryois is a separate study varying resolution the other way, so it
-        # is reported on its own rather than averaged into the SingleBrain mean.
+        # is reported on its own rather than pooled with the SingleBrain classes.
         if major.startswith("Bryois"):
             bryois_delta = (d, d_lo, d_hi)
-        else:
-            deltas.append(d)
         print(f"  {'':<15}{'':>5}{'delta':>9}{'':>17}{d:>+9.3f}"
               f"   [{d_lo:+.3f}, {d_hi:+.3f}]  {call}")
 
-    mean_delta = float(np.mean(deltas))
     n_inconclusive = sum(
         1
         for _, g in out[out["major"].isin(class_hits)].groupby("major")
@@ -435,7 +431,7 @@ def main() -> None:
         )
     else:
         verdict = (
-            "splitting NARROWS the gap -- resolution is doing work"
+            "splitting NARROWS the gap: resolution is doing work"
             if p_d < 0
             else "splitting WIDENS the gap"
         )
@@ -489,7 +485,7 @@ def main() -> None:
             print(
                 "  => the two studies' intervals "
                 + ("OVERLAP, so no evidence they disagree" if overlap
-                   else "DO NOT overlap -- a real study-level disagreement")
+                   else "DO NOT overlap, a real study-level disagreement")
             )
             prov.record(
                 "SingleBrain on the Bryois gene set",
@@ -530,23 +526,28 @@ def main() -> None:
                 f"change in constrained-gene gap on going from pseudobulk to 8 "
                 f"cell types, same donors: {d:+.3f} [{d_lo:+.3f}, {d_hi:+.3f}]. "
                 + (
-                    "Interval excludes zero."
+                    "Interval excludes zero: a resolved direction."
+                    if not spans_zero
+                    else f"Interval spans zero but is bounded at {bound:.3f}, "
+                    f"{as_frac:.0%} of the ladder closure: an informative null."
                     if informative
-                    else "Interval spans zero -- uninformative at this "
-                    "chromosome coverage."
+                    else "Interval spans zero and is wide: uninformative at "
+                    "this chromosome coverage."
                 )
             ),
         )
 
     prov.record(
         "within-SingleBrain resolution test",
-        len(deltas),
-        n_narrow,
+        len(class_hits),
+        n_inconclusive,
         detail=(
-            f"mean change in constrained-gene gap on splitting a class into "
-            f"subtypes: {mean_delta:+.3f}; narrowed in {n_narrow} of "
-            f"{len(deltas)} classes. Donors, pipeline and normalisation are "
-            f"identical between arms."
+            f"change in constrained-gene gap on splitting a class into its "
+            f"subtypes, pooled across {len(class_hits)} classes: {p_d:+.3f} "
+            f"[{p_lo:+.3f}, {p_hi:+.3f}]. Every one of the {n_inconclusive} "
+            f"per-class intervals spans zero, so the per-class signs are noise "
+            f"and only the pooled estimate is quoted. Donors, pipeline and "
+            f"normalisation are identical between arms."
         ),
     )
     prov.save(cfg.DIR_LOGS / "s08_resolution_test.json")

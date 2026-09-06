@@ -2,7 +2,7 @@
 
 The 32 published SCHEMA genes (Singh et al. 2022, FDR < 0.05), scored under the uniform detection rule (D-001).
 
-- **13 switch on** — no detectable cis-eQTL in bulk, one at single-nucleus major-cell-type resolution. This is the Stage 2 colocalization target list.
+- **13 switch on**: no detectable cis-eQTL in bulk, one at single-nucleus major-cell-type resolution. This is the Stage 2 colocalization target list.
 - **6 were already visible** in bulk.
 - **10 remain undetected** even at single-nucleus resolution.
 
@@ -40,5 +40,3 @@ The 32 published SCHEMA genes (Singh et al. 2022, FDR < 0.05), scored under the 
 | OR4P4 | — | — | — | — | — |
 | HIST1H1E | — | — | — | — | — |
 | MAGEC1 | — | — | — | — | — |
-
-Rung 2 (bulk brain) is provisional — its file contains only significant genes. For this table that is harmless: it can only add bulk detections, which makes the switches-on set conservative.
