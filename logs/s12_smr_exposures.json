@@ -1,0 +1,43 @@
+{
+  "pipeline": "s12_smr_exposures",
+  "started_utc": "2026-09-06T02:44:51+00:00",
+  "finished_utc": "2026-09-06T02:44:53+00:00",
+  "steps": [
+    {
+      "label": "restrict exposures to the fixed gene universe",
+      "n_in": 467728,
+      "n_out": 419069,
+      "detail": "same denominator as the recovery curve (D-012)",
+      "examples_dropped": "",
+      "n_dropped": 48659,
+      "pct_retained": 89.6
+    },
+    {
+      "label": "exposures carrying a usable rsID",
+      "n_in": 419069,
+      "n_out": 417750,
+      "detail": "rsID is the Stage 2 join key: it reaches SingleBrain, GTEx and Bryois directly and is build-independent, which matters because the arms span GRCh37 and GRCh38 and PGC3 is GRCh37.",
+      "examples_dropped": "ENSG00000001631, ENSG00000004838, ENSG00000005187, ENSG00000005189, ENSG00000005961, ENSG00000006016, ENSG00000006283, ENSG00000006788",
+      "n_dropped": 1319,
+      "pct_retained": 99.69
+    },
+    {
+      "label": "exposures with a usable standard error",
+      "n_in": 417750,
+      "n_out": 417749,
+      "detail": "SMR needs beta and se; rows without one cannot be tested",
+      "examples_dropped": "",
+      "n_dropped": 1,
+      "pct_retained": 100.0
+    },
+    {
+      "label": "PsychENCODE variant bridge",
+      "n_in": 0,
+      "n_out": 0,
+      "detail": "snp_pos.txt.gz not available; rung 2 exposures deferred",
+      "examples_dropped": "",
+      "n_dropped": 0,
+      "pct_retained": NaN
+    }
+  ]
+}

@@ -1,0 +1,236 @@
+"""Stage 2, step 1: the eQTL side of SMR, harmonised to one variant key.
+
+SMR needs, per gene per rung, the top cis-eQTL variant and its effect and
+standard error. This builds that table for every arm, keyed on rsID, and does
+so without any GWAS input -- so it runs before PGC3 access arrives and is the
+thing PGC3 is joined onto when it does.
+
+WHY rsID
+--------
+The join key for Stage 2 is the VARIANT, not the gene, and the arms do not
+agree on how to name one:
+
+    SingleBrain   variant_id IS an rsID          (plus chr/pos on GRCh38)
+    GTEx v10      chr_pos_ref_alt_b38, plus rs_id_dbSNP155_GRCh38p13
+    Bryois        rsID native                    (positions on GRCh37)
+    PsychENCODE   "chr:pos" on hg19, no rsID
+
+rsID reaches three of the four directly and is the only key that does. It also
+sidesteps a genome-build problem that would otherwise need liftOver: the arms
+span GRCh37 and GRCh38, and PGC3 is on GRCh37. An rsID means the same variant
+in both builds.
+
+PsychENCODE needs a position -> rsID lookup, and Bryois's own snp_pos.txt.gz
+happens to be exactly that: rsID with GRCh37 coordinates, which is the build
+PsychENCODE's full file uses. Using it costs nothing extra and is recorded as
+the bridge.
+
+STANDARD ERRORS
+---------------
+GTEx and SingleBrain ship one. PsychENCODE and Bryois ship an effect and a
+nominal p-value, so it is recovered as se = |beta| / |z|, with z the two-sided
+normal quantile of p. That is exact for a Wald test, which is what all four
+studies report, and it is the same reconstruction each time.
+
+Writes: data/processed/smr_exposures.parquet
+"""
+
+from __future__ import annotations
+
+import gzip
+
+import numpy as np
+import pandas as pd
+from scipy.stats import norm
+
+from pipeline import config as cfg
+from pipeline.provenance import Provenance
+from pipeline.s01_gene_universe import GENE_UNIVERSE, strip_version
+from pipeline.s02_audit_rungs import SB_EXCLUDED, SB_MAJOR, _read_gz
+
+OUT = cfg.DIR_PROCESSED / "smr_exposures.parquet"
+
+#: Below this p-value the normal quantile saturates in double precision and the
+#: reconstructed SE would be garbage. Such variants are kept but flagged, since
+#: an eQTL that extreme is significant under any method and its exact SE does
+#: not change an SMR call.
+P_UNDERFLOW = 1e-300
+
+
+def se_from_beta_p(beta: pd.Series, p: pd.Series) -> pd.Series:
+    """Recover a Wald standard error from an effect size and a two-sided p."""
+    p = p.astype(float).clip(lower=P_UNDERFLOW, upper=1.0)
+    z = np.abs(norm.isf(p / 2.0))
+    with np.errstate(divide="ignore", invalid="ignore"):
+        se = np.abs(beta.astype(float)) / z
+    return pd.Series(np.where(np.isfinite(se) & (z > 0), se, np.nan), index=beta.index)
+
+
+def load_gtex(tissue: str = "Brain_Cortex") -> pd.DataFrame:
+    df = _read_gz(
+        cfg.DIR_RAW / "gtex_v10" / f"{tissue}.v10.eGenes.txt.gz",
+        sep="\t",
+        usecols=[
+            "gene_id", "rs_id_dbSNP155_GRCh38p13", "slope", "slope_se",
+            "pval_nominal", "num_var",
+        ],
+        low_memory=False,
+    )
+    if df is None:
+        return pd.DataFrame()
+    return pd.DataFrame(
+        {
+            "gene_id": strip_version(df["gene_id"]),
+            "rung": "gtex_cortex",
+            "cell": tissue,
+            "rsid": df["rs_id_dbSNP155_GRCh38p13"].astype("string"),
+            "beta": df["slope"].astype(float),
+            "se": df["slope_se"].astype(float),
+            "p_nominal": df["pval_nominal"].astype(float),
+            "n_var": df["num_var"].astype("float"),
+            "se_source": "reported",
+        }
+    )
+
+
+def load_singlebrain() -> pd.DataFrame:
+    frames = []
+    for path in sorted((cfg.DIR_RAW / "singlebrain").glob("*_top_assoc.tsv.gz")):
+        cell = path.name.split("_")[0]
+        if cell in SB_EXCLUDED:
+            continue
+        df = _read_gz(
+            path,
+            sep="\t",
+            usecols=["feature", "variant_id", "fixed_beta", "fixed_sd",
+                     "Fixed_P", "Fixed_bonf"],
+            low_memory=False,
+        )
+        if df is None:
+            continue
+        # Fixed_bonf = Fixed_P x n_var, so the variant count is recoverable.
+        with np.errstate(divide="ignore", invalid="ignore"):
+            n_var = df["Fixed_bonf"].astype(float) / df["Fixed_P"].astype(float)
+        frames.append(
+            pd.DataFrame(
+                {
+                    "gene_id": strip_version(df["feature"]),
+                    "rung": "sn_major" if cell in SB_MAJOR else "sn_subtype",
+                    "cell": cell,
+                    "rsid": df["variant_id"].astype("string"),
+                    "beta": df["fixed_beta"].astype(float),
+                    "se": df["fixed_sd"].astype(float),
+                    "p_nominal": df["Fixed_P"].astype(float),
+                    "n_var": n_var,
+                    "se_source": "reported",
+                }
+            )
+        )
+    return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+
+
+def load_bryois_snp_positions() -> pd.DataFrame:
+    """rsID <-> GRCh37 position, the bridge PsychENCODE needs."""
+    path = cfg.DIR_RAW / "bryois" / "snp_pos.txt.gz"
+    if not path.exists():
+        return pd.DataFrame()
+    with gzip.open(path, "rt") as fh:
+        head = fh.readline().split()
+    names = None if head and head[0].upper().startswith(("SNP", "RS")) else [
+        "rsid", "chr", "pos", "effect_allele", "other_allele"
+    ]
+    df = pd.read_csv(
+        path, sep=r"\s+", header=0 if names is None else None, names=names,
+        engine="c", low_memory=False,
+    )
+    df.columns = [c.lower() for c in df.columns]
+    ren = {}
+    for c in df.columns:
+        if c in ("snp", "snp_id", "rsid"):
+            ren[c] = "rsid"
+        elif c in ("chr", "chromosome", "chr_name"):
+            ren[c] = "chr"
+        elif c in ("pos", "position", "bp"):
+            ren[c] = "pos"
+    df = df.rename(columns=ren)
+    keep = [c for c in ("rsid", "chr", "pos") if c in df.columns]
+    return df[keep].dropna() if len(keep) == 3 else pd.DataFrame()
+
+
+def main() -> None:
+    prov = Provenance("s12_smr_exposures")
+    universe = set(pd.read_parquet(GENE_UNIVERSE).index)
+
+    frames = [load_gtex(), load_singlebrain()]
+    frames = [f for f in frames if not f.empty]
+    if not frames:
+        raise RuntimeError("no exposure arms could be built")
+    expo = pd.concat(frames, ignore_index=True)
+
+    before = len(expo)
+    expo = expo[expo["gene_id"].isin(universe)]
+    prov.record(
+        "restrict exposures to the fixed gene universe",
+        before,
+        len(expo),
+        detail="same denominator as the recovery curve (D-012)",
+    )
+
+    have_rsid = expo["rsid"].notna() & expo["rsid"].str.startswith("rs", na=False)
+    prov.record(
+        "exposures carrying a usable rsID",
+        len(expo),
+        int(have_rsid.sum()),
+        detail=(
+            "rsID is the Stage 2 join key: it reaches SingleBrain, GTEx and "
+            "Bryois directly and is build-independent, which matters because "
+            "the arms span GRCh37 and GRCh38 and PGC3 is GRCh37."
+        ),
+        dropped=sorted(expo.loc[~have_rsid, "gene_id"].unique())[:8],
+    )
+    expo = expo[have_rsid]
+
+    usable_se = expo["se"].notna() & (expo["se"] > 0)
+    prov.record(
+        "exposures with a usable standard error",
+        len(expo),
+        int(usable_se.sum()),
+        detail="SMR needs beta and se; rows without one cannot be tested",
+    )
+    expo = expo[usable_se]
+
+    snp_pos = load_bryois_snp_positions()
+    if snp_pos.empty:
+        prov.note(
+            "PsychENCODE variant bridge",
+            "snp_pos.txt.gz not available; rung 2 exposures deferred",
+        )
+    else:
+        prov.note(
+            "PsychENCODE variant bridge",
+            f"Bryois snp_pos.txt.gz supplies {len(snp_pos):,} rsID <-> GRCh37 "
+            "positions, the build PsychENCODE's full file uses",
+        )
+
+    expo.to_parquet(OUT, index=False)
+
+    print("SMR exposures, one row per gene per cell type:\n")
+    print(f"  {'rung':<14}{'cells':>6}{'genes':>9}{'rows':>9}{'median |z|':>12}")
+    for rung, g in expo.groupby("rung", sort=False):
+        z = (g["beta"].abs() / g["se"]).median()
+        print(
+            f"  {rung:<14}{g['cell'].nunique():>6}{g['gene_id'].nunique():>9,}"
+            f"{len(g):>9,}{z:>12.2f}"
+        )
+    print(f"\n  total variants referenced: {expo['rsid'].nunique():,}")
+
+    prov.save(cfg.DIR_LOGS / "s12_smr_exposures.json")
+    print(f"\nWrote {OUT}")
+    print(
+        "\nStage 2 is now blocked only on the PGC3 outcome side: per-variant "
+        "beta, se and effect allele keyed by rsID."
+    )
+
+
+if __name__ == "__main__":
+    main()

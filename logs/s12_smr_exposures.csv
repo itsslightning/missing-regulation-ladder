@@ -1,0 +1,5 @@
+label,n_in,n_out,detail,examples_dropped,n_dropped,pct_retained
+restrict exposures to the fixed gene universe,467728,419069,same denominator as the recovery curve (D-012),,48659,89.6
+exposures carrying a usable rsID,419069,417750,"rsID is the Stage 2 join key: it reaches SingleBrain, GTEx and Bryois directly and is build-independent, which matters because the arms span GRCh37 and GRCh38 and PGC3 is GRCh37.","ENSG00000001631, ENSG00000004838, ENSG00000005187, ENSG00000005189, ENSG00000005961, ENSG00000006016, ENSG00000006283, ENSG00000006788",1319,99.69
+exposures with a usable standard error,417750,417749,SMR needs beta and se; rows without one cannot be tested,,1,100.0
+PsychENCODE variant bridge,0,0,snp_pos.txt.gz not available; rung 2 exposures deferred,,0,

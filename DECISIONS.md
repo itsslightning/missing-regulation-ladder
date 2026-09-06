@@ -153,20 +153,68 @@ most conservative correction available and the one rejected above — still give
 headline is not an artefact of a permissive multiple-testing rule. It is the
 variant that moves the number most, which is worth stating.
 
-### D-004 — Colocalization priors and posterior threshold — **OPEN**
+### D-004 — Colocalization method and thresholds — **SET** (2026-09-06)
 
-*Needed by: Stage 2 (also blocked on PGC3 access).*
+**Delegated to Claude by the project owner**, same caveat as D-001 and D-003:
+the rejected options run as sensitivity arms wherever the data allows.
 
-coloc's `p12` prior sets how readily a shared causal variant is declared, and the
-Stage 2 headline — how many loci gain an eQTL explanation per rung — moves with
-it. Subtype rungs test more features, compounding the effect.
+**Chosen:** `smr_heidi` — SMR at every rung from top-SNP statistics, with BH
+within rung at 0.05 (matching D-003). HEIDI as a **supplementary** filter where
+regional data exists. coloc as a **sensitivity** arm on the same two arms.
 
-| Option | Meaning |
+**Why coloc is excluded as primary — a data fact, not a preference.** coloc
+needs full regional summary statistics for both traits at every gene. Those
+exist for only two of five arms:
+
+| Arm | Full regional data? |
 |---|---|
-| `coloc_default_priors` | p1=p2=1e-4, p12=1e-5, PP4 ≥ 0.8. Comparable to most papers; widely argued to over-declare. |
-| `coloc_conservative_p12` | p12=1e-6, PP4 ≥ 0.8. Guards against over-calling; lowers absolute counts at every rung, and the cross-rung contrast is what matters. |
-| `coloc_sensitivity_band` | Report across p12 ∈ [1e-6, 1e-5] as a band. Most honest; complicates the single headline statement. |
-| `smr_heidi` | SMR + HEIDI instead. Needs only top-SNP statistics, so it works where full associations are too large; HEIDI rejects linkage rather than confirming a shared variant — a subtly different question. |
+| PsychENCODE | **Yes** — the complete 3.3 GB association file |
+| Bryois | **Yes** — all nominal SNP–gene pairs, 4.5 GB |
+| GTEx v10 | No — the archive publishes eGenes only, one row per gene |
+| SingleBrain | No — `full_assoc` is 4–10 GB per cell type, ~150 GB for the set |
+| Bryois pseudobulk | Yes |
+
+At the ~650 KB/s this project has measured against Zenodo, SingleBrain's full
+associations are about **64 hours** of download, and they are not indexed for
+range extraction, so even a targeted per-gene pull would require fetching each
+file whole. Running coloc only where the data happens to be complete would mean
+comparing rungs scored by **different methods** — precisely the error D-001 was
+chosen to avoid.
+
+**Why SMR works everywhere.** It needs only the top eQTL SNP's effect and
+standard error plus the GWAS effect at that variant, and every rung ships it:
+
+| Arm | Effect | Standard error |
+|---|---|---|
+| GTEx | `slope` | `slope_se` |
+| SingleBrain | `fixed_beta` | `fixed_sd` |
+| PsychENCODE | `regression_slope` | derived from beta and nominal p |
+| Bryois | beta | derived from beta and nominal p |
+
+**Known cost, stated rather than hidden.** SMR alone cannot separate a shared
+causal variant from linkage between two distinct causal variants, so absolute
+counts are inflated relative to a true colocalization. Accepted on the same
+logic as the Bonferroni conservatism in D-001: the bias is of similar
+construction at every rung, so the cross-rung comparison survives it even
+though the absolute numbers should not be quoted against published coloc counts.
+
+**Supplementary and sensitivity arms:**
+
+- **HEIDI** (p > 0.05, the conventional non-rejection of the single-variant
+  model) on PsychENCODE and Bryois, to estimate what fraction of the SMR count
+  is linkage. Explicitly not part of the uniform primary, because it needs
+  regional data.
+- **coloc** at p12 = 1e-5 and 1e-6, PP4 ≥ 0.8, on the same two arms. If SMR and
+  coloc disagree sharply where both are computable, the cross-rung comparison
+  is reported with that caveat attached.
+
+**Consequence for Stage 2 engineering:** the join key becomes the **variant**,
+not the gene. rsID is the common key for three of four rungs (SingleBrain's
+`variant_id` *is* an rsID; GTEx ships `rs_id_dbSNP155_GRCh38p13`; Bryois is
+rsID-native). PsychENCODE gives `chr:pos` on hg19 and needs a lookup — Bryois's
+`snp_pos.txt.gz` supplies exactly that mapping. This is the variant-level
+analogue of the unversioned-ENSG problem from Stage 0 and will need the same
+loss accounting.
 
 ---
 

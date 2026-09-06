@@ -41,6 +41,8 @@ STAGES = [
     ("s09_robustness", "robustness across constraint and correction choices"),
     ("s10_schema_switch", "which SCHEMA genes switch on, and where"),
     ("s11_assay_contrast", "assay vs donor count vs granularity"),
+    ("record_stage2_decisions", "record D-004"),
+    ("s12_smr_exposures", "eQTL side of SMR, harmonised on rsID"),
 ]
 
 
