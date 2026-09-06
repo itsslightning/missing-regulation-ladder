@@ -13,7 +13,17 @@ from pipeline.decisions import OpenDecision, UndecidedError
 
 
 @pytest.fixture
-def sample() -> OpenDecision:
+def sample(monkeypatch: pytest.MonkeyPatch, tmp_path) -> OpenDecision:
+    """A throwaway decision, writing to a throwaway log.
+
+    decide() appends to DECISION_LOG, so without the redirect every run of this
+    suite wrote fake entries into the real logs/decisions.jsonl, where they were
+    replayed at import and rendered in the dashboard's decision trail as though
+    someone had chosen them. The redirect is scoped to the fixture rather than
+    made autouse because test_replayed_decisions_match_the_log has to read the
+    real log.
+    """
+    monkeypatch.setattr(decisions, "DECISION_LOG", tmp_path / "decisions.jsonl")
     return OpenDecision(
         key="D-TEST",
         question="Does the gate hold?",
@@ -108,3 +118,19 @@ def test_every_decision_offers_real_alternatives() -> None:
         assert d.why_it_matters.strip()
         for name, meaning in d.alternatives.items():
             assert meaning.strip(), f"{d.key}:{name} has no stated meaning"
+
+
+def test_the_real_log_holds_no_test_decisions() -> None:
+    """The audit trail is published, so it must carry only real choices."""
+    if not decisions.DECISION_LOG.exists():
+        pytest.skip("no decisions recorded yet")
+
+    import json
+
+    keys = {
+        json.loads(line)["key"]
+        for line in decisions.DECISION_LOG.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    }
+    leaked = {k for k in keys if not k.startswith("D-0")}
+    assert not leaked, f"test decisions leaked into the audit log: {leaked}"
