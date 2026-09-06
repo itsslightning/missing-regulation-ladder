@@ -17,6 +17,13 @@ data/processed/*.tsv
 data/processed/*.csv
 !data/processed/.gitkeep
 
+# The variant map is derived (from Bryois snp_pos.txt.gz) but is 5.35M rows and
+# ~111 MB, over GitHub's 100 MB file limit. It is a lookup table, not a result,
+# and `python -m pipeline.s12_smr_exposures` rebuilds it in seconds -- so it is
+# excluded on size grounds rather than licence ones. Any other derived table
+# that grows past ~50 MB should be treated the same way.
+data/processed/variant_map.parquet
+
 # Logs are excluded, with deliberate exceptions. downloads.json (which bytes
 # each run read), decisions.jsonl (which methodological choices were made and
 # when) and the per-stage sNN_* gene-loss records are not scratch output --

@@ -287,18 +287,31 @@ BRYOIS = Source(
 
 PGC3_SCZ = Source(
     key="pgc3_scz",
-    name="PGC3 schizophrenia GWAS summary statistics",
-    url="https://pgc.unc.edu/for-researchers/download-results/",
-    citation="Trubetskoy et al. 2022, Nature 604:502-508 (PGC3 SCZ)",
-    licence="PGC data-use agreement; redistribution prohibited",
-    redistributable=False,
-    version="PGC3 wave 3",
+    name="PGC3 schizophrenia GWAS summary statistics (wave 3, European)",
+    url="https://ndownloader.figshare.com/files/34517828",
+    citation=(
+        "Trubetskoy et al. 2022, Nature 604:502-508 (PGC3 SCZ); "
+        "figshare 10.6084/m9.figshare.19426775"
+    ),
+    licence="CC-BY-4.0",
+    redistributable=True,
+    version="wave3 v3 public release, European autosomes",
     notes=(
-        "Access requested by the user through the official PGC process; approval "
-        "pending as of 2026-09-04. Stage 2 is the first step that needs it, so "
-        "Stages 0 and 1 do not wait. When it arrives it goes in data/restricted/ "
-        "and only colocalization results, never the summary statistics, are "
-        "published."
+        "This is the PGC's own DESIGNATED PUBLIC RELEASE, not the "
+        "agreement-gated distribution. The figshare record reports "
+        "is_public=True, is_embargoed=False and CC-BY-4.0, and the files are "
+        "named '.public.v3' by the depositors. So no data-use agreement is "
+        "accepted to obtain it and it may be redistributed with attribution -- "
+        "which is why this entry is redistributable=True where an earlier "
+        "version of this file assumed otherwise.\n\n"
+        "The EUROPEAN subset is used rather than the larger core or primary "
+        "releases because SMR assumes the exposure and outcome samples share "
+        "an LD structure, and the eQTL arms are European: SingleBrain is "
+        "European-ancestry only, Bryois is European, GTEx is predominantly so. "
+        "Pairing a multi-ancestry GWAS with European eQTLs would violate that "
+        "assumption. See DECISIONS.md D-014.\n\n"
+        "Despite the permissive licence the 240 MB file is not committed: "
+        "data/raw is gitignored and only derived SMR results are published."
     ),
 )
 

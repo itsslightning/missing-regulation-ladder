@@ -129,32 +129,60 @@ def load_singlebrain() -> pd.DataFrame:
     return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
 
 
-def load_bryois_snp_positions() -> pd.DataFrame:
-    """rsID <-> GRCh37 position, the bridge PsychENCODE needs."""
+VARIANT_MAP = cfg.DIR_PROCESSED / "variant_map.parquet"
+
+
+def load_variant_map() -> pd.DataFrame:
+    """rsID, both genome builds, and the allele pair -- the Stage 2 keystone.
+
+    Bryois's snp_pos.txt.gz turns out to carry far more than positions:
+
+        SNP  SNP_id_hg38  SNP_id_hg19  effect_allele  other_allele  MAF
+
+    That makes it a complete harmonisation table for this project. Three things
+    fall out of it at once:
+
+    1. **The PsychENCODE bridge.** Its full file gives chr:pos on hg19 only,
+       and this maps hg19 positions to rsIDs.
+    2. **Build independence.** The arms span GRCh37 and GRCh38 and PGC3 is
+       GRCh37; having both columns keyed to one rsID removes any need for
+       liftOver.
+    3. **Allele alignment, which SMR cannot be correct without.** An SMR
+       estimate is an eQTL effect propagated through a GWAS effect at the same
+       variant. If the two studies report effects relative to opposite alleles
+       and that is not detected, the estimate's SIGN flips -- turning a gene
+       whose increased expression raises risk into one that appears protective.
+       That is a silent, plausible-looking error, so the allele pair is carried
+       from here rather than assumed.
+    """
     path = cfg.DIR_RAW / "bryois" / "snp_pos.txt.gz"
     if not path.exists():
         return pd.DataFrame()
-    with gzip.open(path, "rt") as fh:
-        head = fh.readline().split()
-    names = None if head and head[0].upper().startswith(("SNP", "RS")) else [
-        "rsid", "chr", "pos", "effect_allele", "other_allele"
-    ]
     df = pd.read_csv(
-        path, sep=r"\s+", header=0 if names is None else None, names=names,
-        engine="c", low_memory=False,
+        path,
+        sep="\t",
+        dtype="string",
+        engine="c",
     )
-    df.columns = [c.lower() for c in df.columns]
-    ren = {}
-    for c in df.columns:
-        if c in ("snp", "snp_id", "rsid"):
-            ren[c] = "rsid"
-        elif c in ("chr", "chromosome", "chr_name"):
-            ren[c] = "chr"
-        elif c in ("pos", "position", "bp"):
-            ren[c] = "pos"
-    df = df.rename(columns=ren)
-    keep = [c for c in ("rsid", "chr", "pos") if c in df.columns]
-    return df[keep].dropna() if len(keep) == 3 else pd.DataFrame()
+    df = df.rename(
+        columns={
+            "SNP": "rsid",
+            "SNP_id_hg38": "pos_hg38",
+            "SNP_id_hg19": "pos_hg19",
+            "effect_allele": "effect_allele",
+            "other_allele": "other_allele",
+            "MAF": "maf",
+        }
+    )
+    keep = [
+        c
+        for c in ("rsid", "pos_hg38", "pos_hg19", "effect_allele",
+                  "other_allele", "maf")
+        if c in df.columns
+    ]
+    df = df[keep].dropna(subset=["rsid"]).drop_duplicates("rsid", keep="first")
+    df["maf"] = pd.to_numeric(df["maf"], errors="coerce")
+    return df
 
 
 def main() -> None:
@@ -199,17 +227,25 @@ def main() -> None:
     )
     expo = expo[usable_se]
 
-    snp_pos = load_bryois_snp_positions()
-    if snp_pos.empty:
-        prov.note(
-            "PsychENCODE variant bridge",
-            "snp_pos.txt.gz not available; rung 2 exposures deferred",
-        )
+    vmap = load_variant_map()
+    if vmap.empty:
+        prov.note("variant map", "snp_pos.txt.gz not available")
     else:
-        prov.note(
-            "PsychENCODE variant bridge",
-            f"Bryois snp_pos.txt.gz supplies {len(snp_pos):,} rsID <-> GRCh37 "
-            "positions, the build PsychENCODE's full file uses",
+        vmap.to_parquet(VARIANT_MAP, index=False)
+        covered = expo["rsid"].isin(set(vmap["rsid"]))
+        prov.record(
+            "exposure variants covered by the variant map",
+            len(expo),
+            int(covered.sum()),
+            detail=(
+                f"{len(vmap):,} variants with rsID, hg19 and hg38 positions, "
+                "and the allele pair. The allele pair is the part SMR cannot "
+                "be correct without: if the eQTL and GWAS report effects "
+                "against opposite alleles and that is missed, the SMR estimate "
+                "flips sign and a risk-increasing gene reads as protective. "
+                "Uncovered variants are not lost -- PGC3 supplies its own "
+                "alleles -- but they lose the independent cross-check."
+            ),
         )
 
     expo.to_parquet(OUT, index=False)

@@ -385,6 +385,45 @@ which is the distinction `sources.py` exists to enforce.
 PGC3. The rule is that a derived output may ship if it cannot be used to
 reconstruct a restricted source table.
 
+### D-014 — PGC3 release: public figshare deposit, European subset — **SET** (2026-09-06)
+
+**Chosen:** `PGC3_SCZ_wave3.european.autosome.public.v3.vcf.tsv.gz` from the
+PGC's figshare deposit (10.6084/m9.figshare.19426775).
+
+**Two separate calls here, both worth recording.**
+
+**1. Which distribution.** An earlier version of `sources.py` recorded PGC3 as
+"PGC data-use agreement; redistribution prohibited" and routed it to
+`data/restricted/`. That was an assumption and it was **wrong for this file**.
+The PGC deposits a designated public release on figshare: the API reports
+`is_public: True`, `is_embargoed: False`, licence **CC-BY-4.0**, and the
+depositors named the files `.public.v3`. No agreement is accepted to obtain it,
+and it may be redistributed with attribution.
+
+This matters beyond convenience: accepting a data-use agreement on someone
+else's behalf would bind them to terms neither party had read, and a PGC DUA
+names an investigator and institution. The public deposit avoids the question
+entirely. The 240 MB file is still not committed — `data/raw` is gitignored and
+only derived SMR results are published — but that is a size decision, not a
+licence one.
+
+**2. Which ancestry subset.** European, not the larger `core` (443 MB) or
+`primary` (236 MB) multi-ancestry releases.
+
+**Why:** SMR assumes the exposure and outcome samples share an LD structure,
+because it propagates an effect through a variant whose correlation with the
+causal variant must be the same in both. The eQTL arms are European —
+SingleBrain is explicitly European-ancestry only, Bryois is European, GTEx is
+predominantly so. Pairing a multi-ancestry GWAS with European eQTLs would
+violate that assumption and bias the SMR estimates by an unknown amount.
+
+**Cost:** the European subset has fewer cases than the core release, so SMR is
+less powered than it could be. That is the right trade: a better-powered but
+LD-mismatched analysis would be wrong rather than merely noisy.
+
+**Consistency note:** the sibling `scz-target-prioritization` repo also used the
+PGC3 European subset, so the two projects rest on the same GWAS.
+
 ---
 
 ## Still open

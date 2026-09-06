@@ -1,7 +1,7 @@
 {
   "pipeline": "s12_smr_exposures",
-  "started_utc": "2026-09-06T02:44:51+00:00",
-  "finished_utc": "2026-09-06T02:44:53+00:00",
+  "started_utc": "2026-09-06T02:52:28+00:00",
+  "finished_utc": "2026-09-06T02:53:10+00:00",
   "steps": [
     {
       "label": "restrict exposures to the fixed gene universe",
@@ -31,13 +31,13 @@
       "pct_retained": 100.0
     },
     {
-      "label": "PsychENCODE variant bridge",
-      "n_in": 0,
-      "n_out": 0,
-      "detail": "snp_pos.txt.gz not available; rung 2 exposures deferred",
+      "label": "exposure variants covered by the variant map",
+      "n_in": 417749,
+      "n_out": 233053,
+      "detail": "5,352,389 variants with rsID, hg19 and hg38 positions, and the allele pair. The allele pair is the part SMR cannot be correct without: if the eQTL and GWAS report effects against opposite alleles and that is missed, the SMR estimate flips sign and a risk-increasing gene reads as protective. Uncovered variants are not lost -- PGC3 supplies its own alleles -- but they lose the independent cross-check.",
       "examples_dropped": "",
-      "n_dropped": 0,
-      "pct_retained": NaN
+      "n_dropped": 184696,
+      "pct_retained": 55.79
     }
   ]
 }
