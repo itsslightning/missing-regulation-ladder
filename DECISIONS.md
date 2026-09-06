@@ -275,15 +275,28 @@ isolated from sample size.
 
 **Cost:** ~4 GB additional download, one extra analysis arm.
 
-### D-008 — PsychENCODE held as non-redistributable — **PROVISIONAL** (2026-09-04)
+### D-008 — PsychENCODE held as non-redistributable — **SET** (2026-09-06)
 
-**Chosen:** written to `data/restricted/`.
+**Chosen:** written to `data/restricted/`, not rehosted.
 
-**Why:** the files download without a click-through, which is not the same as a
-licence to rehost. Held restricted until the resource.psychencode.org terms are
-read and quoted here. Derived counts are publishable either way.
+**Terms read, as promised, before Stage 3 publishes anything.**
+resource.psychencode.org states a citation requirement — *"For all other data
+please cite: Wang et al, Science 2018, Vol. 362, Issue 6420, eaat8464"* — and
+**no explicit redistribution licence**, in contrast to the CC-BY-4.0 grants
+carried by SingleBrain, Bryois and the PGC3 public deposit.
 
-**Revisit:** before Stage 3.
+Absent an explicit grant, not redistributing is the conservative reading and
+costs this project nothing: every PsychENCODE-derived number it publishes is a
+summary, not the source.
+
+**What IS published from it, and why that is not redistribution.**
+`smr_exposures.parquet` carries one row per gene — the top cis variant and its
+effect — for 12,267 PsychENCODE genes. That is a reduction of roughly four
+orders of magnitude from a ~50-million-row source file, it cannot be used to
+reconstruct that file, and it is the same class of top-association summary that
+GTEx and SingleBrain publish openly and that PsychENCODE itself publishes in
+its DER-08b release. It therefore satisfies the D-013 rule: *a derived output
+may ship if it cannot be used to reconstruct a restricted source table.*
 
 ### D-009 — SCHEMA gene set: both releases, published primary — **SET** (2026-09-04)
 
