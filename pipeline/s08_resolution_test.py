@@ -131,6 +131,61 @@ def _delta_with_ci(
     return observed, lo, hi
 
 
+def singlebrain_on_bryois_genes(
+    long: pd.DataFrame,
+    cases: pd.Index,
+    ctrls: pd.Index,
+    weights: np.ndarray,
+    genes: pd.Index,
+    rng: np.random.Generator,
+) -> dict | None:
+    """Run the SingleBrain splitting test on exactly the genes Bryois tested.
+
+    Without this, comparing the two studies' resolution effects confounds the
+    study with the gene set. Bryois is currently restricted to whichever
+    chromosomes have downloaded, which is a small and chromosome-specific
+    subset -- so a disagreement between "Bryois says -0.037" and "SingleBrain
+    says -0.007" could be about those genes rather than about the studies.
+
+    Holding the gene set fixed and re-running the SingleBrain contrast on it
+    separates the two. If SingleBrain also turns negative on these genes, the
+    tension is the subset. If it stays flat, the disagreement is real and is
+    between the studies.
+    """
+    bry_arms = ("bryois_pb", "bryois_celltype")
+    tested = set(long.loc[long["rung"].isin(bry_arms), "gene_id"])
+    if not tested:
+        return None
+
+    c = cases.intersection(tested)
+    keep = ctrls.isin(tested)
+    k, w = ctrls[keep], weights[keep]
+    if len(c) < 50 or len(k) < 50:
+        return None
+
+    # All SingleBrain major classes pooled, versus all their subtypes -- the
+    # same contrast as the per-class test, aggregated so it is comparable to
+    # Bryois's single 1-vs-8 comparison.
+    majors = [m for m in SUBTYPES if m in set(long["cell"])]
+    subs = [s for m in majors for s in SUBTYPES[m] if s in set(long["cell"])]
+    if not majors or not subs:
+        return None
+
+    hit_pooled = _detect(long, majors, genes)
+    hit_split = _detect(long, subs, genes)
+    d, d_lo, d_hi = _delta_with_ci(hit_pooled, hit_split, c, k, w, rng)
+    return {
+        "major": "SingleBrain on Bryois genes",
+        "arm": "summary",
+        "n_columns": len(subs),
+        "n_cases_restricted": len(c),
+        "n_controls_restricted": len(k),
+        "delta": d,
+        "delta_lo": d_lo,
+        "delta_hi": d_hi,
+    }
+
+
 def pooled_delta(
     hits_by_class: dict[str, tuple[pd.Series, pd.Series]],
     cases: pd.Index,
@@ -388,6 +443,37 @@ def main() -> None:
     if bryois_delta is not None:
         d, d_lo, d_hi = bryois_delta
         informative = not (d_lo <= 0 <= d_hi)
+
+        # Same-gene-set control: is the Bryois/SingleBrain difference about the
+        # studies, or about which genes Bryois has downloaded so far?
+        matched = singlebrain_on_bryois_genes(
+            long, cases, ctrls, weights, genes, rng
+        )
+        if matched is not None:
+            rows.append(matched)
+            m, m_lo, m_hi = (
+                matched["delta"], matched["delta_lo"], matched["delta_hi"]
+            )
+            print(
+                f"\n  SingleBrain restricted to the same {matched['n_cases_restricted']}"
+                f" constrained genes Bryois tested: {m:+.3f} [{m_lo:+.3f}, {m_hi:+.3f}]"
+            )
+            overlap = not (d_hi < m_lo or m_hi < d_lo)
+            print(
+                "  => the two studies' intervals "
+                + ("OVERLAP, so no evidence they disagree" if overlap
+                   else "DO NOT overlap -- a real study-level disagreement")
+            )
+            prov.record(
+                "SingleBrain on the Bryois gene set",
+                matched["n_cases_restricted"],
+                matched["n_controls_restricted"],
+                detail=(
+                    f"delta {m:+.3f} [{m_lo:+.3f}, {m_hi:+.3f}] against Bryois "
+                    f"{d:+.3f} [{d_lo:+.3f}, {d_hi:+.3f}]; intervals "
+                    + ("overlap" if overlap else "do not overlap")
+                ),
+            )
         print(
             f"\n  Bryois (D-007), pseudobulk -> 8 cell types: {d:+.3f} "
             f"[{d_lo:+.3f}, {d_hi:+.3f}]"

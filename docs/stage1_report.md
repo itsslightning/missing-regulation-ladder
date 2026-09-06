@@ -221,14 +221,22 @@ yet. Both arms are restricted to the same tested genes, so the contrast is
 valid at any coverage — it is only imprecise, and the width should fall roughly
 as √(chromosomes) as the rest arrive.
 
-**Note the sign, and do not over-read it.** The point estimate is *negative* —
-splitting pseudobulk into cell types narrows the gap — which is the direction
-the resolution account predicts and the opposite of what the SingleBrain
-splitting test found (−0.007, tightly bounded). If that survives to full
-coverage it is the most interesting tension in the project, and the honest
-reading would be that the two studies disagree rather than that resolution is
-settled. At present it is one marginal interval on 2 of 22 chromosomes and
-should not be quoted.
+**The sign looks like a tension. It is not — I checked.** The Bryois point
+estimate is *negative* (splitting narrows the gap), which is the direction the
+resolution account predicts and the opposite of the SingleBrain result
+(−0.007). Before reading anything into that, the obvious confound is the gene
+set: Bryois is restricted to whichever chromosomes have downloaded, which is a
+small, chromosome-specific subset, so "Bryois says −0.037, SingleBrain says
+−0.007" might be about *those genes* rather than about the studies.
+
+Re-running the SingleBrain splitting test on **exactly the 439 constrained
+genes Bryois has tested** gives **−0.017 [−0.103, +0.057]** — overlapping the
+Bryois interval, and with a CI five times wider than SingleBrain's full-gene
+estimate. So the apparent disagreement is the subset and its low power, not the
+studies. There is currently **no evidence the two studies disagree**.
+
+This is why the contrast is reported with a matched-gene-set control rather
+than as two numbers side by side.
 
 **My read.** The data are consistent with a large power component, a real
 residual, and — on four independent internal checks — **no detectable
