@@ -201,16 +201,44 @@ logs/         downloads.json (which bytes), decisions.jsonl (which choices),
               sNN_*.json (gene loss per stage)
 ```
 
+## Read next
+
+| Document | What it is |
+|---|---|
+| [**Methods note**](docs/methods_note.md) | 2–3 page write-up, bioRxiv style — the headline finding and how it was reached |
+| [Interview Q&A](docs/interview_qa.md) | Anticipated questions with answers grounded in the results, including what went wrong |
+| [`DECISIONS.md`](DECISIONS.md) | Every methodological choice, its alternatives, and why — 14 entries |
+| [Stage 0](docs/stage0_report.md) · [Stage 1](docs/stage1_report.md) · [Stage 2](docs/stage2_report.md) | Stage reports with full numbers |
+| [Deploying the dashboard](docs/deploy.md) | Streamlit Community Cloud steps |
+
+Run the dashboard locally:
+
+```bash
+uv sync && uv run streamlit run app/streamlit_app.py
+```
+
+Reproduce every table and figure from the raw downloads (~70 s):
+
+```bash
+uv run python scripts/run_all.py
+```
+
 ## Status
 
-**Stage 1 complete (rungs 1, 3, 4).** The constrained-gene gap closes 59.9%
-[49.5%, 70.5%] from bulk cortex to single-nucleus major cell types; the residual
-excludes zero under every detection rule. See
-[`docs/stage1_report.md`](docs/stage1_report.md).
+**Stages 0–4 complete.** All four rungs built, both hypotheses tested and
+excluded, causal and druggability layers run, dashboard built and tested.
 
-Stage 0: gene universe (18,481), matched control set (2,767 pairs),
-SCHEMA sets (32 published / 50 browser) and the rung audit; see
-[`docs/stage0_report.md`](docs/stage0_report.md).
+| Stage | Output |
+|---|---|
+| 0 — scope lock | 18,481-gene universe, 2,767 matched pairs, rung audit, 254 files hash-stamped |
+| 1 — recovery curve | 59.9% [49.5, 70.5] closure; assay identified as the cause |
+| 2 — causal + druggable | 184 loci, 41 gained at single-nucleus, 24 clinical targets, CHRM4 answered |
+| 3 — ship | 5-page dashboard, methods note, licence audit |
+| 4 — interview prep | Q&A grounded in the results |
+
+**Not yet done:** deployment to Streamlit Community Cloud (needs authorising
+from the owner's account — see [docs/deploy.md](docs/deploy.md)), and the
+HEIDI/coloc sensitivity arms for Stage 2.
 
 ## Related work
 
