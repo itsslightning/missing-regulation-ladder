@@ -209,14 +209,26 @@ in either direction, and the closure on the main ladder must be coming from
 donor count. That is a bounded, defensible conclusion, and it is the one this
 project can actually reach.
 
-**Bryois status: running, currently uninformative.** On chromosome 1 alone —
-all that has downloaded of the 198 files — pseudobulk gives a gap of 0.082
-[0.004, 0.173] and the 8 cell types 0.051 [−0.038, 0.156], a paired difference
-of **−0.030 [−0.077, +0.020]**. That interval spans zero and is three times
-wider than the SingleBrain pooled interval, so it currently distinguishes
-nothing. It narrows as the remaining chromosomes arrive. Both arms are
-restricted to the same tested genes, so the contrast is valid at any coverage —
-it is only imprecise.
+**Bryois status: running, not yet informative.** On chromosomes 1–2 — what has
+downloaded of the 198 files — pseudobulk gives a gap of 0.058 [−0.001, 0.129]
+and the 8 cell types 0.021 [−0.047, 0.095], a paired difference of
+
+> **−0.037 [−0.075, +0.004]**, on 439 constrained and 210 control genes.
+
+That interval still spans zero, though it now only just does. It is about four
+times wider than the SingleBrain pooled interval, so it distinguishes nothing
+yet. Both arms are restricted to the same tested genes, so the contrast is
+valid at any coverage — it is only imprecise, and the width should fall roughly
+as √(chromosomes) as the rest arrive.
+
+**Note the sign, and do not over-read it.** The point estimate is *negative* —
+splitting pseudobulk into cell types narrows the gap — which is the direction
+the resolution account predicts and the opposite of what the SingleBrain
+splitting test found (−0.007, tightly bounded). If that survives to full
+coverage it is the most interesting tension in the project, and the honest
+reading would be that the two studies disagree rather than that resolution is
+settled. At present it is one marginal interval on 2 of 22 chromosomes and
+should not be quoted.
 
 **My read.** The data are consistent with a large power component, a real
 residual, and — on four independent internal checks — **no detectable
