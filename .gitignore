@@ -55,3 +55,7 @@ Thumbs.db
 
 # Streamlit secrets must never be committed.
 .streamlit/secrets.toml
+
+# Editor and assistant tooling config, local to a machine and not part of
+# the analysis. The Streamlit preview launcher lives outside this repo.
+.claude/
