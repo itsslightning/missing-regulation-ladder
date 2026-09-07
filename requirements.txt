@@ -1,18 +1,25 @@
 # Streamlit Community Cloud installs from this file, so it exists alongside
 # pyproject.toml/uv.lock rather than instead of them: uv.lock is the exact pin
 # for reproducing an analysis run, this is the deploy floor for the dashboard.
-# Keep the two in step when a dependency is added.
+#
+# It is deliberately NOT the same set as pyproject.toml. The dashboard reads
+# committed parquet and computes nothing, so it needs far less than the
+# pipeline that produced those files. Verified by rendering every page under
+# AppTest and checking sys.modules: scipy, statsmodels, requests, matplotlib
+# and openpyxl are never imported at runtime, so shipping them here would only
+# lengthen the cold build. Add a dependency here when the APP starts using it,
+# not when the pipeline does.
 #
 # The app uses recent Streamlit APIs: st.navigation(position=...),
-# st.segmented_control and width="stretch". Pinning the floor high enough that
+# st.badge, st.space and width="stretch". Pinning the floor high enough that
 # a deploy cannot resolve to a version missing them.
 streamlit>=1.60
 pandas>=2.2
+# Not imported directly: pandas loads it inside read_parquet(), which is the
+# only way this app gets its data. The same lazy-import pattern that hid a
+# missing openpyxl from the pipeline, so it is called out rather than assumed.
 pyarrow>=15
 numpy>=1.26
-scipy>=1.13
-statsmodels>=0.14
-requests>=2.31
 # Plotly rather than Altair here: the report specifies it for this project, and
 # the recovery curves need per-rung hover detail that Altair makes awkward.
 plotly>=5.22
