@@ -71,6 +71,11 @@ page = st.navigation(
             icon=":material/medication:",
         ),
         st.Page(
+            "app_pages/confound.py",
+            title="Why the controls matter",
+            icon=":material/swap_vert:",
+        ),
+        st.Page(
             "app_pages/methodology.py",
             title="Methods",
             icon=":material/science:",

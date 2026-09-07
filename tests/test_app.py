@@ -22,6 +22,7 @@ PAGES = [
     "assay.py",
     "schema_genes.py",
     "causal.py",
+    "confound.py",
     "methodology.py",
 ]
 
