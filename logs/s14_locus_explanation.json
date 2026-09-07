@@ -1,7 +1,7 @@
 {
   "pipeline": "s14_locus_explanation",
-  "started_utc": "2026-09-06T12:46:16+00:00",
-  "finished_utc": "2026-09-06T12:46:25+00:00",
+  "started_utc": "2026-09-07T00:14:02+00:00",
+  "finished_utc": "2026-09-07T00:14:11+00:00",
   "steps": [
     {
       "label": "PGC3 variants at p < 5e-08",

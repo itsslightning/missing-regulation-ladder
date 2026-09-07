@@ -1,7 +1,7 @@
 {
   "pipeline": "s13_smr",
-  "started_utc": "2026-09-06T12:46:06+00:00",
-  "finished_utc": "2026-09-06T12:46:16+00:00",
+  "started_utc": "2026-09-07T00:13:51+00:00",
+  "finished_utc": "2026-09-07T00:14:02+00:00",
   "steps": [
     {
       "label": "PGC3 outcome loaded",
